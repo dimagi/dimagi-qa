@@ -162,6 +162,7 @@ class ReportPage:
     def scheduled_messaging_report(self):
         self.wait_to_click(By.LINK_TEXT, self.scheduled_messaging_rep)
         self.check_if_report_loaded()
+        time.sleep(2)
 
     def delete_report(self):
         try:
