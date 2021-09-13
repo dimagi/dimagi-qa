@@ -21,7 +21,7 @@ class HomePage:
         self.admin_menu_id = "AdminTab"
 
     def wait_to_click(self, *locator, timeout=5):
-        clickable = ec.element_to_be_clickable(locator)
+        clickable = ec.visibility_of_element_located(locator)
         WebDriverWait(self.driver, timeout).until(clickable).click()
 
     def dashboard_menu(self):
