@@ -63,7 +63,7 @@ jobs:
         # Required mail subject:
         subject: ${{ github.event.client_payload.environment }}  PASS - Github Actions job result ${{env.NOW}}  #${{github.run_number}}
         # Required recipients' addresses:
-        to: qa@dimagi.com
+        to: qa@dimagi.com, sameena.shaik@fissionlabs.com
         # Required sender full name (address can be skipped):
         from: <no-reply@dimagi.com> # <user@example.com>
         # Optional plain body:
@@ -82,7 +82,7 @@ jobs:
         username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
         password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
         subject: ${{ github.event.client_payload.environment }} FAIL - Github Actions job result ${{env.NOW}}
-        to: qa@dimagi.com
+        to: qa@dimagi.com, sameena.shaik@fissionlabs.com
         from: <no-reply@dimagi.com>
         body: Build job of ${{github.repository}} completed with failure!
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_fail.html
