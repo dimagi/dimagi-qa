@@ -93,6 +93,8 @@ class ExportDataPage:
 
         # Manage Forms
         self.manage_forms_link = '//*[@id="hq-sidebar"]/nav/ul[2]/li[3]/a'
+        self.select_app_dropdown = 'report_filter_form_app_id'
+        self.village_app = "//option[text()='Village Health']"
         self.apply_button = '//*[@id="apply-btn"]'
         self.select_all_checkbox = "//input[@name='select_all']"
         # self.checkbox1 = "//input[@class='xform-checkbox'][1]"
@@ -501,6 +503,8 @@ class ExportDataPage:
     def manage_forms(self):
         # Forms archival
         self.wait_to_click(By.XPATH, self.manage_forms_link)
+        self.wait_to_click(By.ID, self.select_app_dropdown)
+        self.wait_to_click(By.XPATH, self.village_app)
         self.wait_to_click(By.XPATH, self.apply_button)
         time.sleep(2)
         self.wait_to_click(By.XPATH, self.checkbox1)
@@ -512,6 +516,8 @@ class ExportDataPage:
 
         # View Archived Forms
         self.wait_to_click(By.XPATH, self.manage_forms_link)
+        self.driver.find_element(By.ID, self.select_app_dropdown)
+        self.wait_to_click(By.XPATH, self.village_app)
         self.wait_to_click(By.XPATH, self.archived_restored_dropdown)
         self.wait_to_click(By.XPATH, self.archived_forms_option)
         self.wait_to_click(By.XPATH, self.apply_button)
