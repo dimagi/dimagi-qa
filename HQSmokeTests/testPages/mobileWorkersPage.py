@@ -4,7 +4,7 @@ import time
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
 from HQSmokeTests.userInputs.userInputsData import UserInputsData
 from HQSmokeTests.testPages.organisationStructurePage import latest_download_file
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -90,34 +90,44 @@ class MobileWorkerPage:
         self.download_filter = "//button[@data-bind='html: buttonHTML']"
 
     def wait_to_click(self, *locator, timeout=15):
-        try:
-            clickable = ec.element_to_be_clickable(locator)
-            WebDriverWait(self.driver, timeout).until(clickable).click()
-            
-        except TimeoutException:
-            print(TimeoutException)
+        clickable = ec.element_to_be_clickable(locator)
+        WebDriverWait(self.driver, timeout).until(clickable).click()
 
     def search_user(self):
-        WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((
-            By.XPATH, self.search_mw))).send_keys(self.username)
-        self.wait_to_click(By.XPATH, self.search_button_mw)
+        try:
+            WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((
+                By.XPATH, self.search_mw))).send_keys(self.username)
+            self.wait_to_click(By.XPATH, self.search_button_mw)
+        except (TimeoutException, StaleElementReferenceException):
+            print("ERROR: Could not search and find newly created user on mobile workers page."
+                  "Execute Test Case TC_02 to verify")
 
     def webapp_login_as(self):
-        self.wait_to_click(By.ID, self.web_apps_menu_id)
-        self.wait_to_click(By.XPATH, self.webapp_login)
-        time.sleep(1)
-        self.driver.find_element(By.XPATH, self.search_user_web_apps).send_keys(self.username)
-        self.wait_to_click(By.XPATH, self.search_button_we_apps)
-        time.sleep(1)
+        try:
+            self.wait_to_click(By.ID, self.web_apps_menu_id)
+            self.wait_to_click(By.XPATH, self.webapp_login)
+            time.sleep(1)
+            self.driver.find_element(By.XPATH, self.search_user_web_apps).send_keys(self.username)
+            self.wait_to_click(By.XPATH, self.search_button_we_apps)
+            time.sleep(1)
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Could not search and find newly created user to login as"
+                  "Execute Test Case TC_02 to verify")
 
     def mobile_worker_menu(self):
-        self.wait_to_click(By.ID, self.users_menu_id)
-        self.wait_to_click(By.LINK_TEXT, self.mobile_workers_menu_link_text)
-        assert "Mobile Workers : Users :: - CommCare HQ" in self.driver.title
+        try:
+            self.wait_to_click(By.ID, self.users_menu_id)
+            self.wait_to_click(By.LINK_TEXT, self.mobile_workers_menu_link_text)
+            assert "Mobile Workers : Users :: - CommCare HQ" in self.driver.title, "Unable to locate the Users Menu. Execute Test Case TC_02 to verify"
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Could not locate mobile worker menu. Execute Test Case TC_02 to verify")
 
     def create_mobile_worker(self):
-        self.wait_to_click(By.ID, self.create_mobile_worker_id)
-        time.sleep(1)
+        try:
+            self.wait_to_click(By.ID, self.create_mobile_worker_id)
+            time.sleep(1)
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Could not locate create mobile worker button. Execute Test Case TC_02 to verify")
 
     def mobile_worker_enter_username(self, username):
         self.driver.find_element(By.ID, self.mobile_worker_username_id).send_keys(username)
@@ -126,11 +136,16 @@ class MobileWorkerPage:
         self.driver.find_element(By.ID, self.mobile_worker_password_id).send_keys(password)
 
     def click_create(self):
-        self.wait_to_click(By.XPATH, self.create_button_xpath)
-        new_user_created = WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.XPATH, self.new_user_created_xpath)))
-        print("Username is : " + new_user_created.text)
-        assert self.username == new_user_created.text
+        try:
+            self.wait_to_click(By.XPATH, self.create_button_xpath)
+            new_user_created = WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
+                By.XPATH, self.new_user_created_xpath)))
+            print("Username is : " + new_user_created.text)
+            assert self.username == new_user_created.text, "Could not locate the new mobile worker created"\
+                                                       " Execute Test Case TC_02 to verify"
+            print("Mobile Worker Created")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Could not locate the new mobile worker created. Execute Test Case TC_02 to verify")
 
     def edit_user_field(self):
         self.wait_to_click(By.XPATH, self.edit_user_field_xpath)
@@ -153,52 +168,70 @@ class MobileWorkerPage:
 
     def save_field(self):
         self.wait_to_click(By.ID, self.save_field_id)
-        assert self.driver.find_element(By.XPATH, self.user_field_success_msg).is_displayed()
+        assert self.driver.find_element(By.XPATH, self.user_field_success_msg).is_displayed(), \
+            "Unable to save userfield. Execute Test Case TC_02 to verify"
+        print("User Field Added")
 
     def select_mobile_worker_created(self):
-        self.wait_to_click(By.XPATH, self.mobile_worker_on_left_panel)
-        time.sleep(2)
-        self.search_user()
-        time.sleep(2)
-        self.driver.find_element(By.LINK_TEXT, self.username).click()
+        try:
+            self.wait_to_click(By.XPATH, self.mobile_worker_on_left_panel)
+            time.sleep(2)
+            self.search_user()
+            time.sleep(2)
+            self.driver.find_element(By.LINK_TEXT, self.username).click()
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Could not locate the new mobile worker created. Execute Test Case TC_02 to verify")
 
     def enter_value_for_created_user_field(self):
-        self.wait_to_click(By.ID, self.additional_info_dropdown)
-        self.wait_to_click(By.XPATH, self.select_value_dropdown)
-        assert self.driver.find_element(By.XPATH, self.user_file_additional_info).is_displayed()
-        time.sleep(1)
+        try:
+            self.wait_to_click(By.ID, self.additional_info_dropdown)
+            self.wait_to_click(By.XPATH, self.select_value_dropdown)
+            assert self.driver.find_element(By.XPATH, self.user_file_additional_info).is_displayed(), \
+                "Unable to assign user field to user. Execute Test Case TC_02 to verify"
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Unable to assign user field to user. Execute Test Case TC_02 to verify")
 
     def update_information(self):
         button = self.driver.find_element(By.XPATH, self.update_info_button)
         self.driver.execute_script("arguments[0].click();", button)
+        print("User Field Visible and Added for User")
 
     def deactivate_user(self):
-        self.search_user()
-        time.sleep(1)
-        self.wait_to_click(By.XPATH, self.deactivate_buttons_list)
-        self.wait_to_click(By.XPATH, self.confirm_deactivate_xpath_list)
-        time.sleep(2)
+        try:
+            self.search_user()
+            time.sleep(1)
+            self.wait_to_click(By.XPATH, self.deactivate_buttons_list)
+            self.wait_to_click(By.XPATH, self.confirm_deactivate_xpath_list)
+            time.sleep(2)
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Deactivation Unsucessful. Execute Test Case TC_03 to verify")
 
     def verify_deactivation_via_login(self):
         self.webapp_login_as()
-        login_with_username = self.driver.find_elements(By.XPATH, self.webapp_login_with_username)
-        print("Checking webapp login...")
-        for j in range(len(login_with_username)):
-            print("Username is " + login_with_username[j].text)
-            if login_with_username[j].text != self.username:
-                assert True
-        print("Username not in list - Successfully deactivated!")
+        try:
+            login_with_username = self.driver.find_elements(By.XPATH, self.webapp_login_with_username)
+            print("Checking webapp login...")
+            for j in range(len(login_with_username)):
+                print("Username is " + login_with_username[j].text)
+                assert login_with_username[j].text != self.username, "Deactivated mobile worker still visible." \
+                                                                     "Execute Test Case TC_03 to verify "
+            print("Username not in list - Successfully deactivated!")
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Deactivated mobile worker still visible. Execute Test Case TC_03 to verify")
         self.wait_to_click(By.ID, self.show_full_menu_id)
 
     def reactivate_user(self):
-        time.sleep(1)
-        self.mobile_worker_menu()
-        self.wait_to_click(By.XPATH, self.show_deactivated_users_btn)
-        self.search_user()
-        time.sleep(1)
-        self.wait_to_click(By.XPATH, self.reactivate_buttons_list)
-        self.wait_to_click(By.XPATH, self.confirm_reactivate_xpath_list)
-        time.sleep(3)
+        try:
+            time.sleep(1)
+            self.mobile_worker_menu()
+            self.wait_to_click(By.XPATH, self.show_deactivated_users_btn)
+            self.search_user()
+            time.sleep(1)
+            self.wait_to_click(By.XPATH, self.reactivate_buttons_list)
+            self.wait_to_click(By.XPATH, self.confirm_reactivate_xpath_list)
+            time.sleep(3)
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Reactivation unsuccessful. Execute Test Case TC_03 to verify")
 
     def verify_reactivation_via_login(self):
         self.webapp_login_as()
@@ -209,30 +242,36 @@ class MobileWorkerPage:
             if login_with_username[j].text == self.username:
                 self.wait_to_click(By.XPATH, self.webapp_login_with_username + "[" + str(j + 1) + "]")
                 self.wait_to_click(By.ID, self.webapp_login_confirmation)
+                self.wait_to_click(By.ID, self.show_full_menu_id)
                 break
         try:
             login_username = WebDriverWait(self.driver, 3).until(ec.presence_of_element_located(
                 (By.XPATH, self.webapp_working_as)))
-            if login_username.text == self.username:
-                assert True, "Login with the reactivated user failed!"
-                print("Working as " + self.username + " : Reactivation successful!")
+            assert login_username.text == self.username, "Reactivated user is not visible." \
+                                                         "Execute Test Case TC_03 to verify"
+            print("Working as " + self.username + " : Reactivation successful!")
         except TimeoutException:
-            print(TimeoutException)
-        self.wait_to_click(By.ID, self.show_full_menu_id)
+            print("ERROR: Reactivated mobile worker not visible. Execute Test Case TC_03 to verify")
 
     def cleanup_mobile_worker(self):
-        self.wait_to_click(By.LINK_TEXT, self.actions_tab_link_text)
-        self.wait_to_click(By.XPATH, self.delete_mobile_worker)
-        WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
-            By.XPATH, self.enter_username))).send_keys(
-            self.username + "@" + UserInputsData.domain + ".commcarehq.org")
-        self.wait_to_click(By.XPATH, self.confirm_delete_mw)
-        assert WebDriverWait(self.driver, 8).until(ec.presence_of_element_located((
-            By.XPATH, self.delete_success_mw))).is_displayed()
+        try:
+            self.wait_to_click(By.LINK_TEXT, self.actions_tab_link_text)
+            self.wait_to_click(By.XPATH, self.delete_mobile_worker)
+            WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
+                By.XPATH, self.enter_username))).send_keys(
+                self.username + "@" + UserInputsData.domain + ".commcarehq.org")
+            self.wait_to_click(By.XPATH, self.confirm_delete_mw)
+            assert WebDriverWait(self.driver, 8).until(ec.presence_of_element_located((
+                    By.XPATH, self.delete_success_mw))).is_displayed(), "Mobile User Deletion Unsuccessful"
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Cleanup unsuccessful. Delete the mobile worker to verify")
 
     def cleanup_user_field(self):
-        self.wait_to_click(By.XPATH, self.delete_user_field)
-        self.wait_to_click(By.XPATH, self.confirm_user_field_delete)
+        try:
+            self.wait_to_click(By.XPATH, self.delete_user_field)
+            self.wait_to_click(By.XPATH, self.confirm_user_field_delete)
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Cleanup unsuccessful. Delete the user field to verify")
 
     def download_mobile_worker(self):
         time.sleep(1)
@@ -243,8 +282,8 @@ class MobileWorkerPage:
             WebDriverWait(self.driver, 25).until(ec.presence_of_element_located((
                 By.LINK_TEXT, self.download_users_btn))).click()
             time.sleep(5)
-        except TimeoutException as e:
-            print("Still preparing for download..")
+        except TimeoutException:
+            print("ERROR: Still preparing for download..Celery might be down. Execute Test Case TC_09 to verify")
             assert False
         # verify_downloaded_workers
         newest_file = latest_download_file()
@@ -255,17 +294,22 @@ class MobileWorkerPage:
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
         newest_file = latest_download_file()
-        assert "_users_" in newest_file and diff_seconds in range(0, 600)
+        assert "_users_" in newest_file and diff_seconds in range(0, 600), "Download Unsucessful!" \
+                                                 "Execute Test Case TC_09 to verify"
         print("File download successful")
 
     def upload_mobile_worker(self):
         self.mobile_worker_menu()
-        self.driver.find_element(By.LINK_TEXT, self.bulk_upload_btn).click()
-        newest_file = latest_download_file()
-        file_that_was_downloaded = UserInputsData.download_path / newest_file
-        time.sleep(5)
-        self.driver.find_element(By.XPATH, self.choose_file).send_keys(str(file_that_was_downloaded))
-        self.driver.find_element(By.XPATH, self.upload).click()
-        assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
-            By.XPATH, self.import_complete))).is_displayed()
-        print("File uploaded successfully")
+        try:
+            self.driver.find_element(By.LINK_TEXT, self.bulk_upload_btn).click()
+            newest_file = latest_download_file()
+            file_that_was_downloaded = UserInputsData.download_path / newest_file
+            time.sleep(5)
+            self.driver.find_element(By.XPATH, self.choose_file).send_keys(str(file_that_was_downloaded))
+            self.driver.find_element(By.XPATH, self.upload).click()
+            assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
+                    By.XPATH, self.import_complete))).is_displayed(), "Upload UnSuccessful!" \
+                                                                      "Execute Test Case TC_09 to verify"
+            print("File uploaded successfully")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Upload is taking longer to process...Execute Test Case TC_09 to verify")

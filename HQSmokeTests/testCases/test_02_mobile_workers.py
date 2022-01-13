@@ -2,25 +2,16 @@ from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
 from HQSmokeTests.testPages.mobileWorkersPage import MobileWorkerPage
 
 
-def test_01_click_mobile_worker_menu(driver):
-
+def test_01_create_mobile_worker(driver):
     worker = MobileWorkerPage(driver)
     worker.mobile_worker_menu()
-    print("Mobile Workers Menu Visible and Click-able")
-
-
-def test_02_create_mobile_worker(driver):
-
-    worker = MobileWorkerPage(driver)
     worker.create_mobile_worker()
     worker.mobile_worker_enter_username("username_" + str(fetch_random_string()))
     worker.mobile_worker_enter_password(fetch_random_string())
     worker.click_create()
-    print("Mobile Worker Created")
 
 
-def test_03_user_field_creation(driver):
-
+def test_02_user_field_creation(driver):
     create = MobileWorkerPage(driver)
     create.mobile_worker_menu()
     create.edit_user_field()
@@ -29,42 +20,25 @@ def test_03_user_field_creation(driver):
     create.add_label("user_field_" + fetch_random_string())
     create.add_choice("user_field_" + fetch_random_string())
     create.save_field()
-    print("User Field Added")
 
 
-def test_04_user_field_visible(driver):
-
+def test_03_user_field_visible(driver):
     visible = MobileWorkerPage(driver)
     visible.select_mobile_worker_created()
-    print("Clicked on user")
     visible.enter_value_for_created_user_field()
-    print("Selected User Field")
     visible.update_information()
-    print("User Field Visible and Added for User")
 
 
-def test_05_deactivate_user(driver):
-
+def test_04_deactivate_and_reactivate_user(driver):
     user = MobileWorkerPage(driver)
     user.mobile_worker_menu()
     user.deactivate_user()
     user.verify_deactivation_via_login()
-
-
-def test_06_reactivate_user(driver):
-
-    user = MobileWorkerPage(driver)
     user.reactivate_user()
     user.verify_reactivation_via_login()
 
 
-def test_07_download_workers(driver):
-
+def test_05_download_and_upload_users(driver):
     user = MobileWorkerPage(driver)
     user.download_mobile_worker()
-
-
-def test_08_upload_workers(driver):
-
-    user = MobileWorkerPage(driver)
     user.upload_mobile_worker()
