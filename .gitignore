@@ -145,6 +145,7 @@ output.json
 pytest_html_report.html
 archive
 assets
+/HQSmokeTests/testCases/report.html
 
 #Ignoring compliled files of FormplayerTests
 
