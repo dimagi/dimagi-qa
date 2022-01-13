@@ -62,6 +62,7 @@ def test_07_manage_forms(driver):
     export.data_tab()
     export.manage_forms()
 
+
 def test_08_delete_all_bulk_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
