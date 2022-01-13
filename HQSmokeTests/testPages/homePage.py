@@ -29,46 +29,46 @@ class HomePage:
         try:
             self.wait_to_click(By.ID, self.dashboard_menu_id)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Dashboard menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Dashboard menu\n Execute Test Case TC_01 to verify")
 
     def reports_menu(self):
         try:
             self.wait_to_click(By.ID, self.reports_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Reports menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Reports menu\n Execute Test Case TC_01 to verify")
 
     def data_menu(self):
         try:
             self.wait_to_click(By.ID, self.data_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Data menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Data menu\n Execute Test Case TC_01 to verify")
 
     def applications_menu(self):
         try:
             self.wait_to_click(By.ID, self.applications_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.available_application)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Applications menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Applications menu\n Execute Test Case TC_01 to verify")
 
     def users_menu(self):
         try:
             self.wait_to_click(By.ID, self.users_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Users menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Users menu\n Execute Test Case TC_01 to verify")
 
     def messaging_menu(self):
         try:
             self.wait_to_click(By.ID, self.messaging_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Messaging menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Messaging menu\n Execute Test Case TC_01 to verify")
 
     def web_apps_menu(self):
         try:
             self.wait_to_click(By.ID, self.web_apps_menu_id)
             self.wait_to_click(By.ID, self.show_full_menu_id)
         except TimeoutException:
-            print("Timeout: Couldn’t find the Webapps menu\n Execute Tese Case TC_01 to verify")
+            print("Timeout: Couldn’t find the Webapps menu\n Execute Test Case TC_01 to verify")
