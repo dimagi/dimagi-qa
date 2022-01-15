@@ -1,8 +1,11 @@
+import pytest
+
 from HQSmokeTests.testPages.groupPage import GroupPage
 from HQSmokeTests.testPages.homePage import HomePage
 
 
-def test_01_user_groups(driver):
+@pytest.mark.order(1)
+def test_TC_04_create_group_and_assign_user(driver):
 
     menu = HomePage(driver)
     visible = GroupPage(driver)
@@ -11,7 +14,8 @@ def test_01_user_groups(driver):
     visible.add_user_to_group()
 
 
-def test_02_edit_user_groups(driver):
+@pytest.mark.order(2)
+def test_TC_04_edit_user_groups(driver):
 
     edit = GroupPage(driver)
     edit.edit_existing_group()

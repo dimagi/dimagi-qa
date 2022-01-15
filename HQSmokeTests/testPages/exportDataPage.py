@@ -4,7 +4,7 @@ import time
 
 import pandas as pd
 from HQSmokeTests.userInputs.userInputsData import UserInputsData
-from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -218,7 +218,7 @@ class ExportDataPage:
         time.sleep(3)
         womanName_HQ = WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located((
             By.XPATH, self.womanName_HQ))).text
-        assert woman_name_excel == womanName_HQ
+        assert woman_name_excel == womanName_HQ, "File seems to be blank"
         print("Downloaded file has the required data!")
         self.driver.close()
         self.switch_back_to_prev_tab()
@@ -271,7 +271,7 @@ class ExportDataPage:
         self.switch_to_next_tab()
         womanName_HQ = WebDriverWait(self.driver, 15).until(ec.presence_of_element_located((
             By.XPATH, self.woman_case_name_HQ))).text
-        assert woman_name_excel == womanName_HQ
+        assert woman_name_excel == womanName_HQ, "File seems to be blank"
         print("Downloaded file has the required data!")
         self.driver.close()
         self.switch_back_to_prev_tab()
@@ -290,7 +290,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Messages" in newest_file and diff_seconds in range(0, 600)
+        assert "Messages" in newest_file and diff_seconds in range(0, 600), "Export not completed"
         print("Export successful")
 
     # Test Case 23_a - Daily saved export, form
@@ -326,7 +326,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Form Export DSE" in newest_file and diff_seconds in range(0, 600)
+        assert "Form Export DSE" in newest_file and diff_seconds in range(0, 600), "Export not completed"
         print("DSE Form Export successful")
 
     # Test Case 23_b - Daily saved export, case
@@ -362,7 +362,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Case Export DSE" in newest_file and diff_seconds in range(0, 600)
+        assert "Case Export DSE" in newest_file and diff_seconds in range(0, 600), "Export not completed"
         print("DSE Case Export successful")
 
     # Test Case - 24 - Excel Dashboard Integration, form
@@ -466,7 +466,7 @@ class ExportDataPage:
         self.driver.refresh()
         self.get_url_paste_browser_form(username, password)
         odata_feed_data = self.driver.page_source
-        assert odata_feed_data != ""
+        assert odata_feed_data != "", "No Data!"
         print("Odata form feed has data")
         self.driver.close()
         self.switch_back_to_prev_tab()
@@ -493,7 +493,7 @@ class ExportDataPage:
         self.driver.refresh()
         self.get_url_paste_browser_case(username, password)
         odata_feed_data = self.driver.page_source
-        assert odata_feed_data != ""  # This condition can be improvised
+        assert odata_feed_data != "", "No Data!" # This condition can be improvised
         print("Odata case feed has data")
         self.driver.close()  # Close the feed URL
         self.switch_back_to_prev_tab()
@@ -510,7 +510,7 @@ class ExportDataPage:
         self.wait_to_click(By.XPATH, self.checkbox1)
         self.wait_to_click(By.XPATH, self.archive_button)
         assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
-            By.XPATH, self.success_message))).is_displayed()
+            By.XPATH, self.success_message))).is_displayed(), "Form archival not completed.."
         print("Forms archival successful!!")
         time.sleep(5)
 
@@ -525,7 +525,7 @@ class ExportDataPage:
         self.wait_to_click(By.XPATH, self.view_form_link)
         self.switch_to_next_tab()
         normal_form_data = self.driver.page_source
-        assert normal_form_data != ""  # This condition can be improvised
+        assert normal_form_data != "","No Data!" # This condition can be improvised
         print("archived_form has data")
         self.driver.close()
         self.switch_back_to_prev_tab()
@@ -535,8 +535,8 @@ class ExportDataPage:
             self.wait_to_click(By.XPATH, self.checkbox1)
             self.wait_to_click(By.XPATH, self.archive_button)
             assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
-                By.XPATH, self.success_message))).is_displayed()
-            print("Forms archival successful!!")
+                By.XPATH, self.success_message))).is_displayed(), "Restore not completed"
+            print("Forms restoration successful!!")
         except TimeoutException:
             print(TimeoutException)
 
@@ -546,7 +546,7 @@ class ExportDataPage:
         self.wait_to_click(By.XPATH, self.view_form_link)
         self.switch_to_next_tab()
         normal_form_data = self.driver.page_source
-        assert normal_form_data != ""  # This condition can be improvised
+        assert normal_form_data != "", "No Data!"  # This condition can be improvised
         print("normal_form has data")
         self.driver.close()
         self.switch_back_to_prev_tab()

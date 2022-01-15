@@ -94,7 +94,7 @@ class ReportPage:
             WebDriverWait(self.driver, timeout).until(clickable).click()
             
         except (NoSuchElementException, TimeoutException):
-            print(NoSuchElementException, TimeoutException)
+            print("It timedout!")
 
     def check_if_report_loaded(self):
         try:

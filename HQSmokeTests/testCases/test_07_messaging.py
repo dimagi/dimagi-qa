@@ -1,8 +1,11 @@
+import pytest
+
 from HQSmokeTests.testPages.homePage import HomePage
 from HQSmokeTests.testPages.messagingPage import MessagingPage
 
 
-def test_01_dashboard(driver):
+@pytest.mark.order(1)
+def test_TC_41_dashboard(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -10,7 +13,8 @@ def test_01_dashboard(driver):
     msg.open_dashboard_page()
 
 
-def test_02_compose_sms(driver):
+@pytest.mark.order(2)
+def test_TC_42_compose_sms(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -18,7 +22,8 @@ def test_02_compose_sms(driver):
     msg.compose_sms()
 
 
-def test_03_broadcast(driver):
+@pytest.mark.order(3)
+def test_TC_43_broadcast(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -26,7 +31,8 @@ def test_03_broadcast(driver):
     msg.send_broadcast_message()
 
 
-def test_04_create_cond_alert(driver):
+@pytest.mark.order(4)
+def test_TC_44_create_cond_alert(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -35,7 +41,8 @@ def test_04_create_cond_alert(driver):
     msg.remove_cond_alert()
 
 
-def test_05_cond_alert_bulk_upload(driver):
+@pytest.mark.order(5)
+def test_TC_45_cond_alert_bulk_upload(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -44,7 +51,8 @@ def test_05_cond_alert_bulk_upload(driver):
     msg.cond_alert_upload()
 
 
-def test_06_keyword_creation(driver):
+@pytest.mark.order(6)
+def test_TC_46_keyword_creation(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -55,7 +63,8 @@ def test_06_keyword_creation(driver):
     msg.remove_structured_keyword()
 
 
-def test_07_chats(driver):
+@pytest.mark.order(7)
+def test_TC_47_chats(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -63,7 +72,8 @@ def test_07_chats(driver):
     msg.chat_page()
 
 
-def test_08_general_settings(driver):
+@pytest.mark.order(8)
+def test_TC_49_general_settings(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -71,7 +81,8 @@ def test_08_general_settings(driver):
     msg.general_settings_page()
 
 
-def test_09_languages(driver):
+@pytest.mark.order(9)
+def test_TC_50_languages(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -79,7 +90,8 @@ def test_09_languages(driver):
     msg.languages_page()
 
 
-def test_10_translations(driver):
+@pytest.mark.order(10)
+def test_TC_51_translations(driver):
 
     menu = HomePage(driver)
     msg = MessagingPage(driver)
@@ -88,7 +100,8 @@ def test_10_translations(driver):
     msg.msg_trans_upload()
 
 
-def test_11_settings_pages(driver):
+@pytest.mark.order(11)
+def test_TC_52_settings_pages(driver):
 
     msg = MessagingPage(driver)
     msg.project_settings_page()

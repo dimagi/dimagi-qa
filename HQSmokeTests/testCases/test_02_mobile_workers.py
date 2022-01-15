@@ -1,8 +1,11 @@
+import pytest
+
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
 from HQSmokeTests.testPages.mobileWorkersPage import MobileWorkerPage
 
 
-def test_01_create_mobile_worker(driver):
+@pytest.mark.order(1)
+def test_TC_02_create_mobile_worker(driver):
     worker = MobileWorkerPage(driver)
     worker.mobile_worker_menu()
     worker.create_mobile_worker()
@@ -11,7 +14,8 @@ def test_01_create_mobile_worker(driver):
     worker.click_create()
 
 
-def test_02_user_field_creation(driver):
+@pytest.mark.order(2)
+def test_TC_02_user_field_creation(driver):
     create = MobileWorkerPage(driver)
     create.mobile_worker_menu()
     create.edit_user_field()
@@ -22,14 +26,16 @@ def test_02_user_field_creation(driver):
     create.save_field()
 
 
-def test_03_user_field_visible(driver):
+@pytest.mark.order(3)
+def test_TC_02_user_field_visible(driver):
     visible = MobileWorkerPage(driver)
     visible.select_mobile_worker_created()
     visible.enter_value_for_created_user_field()
     visible.update_information()
 
 
-def test_04_deactivate_and_reactivate_user(driver):
+@pytest.mark.order(4)
+def test_TC_03_deactivate_and_reactivate_user(driver):
     user = MobileWorkerPage(driver)
     user.mobile_worker_menu()
     user.deactivate_user()
@@ -38,7 +44,8 @@ def test_04_deactivate_and_reactivate_user(driver):
     user.verify_reactivation_via_login()
 
 
-def test_05_download_and_upload_users(driver):
+@pytest.mark.order(5)
+def test_TC_09_download_and_upload_users(driver):
     user = MobileWorkerPage(driver)
     user.download_mobile_worker()
     user.upload_mobile_worker()

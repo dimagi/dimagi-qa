@@ -119,10 +119,10 @@ class MessagingPage:
             WebDriverWait(self.driver, timeout).until(clickable).click()
 
         except TimeoutException:
-            print(TimeoutException)
+            print("It timedout!")
 
     def open_dashboard_page(self):
-        assert True == self.driver.find_element(By.XPATH, self.dashboard_elements).is_displayed()
+        assert True == self.driver.find_element(By.XPATH, self.dashboard_elements).is_displayed(), "Dashboatd  didn't load successfully!"
         print("Messaging dashboard loaded successfully!")
 
     def compose_sms(self):
@@ -132,14 +132,14 @@ class MessagingPage:
         self.driver.find_element(By.XPATH, self.send_message).click()
         try:
             assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-                By.XPATH, self.message_sent_success_msg))).is_displayed()
+                By.XPATH, self.message_sent_success_msg))).is_displayed(), "Message not sent successfully"
         except TimeoutException:
             self.driver.find_element(By.LINK_TEXT, self.compose_sms_menu).click()
             self.driver.find_element(By.XPATH, self.recipients_textarea).send_keys("[send to all]")
             self.driver.find_element(By.XPATH, self.message_textarea).send_keys("sms_" + fetch_random_string())
             self.driver.find_element(By.XPATH, self.send_message).click()
             assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-                By.XPATH, self.message_sent_success_msg))).is_displayed()
+                By.XPATH, self.message_sent_success_msg))).is_displayed(), "Message not sent successfully"
             print("SMS composed successfully!")
 
     def send_broadcast_message(self):
@@ -173,7 +173,7 @@ class MessagingPage:
 #                 By.XPATH, self.broadcast_created))).is_displayed()
         except StaleElementReferenceException:
             assert True == WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((
-                By.XPATH, self.broadcast_created))).is_displayed()
+                By.XPATH, self.broadcast_created))).is_displayed(), "Broadcast not created successfully!"
         print("Broadcast created successfully!")
 
     def create_cond_alert(self):
@@ -195,7 +195,7 @@ class MessagingPage:
             By.XPATH, self.search_box))).send_keys(cond_text)
         self.wait_to_click(By.XPATH, self.search_box)
         assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.XPATH, self.cond_alert_created))).is_displayed()
+            By.XPATH, self.cond_alert_created))).is_displayed(), "Conditional Alert not created successfully!"
         print("Conditional Alert created successfully!")
 
     def cond_alert_download(self):
@@ -210,7 +210,7 @@ class MessagingPage:
         file_that_was_downloaded = UserInputsData.download_path / newest_file
         self.driver.find_element(By.XPATH, self.choose_file).send_keys(str(file_that_was_downloaded))
         self.wait_to_click(By.XPATH, self.upload)
-        assert True == self.driver.find_element(By.XPATH, self.upload_success_message).is_displayed()
+        assert True == self.driver.find_element(By.XPATH, self.upload_success_message).is_displayed(), "Conditional Alert upload not completed!"
         print("Conditional Alert uploaded successfully!")
 
     def add_keyword_trigger(self):
@@ -222,7 +222,7 @@ class MessagingPage:
                                                                            + fetch_random_string())
         self.driver.find_element(By.XPATH, self.send_message).click()
         assert True == WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((
-            By.XPATH, self.keyword_created))).is_displayed()
+            By.XPATH, self.keyword_created))).is_displayed(), print("Keyword not created successfully!")
         print("Keyword created successfully!")
 
     def add_structured_keyword_trigger(self):
@@ -238,12 +238,12 @@ class MessagingPage:
             "Test Message" + "structured_keyword_" + fetch_random_string())
         self.wait_to_click(By.XPATH, self.send_message)
         assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.XPATH, self.structured_keyword_created))).is_displayed()
+            By.XPATH, self.structured_keyword_created))).is_displayed(), "Structured keyword not created successfully!"
         print("Structured keyword created successfully!")
 
     def chat_page(self):
         self.driver.find_element(By.LINK_TEXT, self.chat).click()
-        assert True == self.driver.find_element(By.ID, self.contact_table).is_displayed()
+        assert True == self.driver.find_element(By.ID, self.contact_table).is_displayed(), "Chat Page did not load successfully!"
         print("Chat Page loaded successfully!")
 
     # def sms_connectivity_gateway(self):
@@ -275,7 +275,7 @@ class MessagingPage:
             self.driver.find_element(By.XPATH, self.disable_button).click()
         self.driver.find_element(By.XPATH, self.send_message).click()
         assert True == WebDriverWait(self.driver, 2).until(ec.presence_of_element_located((
-            By.XPATH, self.message_sent_success_msg))).is_displayed()
+            By.XPATH, self.message_sent_success_msg))).is_displayed(), "Settings page not updated successfully!"
         print("Settings page updated successfully!")
 
     def languages_page(self):
@@ -385,19 +385,19 @@ class MessagingPage:
         button = self.driver.find_element(By.XPATH, self.upload)
         self.driver.execute_script("arguments[0].click();", button)
         assert True == WebDriverWait(self.driver, 2).until(ec.presence_of_element_located((
-            By.XPATH, self.upload_success_message))).is_displayed()
+            By.XPATH, self.upload_success_message))).is_displayed(), "Msg Trans not uploaded successfully"
         print("Msg Trans uploaded successfully!")
 
     def project_settings_page(self):
         self.wait_to_click(By.XPATH, self.settings_bar)
         self.wait_to_click(By.LINK_TEXT, self.project_settings_menu)
         assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.XPATH, self.project_settings_elements))).is_displayed()
+            By.XPATH, self.project_settings_elements))).is_displayed(), "Project Settings page did not load successfully"
         print("Project Settings page loaded successfully!")
 
     def current_subscription_page(self):
         self.wait_to_click(By.XPATH, self.settings_bar)
         self.wait_to_click(By.LINK_TEXT, self.subscription_menu)
         assert True == WebDriverWait(self.driver, 2).until(ec.presence_of_element_located((
-            By.ID, self.subscription_elements_id))).is_displayed()
+            By.ID, self.subscription_elements_id))).is_displayed(), "Subscription Page did not load successfully"
         print("Current Subscription page loaded successfully!")

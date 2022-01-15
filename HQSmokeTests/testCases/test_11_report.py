@@ -1,9 +1,12 @@
+import pytest
+
 from HQSmokeTests.testPages.homePage import HomePage
 from HQSmokeTests.testPages.reportPage import ReportPage
 from selenium.common.exceptions import UnexpectedAlertPresentException
 
 
-def test_01_report_loading(driver):
+@pytest.mark.order(1)
+def test_TC_13_report_loading(driver):
 
     report = HomePage(driver)
     report.reports_menu()
@@ -25,7 +28,8 @@ def test_01_report_loading(driver):
     load.scheduled_messaging_report()
 
 
-def test_02_create_case_report(driver):
+@pytest.mark.order(2)
+def test_TC_16_create_case_report(driver):
 
     report = HomePage(driver)
     report.reports_menu()
@@ -33,7 +37,8 @@ def test_02_create_case_report(driver):
     load.create_report_builder_case_report()
 
 
-def test_03_create_form_report(driver):
+@pytest.mark.order(3)
+def test_TC_17_create_form_report(driver):
 
     report = HomePage(driver)
     driver.refresh()
@@ -42,7 +47,8 @@ def test_03_create_form_report(driver):
     load.create_report_builder_form_report()
 
 
-def test_04_save_report(driver):
+@pytest.mark.order(4)
+def test_TC_18_saved_report(driver):
 
     report = HomePage(driver)
     report.reports_menu()
@@ -50,7 +56,8 @@ def test_04_save_report(driver):
     load.saved_report()
 
 
-def test_05_scheduled_report(driver):
+@pytest.mark.order(5)
+def test_TC_19_scheduled_report(driver):
 
     report = HomePage(driver)
     driver.refresh()

@@ -80,12 +80,12 @@ class OrganisationStructurePage:
         self.delete_confirm_button = "//button[@data-bind ='click: delete_fn, css: {disabled: !(signOff() == count)}']"
         self.delete_loc_field = "(//a[@class='btn btn-danger'])[last()]"
         self.delete_org_level = "(//button[@class='btn btn-danger'])[last()]"
+        self.delete_success ="//span[text()='You have successfully deleted the location ss and all of its child locations']"
 
     def wait_to_click(self, *locator, timeout=10):
         try:
             clickable = ec.element_to_be_clickable(locator)
             WebDriverWait(self.driver, timeout).until(clickable).click()
-
         except TimeoutException:
             print(TimeoutException)
 
@@ -100,15 +100,15 @@ class OrganisationStructurePage:
         self.driver.find_element(By.XPATH, self.loc_name_xpath).send_keys(self.new_location_name)
         self.driver.find_element(By.XPATH, self.create_loc_xpath).click()
         assert WebDriverWait(self.driver, 10).until(ec.presence_of_element_located((
-            By.XPATH, self.loc_saved_success_msg))).is_displayed()
+            By.XPATH, self.loc_saved_success_msg))).is_displayed(), "Location not created!"
         self.wait_to_click(By.LINK_TEXT, self.org_menu_link_text)
         self.driver.refresh()
         try:
             assert WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-                By.XPATH, self.location_created_xpath))).is_displayed()
+                By.XPATH, self.location_created_xpath))).is_displayed(), "Location not created!"
         except StaleElementReferenceException:
             assert WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-                By.XPATH, self.location_created_xpath))).is_displayed()
+                By.XPATH, self.location_created_xpath))).is_displayed(), "Location not created!"
 
     def edit_location(self):
         try:
@@ -118,11 +118,11 @@ class OrganisationStructurePage:
             self.driver.find_element(By.ID, self.loc_name_input_id).send_keys("updated_on:" + str(date.today()))
             self.driver.find_element(By.XPATH, self.update_loc_xpath).click()
             assert WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((
-                By.XPATH, self.loc_saved_success_msg))).is_displayed()
+                By.XPATH, self.loc_saved_success_msg))).is_displayed(),  "Location editing not successful!"
             self.driver.find_element(By.LINK_TEXT, self.org_menu_link_text).click()
             self.driver.refresh()
             assert WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((
-                By.XPATH, self.renamed_location))).is_displayed()
+                By.XPATH, self.renamed_location))).is_displayed(), "Location editing not successful!"
         except StaleElementReferenceException:
             print(StaleElementReferenceException)
 
@@ -138,7 +138,7 @@ class OrganisationStructurePage:
         self.driver.find_element(By.XPATH, self.add_choice_btn_xpath).click()
         self.driver.find_element(By.XPATH, self.choice_xpath).send_keys("location_field_" + fetch_random_string())
         self.driver.find_element(By.ID, self.save_btn_id).click()
-        assert self.driver.find_element(By.XPATH, self.success_msg_xpath).is_displayed()
+        assert self.driver.find_element(By.XPATH, self.success_msg_xpath).is_displayed(), "Location field edit not successful!"
         self.driver.refresh()
 
     def selection_location_field_for_location_created(self):
@@ -149,7 +149,7 @@ class OrganisationStructurePage:
             self.driver.find_element(By.XPATH, self.select_value_drop_down).click()
             self.driver.find_element(By.XPATH, self.update_loc_xpath).click()
             assert WebDriverWait(self.driver, 2).until(ec.presence_of_element_located((
-                By.XPATH, self.success_msg_xpath))).is_displayed()
+                By.XPATH, self.success_msg_xpath))).is_displayed(), "Location field not assigned!"
         except StaleElementReferenceException:
             print(StaleElementReferenceException)
 
@@ -178,7 +178,7 @@ class OrganisationStructurePage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "_locations" in newest_file and diff_seconds in range(0, 600)
+        assert "_locations" in newest_file and diff_seconds in range(0, 600), "Download not completed!"
         print("File download successful")
 
     def upload_locations(self):
@@ -190,7 +190,7 @@ class OrganisationStructurePage:
         time.sleep(2)
         self.wait_to_click(By.XPATH, self.upload)
         assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
-            By.XPATH, self.import_complete))).is_displayed()
+            By.XPATH, self.import_complete))).is_displayed(), "Upload not completed!"
         print("File uploaded successfully")
 
     def cleanup(self):
@@ -215,3 +215,6 @@ class OrganisationStructurePage:
         time.sleep(1)
         self.driver.find_element(By.XPATH, self.delete_org_level).click()
         self.wait_to_click(By.XPATH, self.save_btn_delete)
+        assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
+            By.XPATH, self.delete_success))).is_displayed(), "Location Not Deleted!"
+        print("Location deleted successfully")

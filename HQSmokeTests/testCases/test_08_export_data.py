@@ -1,7 +1,9 @@
+import pytest
+
 from HQSmokeTests.testPages.exportDataPage import ExportDataPage
 
-
-def test_01_form_exports(driver):
+@pytest.mark.order(1)
+def test_TC_20_form_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.add_form_exports()
@@ -9,8 +11,8 @@ def test_01_form_exports(driver):
     export.validate_downloaded_form_exports()
     # export.delete_bulk_exports()
 
-
-def test_02_case_exports(driver):
+@pytest.mark.order(2)
+def test_TC_20_case_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.add_case_exports()
@@ -18,14 +20,14 @@ def test_02_case_exports(driver):
     export.validate_downloaded_case_exports()
     # export.delete_bulk_exports()
 
-
-def test_03_sms_exports(driver):
+@pytest.mark.order(3)
+def test_TC_21_sms_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.sms_exports()
 
-
-def test_04_daily_saved_exports(driver):
+@pytest.mark.order(4)
+def test_TC_23_daily_saved_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.daily_saved_exports_form()
@@ -35,35 +37,48 @@ def test_04_daily_saved_exports(driver):
     export.deletion()
     export.delete_bulk_exports()
 
-
-def test_05_excel_dashboard_integration(driver):
+@pytest.mark.order(5)
+def test_TC_24_excel_dashboard_integration_form(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.excel_dashboard_integration_form()
     export.deletion()
+
+
+@pytest.mark.order(6)
+def test_TC_25_excel_dashboard_integration_case(driver):
+    export = ExportDataPage(driver)
+    export.data_tab()
     export.excel_dashboard_integration_case()
     export.deletion()
 
+@pytest.mark.order(7)
+def test_TC_27_powerBI_tableau_integration_case(driver, settings):
+    username = settings["login_username"]
+    password = settings["login_password"]
+    export = ExportDataPage(driver)
+    export.data_tab()
+    export.power_bi_tableau_integration_case(username, password)
+    export.deletion()
 
-def test_06_powerBI_tableau_integration(driver, settings):
+@pytest.mark.order(8)
+def test_TC_28_powerBI_tableau_integration_form(driver, settings):
     username = settings["login_username"]
     password = settings["login_password"]
     export = ExportDataPage(driver)
     export.data_tab()
     export.power_bi_tableau_integration_form(username, password)
     export.deletion()
-    export.power_bi_tableau_integration_case(username, password)
-    export.deletion()
 
-
-def test_07_manage_forms(driver):
+@pytest.mark.order(9)
+def test_TC_30_manage_forms(driver):
     export = ExportDataPage(driver)
     driver.refresh()
     export.data_tab()
     export.manage_forms()
 
-
-def test_08_delete_all_bulk_exports(driver):
+@pytest.mark.order(10)
+def test_delete_all_bulk_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.delete_all_bulk_exports()

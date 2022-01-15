@@ -9,6 +9,7 @@ class WebAppPermissionPage:
         self.first_radio_button = "//input[@name='ko_unique_1']"
         self.second_radio_button = "//input[@name='ko_unique_2']"
         self.save_button = "//div[@class='btn btn-primary']"
+        self.after_save = "//div[@class='btn btn-primary disabled']"
 
     def webapp_permission_option_toggle(self):
         self.driver.find_element(By.LINK_TEXT, self.web_app_permissions_menu).click()
@@ -18,3 +19,5 @@ class WebAppPermissionPage:
         else:
             self.driver.find_element(By.XPATH, self.first_radio_button).click()
         self.driver.find_element(By.XPATH, self.save_button).click()
+        assert True == self.driver.find_element(By.XPATH, self.after_save).is_displayed()
+        print("Webapps permissions toggled")

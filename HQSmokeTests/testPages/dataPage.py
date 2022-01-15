@@ -1,5 +1,5 @@
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -57,21 +57,27 @@ class DataPage:
         self.wait_to_click(By.LINK_TEXT, self.auto_case_update_link)
 
     def add_new_rule(self):
-        self.wait_to_click(By.ID, self.add_rule_button_id)
-        self.driver.find_element(By.ID, self.add_rule_name_id).send_keys(self.rule_name)
-        self.wait_to_click(By.ID, self.case_type_id)
-        self.wait_to_click(By.XPATH, self.case_type_option_value)
-        self.wait_to_click(By.XPATH, self.add_action)
-        self.wait_to_click(By.XPATH, self.close_case)
-        self.wait_to_click(By.XPATH, self.rule_save)
+        try:
+            self.wait_to_click(By.ID, self.add_rule_button_id)
+            self.driver.find_element(By.ID, self.add_rule_name_id).send_keys(self.rule_name)
+            self.wait_to_click(By.ID, self.case_type_id)
+            self.wait_to_click(By.XPATH, self.case_type_option_value)
+            self.wait_to_click(By.XPATH, self.add_action)
+            self.wait_to_click(By.XPATH, self.close_case)
+            self.wait_to_click(By.XPATH, self.rule_save)
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Could not add new rule")
         assert True == WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((
-            By.XPATH, self.rule_created))).is_displayed()
+            By.XPATH, self.rule_created))).is_displayed(), "Could not add new rule"
         print("New Rule to Update Cases created successfully!")
 
     def remove_rule(self):
-        self.open_auto_case_update_page()
-        self.wait_to_click(By.XPATH, self.delete_rule)
-        self.wait_to_click(By.XPATH, self.delete_confirm)
+        try:
+            self.open_auto_case_update_page()
+            self.wait_to_click(By.XPATH, self.delete_rule)
+            self.wait_to_click(By.XPATH, self.delete_confirm)
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Could not remove rule")
         try:
             self.driver.refresh()
             isPresent = self.driver.find_element(By.XPATH, self.rule_created).is_displayed()
@@ -82,29 +88,38 @@ class DataPage:
             print("Rule removed successfully!")
 
     def create_lookup_table(self):
-        self.wait_to_click(By.LINK_TEXT, self.manage_tables_link)
-        self.wait_to_click(By.XPATH, self.add_table)
-        self.driver.find_element(By.XPATH, self.table_id).send_keys(self.table_id_name)
-        self.driver.find_element(By.XPATH, self.table_id_description).send_keys(self.table_id_name)
-        self.wait_to_click(By.XPATH, self.add_field)
-        self.driver.find_element(By.XPATH, self.field_name).send_keys(self.table_id_name)
-        self.wait_to_click(By.XPATH, self.save_table)
+        try:
+            self.wait_to_click(By.LINK_TEXT, self.manage_tables_link)
+            self.wait_to_click(By.XPATH, self.add_table)
+            self.driver.find_element(By.XPATH, self.table_id).send_keys(self.table_id_name)
+            self.driver.find_element(By.XPATH, self.table_id_description).send_keys(self.table_id_name)
+            self.wait_to_click(By.XPATH, self.add_field)
+            self.driver.find_element(By.XPATH, self.field_name).send_keys(self.table_id_name)
+            self.wait_to_click(By.XPATH, self.save_table)
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Could not create lookup table")
         assert True == WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((
             By.XPATH, self.table_created))).is_displayed()
         print("LookUp Table created successfully!")
 
     def view_lookup_table(self):
-        self.wait_to_click(By.LINK_TEXT, self.view_tables_link)
-        self.wait_to_click(By.ID, self.select_table_drop_down_id)
-        self.wait_to_click(By.XPATH, self.select_table_from_dropdown)
-        self.wait_to_click(By.ID, self.view_table_id)
+        try:
+            self.wait_to_click(By.LINK_TEXT, self.view_tables_link)
+            self.wait_to_click(By.ID, self.select_table_drop_down_id)
+            self.wait_to_click(By.XPATH, self.select_table_from_dropdown)
+            self.wait_to_click(By.ID, self.view_table_id)
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Could not view lookup table")
         assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
             By.XPATH, self.column_name))).is_displayed()
         print("LookUp Table can be viewed successfully!")
 
     def delete_lookup_table(self):
-        self.wait_to_click(By.LINK_TEXT, self.manage_tables_link)
-        self.wait_to_click(By.XPATH, self.delete_table)
+        try:
+            self.wait_to_click(By.LINK_TEXT, self.manage_tables_link)
+            self.wait_to_click(By.XPATH, self.delete_table)
+        except TimeoutException:
+            print("ERROR: Could not delete table")
         obj = self.driver.switch_to.alert
         obj.accept()
         print("LookUp Table deleted successfully!")

@@ -1,8 +1,7 @@
 import time
 
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
-from selenium.common.exceptions import UnexpectedAlertPresentException, TimeoutException, NoSuchElementException, \
-    StaleElementReferenceException
+from selenium.common.exceptions import UnexpectedAlertPresentException, TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -19,6 +18,7 @@ class GroupPage:
         self.select_user = "//li[text()='" + "username_" + fetch_random_string() + "']"
         self.update_button_id = "submit-id-submit"
         self.created_group = "group_" + fetch_random_string()
+        self.group_created_success = "//h1[text()[contains(.,'Editing Group')]]"
         self.edit_settings_link_text = "Edit Settings"
         self.group_name_input_id = "group-name-input"
         self.save_button_xpath = "//button[@type='submit' and text()='Save']"
@@ -41,25 +41,24 @@ class GroupPage:
             WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
                 By.ID, self.group_name_id))).send_keys(self.created_group)
             self.wait_to_click(By.XPATH, self.add_group_button)
-            print("Group Added")
-        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
-            print("ERROR: Creating group not successful. TEST CASE: TC_04")
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Creating group not successful.")
+        assert WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
+                    By.XPATH, self.group_created_success))).is_displayed(), "Group not created successfully"
+        print("Group Added")
 
     def add_user_to_group(self):
+        self.driver.find_element(By.XPATH, self.users_drop_down).send_keys("username_" + fetch_random_string())
+        self.wait_to_click(By.XPATH, self.select_user)
         try:
-            self.driver.find_element(By.XPATH, self.users_drop_down).send_keys("username_" + fetch_random_string())
-            self.wait_to_click(By.XPATH, self.select_user)
-            try:
-                self.wait_to_click(By.ID, self.update_button_id)
-                time.sleep(2)
-                self.click_group_menu()
-                assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-                    By.LINK_TEXT, self.created_group))).is_displayed()
-            except UnexpectedAlertPresentException as e:
-                print(e)
-                print("User Added to Group")
-        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
-            print("ERROR: Adding user to group not successful. TEST CASE: TC_04")
+            self.wait_to_click(By.ID, self.update_button_id)
+            time.sleep(2)
+            self.click_group_menu()
+            assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+                By.LINK_TEXT, self.created_group))).is_displayed(), "User could not be assigned to the group"
+        except UnexpectedAlertPresentException as e:
+            print(e)
+            print("User Added to Group")
 
     def edit_existing_group(self):
         try:
@@ -80,30 +79,24 @@ class GroupPage:
             self.driver.find_element(
                 By.ID, self.group_name_input_id).send_keys(self.created_group + "_rename")
             self.driver.find_element(By.XPATH, self.save_button_xpath).click()
+        except (TimeoutException, NoSuchElementException):
+            print("ERROR: Editing group not successful.")
             assert WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((
-                By.ID, self.success_alert_id))).is_displayed()
+                By.ID, self.success_alert_id))).is_displayed(),  "Group could not be renamed"
             print("Renamed a group")
-        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
-            print("ERROR: Editing group not successful. TEST CASE: TC_04")
 
     def remove_user_from_group(self):
-        try:
-            self.wait_to_click(By.XPATH, self.remove_user_xpath)
-            update_button = self.driver.find_element(By.ID, self.update_button_id)
-            self.driver.execute_script("arguments[0].click();", update_button)
-            assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-                By.ID, self.success_alert_id))).is_displayed()
-            print("Removed added user from group")
-        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
-            print("ERROR: User deletion from frouo not successful. TEST CASE: TC_04")
+        self.wait_to_click(By.XPATH, self.remove_user_xpath)
+        update_button = self.driver.find_element(By.ID, self.update_button_id)
+        self.driver.execute_script("arguments[0].click();", update_button)
+        assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+            By.ID, self.success_alert_id))).is_displayed(), "User deletion from group not successful"
+        print("Removed added user from group")
 
     def cleanup_group(self):
-        try:
-            self.wait_to_click(By.LINK_TEXT, self.created_group + "_rename")
-            self.wait_to_click(By.XPATH, self.delete_group)
-            self.wait_to_click(By.XPATH, self.confirm_delete)
-            assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-                By.XPATH, self.delete_success_message))).is_displayed()
-            print("Clean up added group")
-        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
-            print("ERROR: Group deletion not successful. TEST CASE: TC_04")
+        self.wait_to_click(By.LINK_TEXT, self.created_group + "_rename")
+        self.wait_to_click(By.XPATH, self.delete_group)
+        self.wait_to_click(By.XPATH, self.confirm_delete)
+        assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+            By.XPATH, self.delete_success_message))).is_displayed(), "Group deletion not successful"
+        print("Clean up added group")

@@ -1,8 +1,10 @@
+import pytest
+
 from HQSmokeTests.testPages.groupPage import GroupPage
 from HQSmokeTests.testPages.mobileWorkersPage import MobileWorkerPage
 
-
-def test_01_cleanup_mobile_worker(driver):
+@pytest.mark.order(1)
+def test_cleanup_mobile_worker(driver):
 
     clean = MobileWorkerPage(driver)
     clean.mobile_worker_menu()
@@ -11,7 +13,8 @@ def test_01_cleanup_mobile_worker(driver):
     print("Deleted the mobile worker")
 
 
-def test_02_cleanup_user_field(driver):
+@pytest.mark.order(2)
+def test_cleanup_user_field(driver):
 
     clean = MobileWorkerPage(driver)
     clean.mobile_worker_menu()
@@ -21,7 +24,8 @@ def test_02_cleanup_user_field(driver):
     print("Deleted the user field")
 
 
-def test_03_cleanup_group(driver):
+@pytest.mark.order(3)
+def test_cleanup_group(driver):
 
     clean = GroupPage(driver)
     clean2 = MobileWorkerPage(driver)

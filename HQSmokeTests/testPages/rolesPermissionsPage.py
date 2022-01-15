@@ -1,5 +1,7 @@
 import time
 
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -26,35 +28,40 @@ class RolesPermissionPage:
     def wait_to_click(self, *locator, timeout=3):
         clickable = ec.element_to_be_clickable(locator)
         WebDriverWait(self.driver, timeout).until(clickable).click()
-        
 
     def roles_menu_click(self):
         self.wait_to_click(By.XPATH, self.roles_menu_xpath)
         assert "Roles & Permissions : Users :: - CommCare HQ" in self.driver.title
 
     def add_role(self):
-        self.wait_to_click(By.XPATH, self.add_role_btn_xpath)
-        WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
-            By.ID, self.role_name_id))).clear()
-        self.driver.find_element(By.ID, self.role_name_id).send_keys("role_name_" + fetch_random_string())
-        self.driver.find_element(By.ID, self.edit_web_user_checkbox).click()
-        ActionChains(self.driver).move_to_element(
-            self.driver.find_element(By.XPATH, self.save_btn_xpath)).click(
-            self.driver.find_element(By.XPATH, self.save_btn_xpath)).perform()
+        try:
+            self.wait_to_click(By.XPATH, self.add_role_btn_xpath)
+            WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
+                By.ID, self.role_name_id))).clear()
+            self.driver.find_element(By.ID, self.role_name_id).send_keys("role_name_" + fetch_random_string())
+            self.driver.find_element(By.ID, self.edit_web_user_checkbox).click()
+            ActionChains(self.driver).move_to_element(
+                self.driver.find_element(By.XPATH, self.save_btn_xpath)).click(
+                self.driver.find_element(By.XPATH, self.save_btn_xpath)).perform()
+        except (TimeoutException, NoSuchElementException):
+            print("TIMEOUT ERROR: Role not added successfully")
         assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.XPATH, self.role_created))).is_displayed()
+            By.XPATH, self.role_created))).is_displayed(), "Role not added successfully"
 
     def edit_role(self):
-        self.driver.find_element(By.XPATH, self.edit_role_xpath).click()
-        WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
-            By.ID, self.role_name_id))).clear()
-        self.driver.find_element(By.ID, self.role_name_id).send_keys("role_name_" + fetch_random_string())
-        self.driver.find_element(By.ID, self.edit_mobile_worker_checkbox).click()
-        ActionChains(self.driver).move_to_element(
-            self.driver.find_element(By.XPATH, self.save_btn_xpath)).click(
-            self.driver.find_element(By.XPATH, self.save_btn_xpath)).perform()
+        try:
+            self.driver.find_element(By.XPATH, self.edit_role_xpath).click()
+            WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
+                By.ID, self.role_name_id))).clear()
+            self.driver.find_element(By.ID, self.role_name_id).send_keys("role_name_" + fetch_random_string())
+            self.driver.find_element(By.ID, self.edit_mobile_worker_checkbox).click()
+            ActionChains(self.driver).move_to_element(
+                self.driver.find_element(By.XPATH, self.save_btn_xpath)).click(
+                self.driver.find_element(By.XPATH, self.save_btn_xpath)).perform()
+        except (TimeoutException, NoSuchElementException):
+            print("TIMEOUT ERROR: Role not edited successfully")
         assert True == WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.XPATH, self.role_renamed))).is_displayed()
+            By.XPATH, self.role_renamed))).is_displayed(), "Role not edited successfully"
         time.sleep(1)
 
     def cleanup_role(self):
