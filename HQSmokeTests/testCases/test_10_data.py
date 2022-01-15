@@ -1,10 +1,7 @@
-import pytest
-
 from HQSmokeTests.testPages.dataPage import DataPage
 from HQSmokeTests.testPages.exportDataPage import ExportDataPage
 
 
-@pytest.mark.order(1)
 def test_TC_31_auto_case_update(driver):
 
     export = ExportDataPage(driver)
@@ -15,7 +12,6 @@ def test_TC_31_auto_case_update(driver):
     data.remove_rule()
 
 
-@pytest.mark.order(2)
 def test_TC_32_create_lookup_table(driver):
 
     data = DataPage(driver)
@@ -24,7 +20,6 @@ def test_TC_32_create_lookup_table(driver):
     data.create_lookup_table()
 
 
-@pytest.mark.order(3)
 def test_TC_33_view_lookup_table(driver):
 
     data = DataPage(driver)

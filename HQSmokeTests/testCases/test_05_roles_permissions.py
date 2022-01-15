@@ -1,10 +1,7 @@
-import pytest
-
 from HQSmokeTests.testPages.homePage import HomePage
 from HQSmokeTests.testPages.rolesPermissionsPage import RolesPermissionPage
 
 
-@pytest.mark.order(1)
 def test_TC_05_add_role(driver):
 
     menu = HomePage(driver)
@@ -17,7 +14,6 @@ def test_TC_05_add_role(driver):
     print("New Role Added")
 
 
-@pytest.mark.order(2)
 def test_TC_05_edit_role(driver):
 
     role = RolesPermissionPage(driver)
@@ -25,7 +21,6 @@ def test_TC_05_edit_role(driver):
     print("Role Edited Successfully")
 
 
-@pytest.mark.order(3)
 def test_cleanup_role(driver):
 
     clean = RolesPermissionPage(driver)
