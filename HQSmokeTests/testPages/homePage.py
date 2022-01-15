@@ -28,47 +28,54 @@ class HomePage:
     def dashboard_menu(self):
         try:
             self.wait_to_click(By.ID, self.dashboard_menu_id)
+            assert "CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Dashboard menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Dashboard menu.Test Case: TC_01")
 
     def reports_menu(self):
         try:
             self.wait_to_click(By.ID, self.reports_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
+            assert "My Saved Reports : Project Reports :: - CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Reports menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Reports menu.Test Case: TC_01")
 
     def data_menu(self):
         try:
             self.wait_to_click(By.ID, self.data_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
+            assert "Export Form Data : Data :: - CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Data menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Data menu.Test Case: TC_01")
 
     def applications_menu(self):
         try:
             self.wait_to_click(By.ID, self.applications_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.available_application)
+            assert "Releases - " + UserInputsData.application + " - CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Applications menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Applications menu.Test Case: TC_01")
 
     def users_menu(self):
         try:
             self.wait_to_click(By.ID, self.users_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
+            assert "Mobile Workers : Users :: - CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Users menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Users menu.Test Case: TC_01")
 
     def messaging_menu(self):
         try:
             self.wait_to_click(By.ID, self.messaging_menu_id)
             self.wait_to_click(By.LINK_TEXT, self.view_all_link_text)
+            assert "Dashboard : Messaging :: - CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Messaging menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Messaging menu.Test Case: TC_01")
 
     def web_apps_menu(self):
         try:
             self.wait_to_click(By.ID, self.web_apps_menu_id)
             self.wait_to_click(By.ID, self.show_full_menu_id)
+            assert "Web Apps - CommCare HQ" in self.driver.title
         except TimeoutException:
-            print("ERROR: Couldn’t find the Webapps menu. Execute Test Case TC_01 to verify.")
+            print("ERROR: Couldn’t find the Webapps menu.Test Case: TC_01")

@@ -1,51 +1,45 @@
-from HQSmokeTests.userInputs.userInputsData import UserInputsData
+import pytest
+
 from HQSmokeTests.testPages.homePage import HomePage
 
 
-def test_01_reports_menu_visibility(driver):
-
+@pytest.mark.order(1)
+def test_reports_menu_visibility(driver):
     visible = HomePage(driver)
     visible.reports_menu()
-    assert "My Saved Reports : Project Reports :: - CommCare HQ" in driver.title
 
 
-def test_02_dashboard_menu_visibility(driver):
-
+@pytest.mark.order(2)
+def test_dashboard_menu_visibility(driver):
     visible = HomePage(driver)
     visible.dashboard_menu()
-    assert "CommCare HQ" in driver.title
 
 
-def test_03_data_menu_visibility(driver):
-
+@pytest.mark.order(3)
+def test_data_menu_visibility(driver):
     visible = HomePage(driver)
     visible.data_menu()
-    assert "Export Form Data : Data :: - CommCare HQ" in driver.title
 
 
-def test_04_user_menu_visibility(driver):
-
+@pytest.mark.order(4)
+def test_user_menu_visibility(driver):
     visible = HomePage(driver)
     visible.users_menu()
-    assert "Mobile Workers : Users :: - CommCare HQ" in driver.title
 
 
-def test_05_application_menu_visibility(driver):
-
+@pytest.mark.order(5)
+def test_application_menu_visibility(driver):
     visible = HomePage(driver)
     visible.applications_menu()
-    assert "Releases - " + UserInputsData.application + " - CommCare HQ" in driver.title
 
 
-def test_06_messaging_menu_visibility(driver):
-
+@pytest.mark.order(6)
+def test_messaging_menu_visibility(driver):
     visible = HomePage(driver)
     visible.messaging_menu()
-    assert "Dashboard : Messaging :: - CommCare HQ" in driver.title
 
 
-def test_07_web_apps_menu_visibility(driver):
-
+@pytest.mark.order(7)
+def test_web_apps_menu_visibility(driver):
     visible = HomePage(driver)
     visible.web_apps_menu()
-    assert "Web Apps - CommCare HQ" in driver.title
