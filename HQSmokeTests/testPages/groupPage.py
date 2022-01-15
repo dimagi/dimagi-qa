@@ -1,7 +1,8 @@
 import time
 
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
-from selenium.common.exceptions import UnexpectedAlertPresentException, TimeoutException
+from selenium.common.exceptions import UnexpectedAlertPresentException, TimeoutException, NoSuchElementException, \
+    StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -28,68 +29,81 @@ class GroupPage:
         self.delete_success_message = "//div[@class='alert alert-margin-top fade in html alert-success']"
 
     def wait_to_click(self, *locator, timeout=3):
-        try:
-            clickable = ec.element_to_be_clickable(locator)
-            WebDriverWait(self.driver, timeout).until(clickable).click()
-
-        except TimeoutException:
-            print(TimeoutException)
+        clickable = ec.element_to_be_clickable(locator)
+        WebDriverWait(self.driver, timeout).until(clickable).click()
 
     def click_group_menu(self):
         self.wait_to_click(By.XPATH, self.group_menu_xpath)
 
     def add_group(self):
-        WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
-            By.ID, self.group_name_id))).send_keys(self.created_group)
-        self.wait_to_click(By.XPATH, self.add_group_button)
-        print("Group Added")
+        try:
+            self.click_group_menu()
+            WebDriverWait(self.driver, 3).until(ec.presence_of_element_located((
+                By.ID, self.group_name_id))).send_keys(self.created_group)
+            self.wait_to_click(By.XPATH, self.add_group_button)
+            print("Group Added")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Creating group not successful. TEST CASE: TC_04")
 
     def add_user_to_group(self):
-        self.driver.find_element(By.XPATH, self.users_drop_down).send_keys("username_" + fetch_random_string())
-        self.wait_to_click(By.XPATH, self.select_user)
         try:
-            self.wait_to_click(By.ID, self.update_button_id)
-            time.sleep(2)
-            self.click_group_menu()
-            assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-                By.LINK_TEXT, self.created_group))).is_displayed()
-        except UnexpectedAlertPresentException as e:
-            print(e)
-            print("User Added to Group")
+            self.driver.find_element(By.XPATH, self.users_drop_down).send_keys("username_" + fetch_random_string())
+            self.wait_to_click(By.XPATH, self.select_user)
+            try:
+                self.wait_to_click(By.ID, self.update_button_id)
+                time.sleep(2)
+                self.click_group_menu()
+                assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+                    By.LINK_TEXT, self.created_group))).is_displayed()
+            except UnexpectedAlertPresentException as e:
+                print(e)
+                print("User Added to Group")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Adding user to group not successful. TEST CASE: TC_04")
 
     def edit_existing_group(self):
-        time.sleep(2)
-        self.wait_to_click(By.LINK_TEXT, self.created_group)
         try:
-            WebDriverWait(self.driver, 3).until(ec.alert_is_present(), 'Waiting for popup to appear.')
+            self.click_group_menu()
+            time.sleep(2)
+            self.wait_to_click(By.LINK_TEXT, self.created_group)
+            try:
+                WebDriverWait(self.driver, 3).until(ec.alert_is_present(), 'Waiting for popup to appear.')
 
-            alert = self.driver.switch_to.alert
-            alert.accept()
-            print("alert accepted")
-        except TimeoutException:
-            print("no alert")
-        self.wait_to_click(By.LINK_TEXT, self.edit_settings_link_text)
-        WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-            By.ID, self.group_name_input_id))).clear()
-        self.driver.find_element(
-            By.ID, self.group_name_input_id).send_keys(self.created_group + "_rename")
-        self.driver.find_element(By.XPATH, self.save_button_xpath).click()
-        assert WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((
-            By.ID, self.success_alert_id))).is_displayed()
-        print("Renamed a group")
+                alert = self.driver.switch_to.alert
+                alert.accept()
+                print("alert accepted")
+            except TimeoutException:
+                print("no alert")
+            self.wait_to_click(By.LINK_TEXT, self.edit_settings_link_text)
+            WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+                By.ID, self.group_name_input_id))).clear()
+            self.driver.find_element(
+                By.ID, self.group_name_input_id).send_keys(self.created_group + "_rename")
+            self.driver.find_element(By.XPATH, self.save_button_xpath).click()
+            assert WebDriverWait(self.driver, 5).until(ec.element_to_be_clickable((
+                By.ID, self.success_alert_id))).is_displayed()
+            print("Renamed a group")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Editing group not successful. TEST CASE: TC_04")
 
     def remove_user_from_group(self):
-        self.wait_to_click(By.XPATH, self.remove_user_xpath)
-        update_button = self.driver.find_element(By.ID, self.update_button_id)
-        self.driver.execute_script("arguments[0].click();", update_button)
-        assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-            By.ID, self.success_alert_id))).is_displayed()
-        print("Removed added user from group")
+        try:
+            self.wait_to_click(By.XPATH, self.remove_user_xpath)
+            update_button = self.driver.find_element(By.ID, self.update_button_id)
+            self.driver.execute_script("arguments[0].click();", update_button)
+            assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+                By.ID, self.success_alert_id))).is_displayed()
+            print("Removed added user from group")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: User deletion from frouo not successful. TEST CASE: TC_04")
 
     def cleanup_group(self):
-        self.wait_to_click(By.LINK_TEXT, self.created_group + "_rename")
-        self.wait_to_click(By.XPATH, self.delete_group)
-        self.wait_to_click(By.XPATH, self.confirm_delete)
-        assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
-            By.XPATH, self.delete_success_message))).is_displayed()
-        print("Clean up added group")
+        try:
+            self.wait_to_click(By.LINK_TEXT, self.created_group + "_rename")
+            self.wait_to_click(By.XPATH, self.delete_group)
+            self.wait_to_click(By.XPATH, self.confirm_delete)
+            assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
+                By.XPATH, self.delete_success_message))).is_displayed()
+            print("Clean up added group")
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException):
+            print("ERROR: Group deletion not successful. TEST CASE: TC_04")
