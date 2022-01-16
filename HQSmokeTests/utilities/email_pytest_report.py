@@ -1,5 +1,5 @@
 """
-Qxf2 Services: Utility script to send pytest test report email
+Qxf2 Services: Utility script to send pytest test reports email
 * Supports both text and html formatted messages
 * Supports text, html, image, audio files as an attachment
 
@@ -8,7 +8,7 @@ To Do:
 
 Note:
 * We added subject, email body message as per our need. You can update that as per your requirement.
-* To generate html formatted test report, you need to use pytest-html plugin. To install it use command: pip install pytest-html
+* To generate html formatted test reports, you need to use pytest-html plugin. To install it use command: pip install pytest-html
 * To generate pytest_report.html file use following command from the root of repo e.g. py.test --html = log/pytest_report.html
 * To generate pytest_report.log file use following command from the root of repo e.g. py.test -k example_form -r F -v > log/pytest_report.log
 """
@@ -30,7 +30,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class Email_Pytest_Report:
-    "Class to email pytest report"
+    "Class to email pytest reports"
 
     def __init__(self):
         self.smtp_ssl_host = conf_file.smtp_ssl_host
@@ -48,14 +48,14 @@ class Email_Pytest_Report:
         # self.targets = conf_file[self.targets]
 
     def get_test_report_data(self,html_body_flag= True,report_file_path= 'default'):
-        "get test report data from pytest_report.html or pytest_report.txt or from user provided file"
+        "get test reports data from pytest_report.html or pytest_report.txt or from user provided file"
         if html_body_flag == True and report_file_path == 'default':
             #To generate pytest_report.html file use following command e.g. py.test --html = log/pytest_report.html
-            test_report_file = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','','report.html'))#Change report file name & address here
+            test_report_file = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','','reports.html'))#Change reports file name & address here
             print(test_report_file)
         elif html_body_flag == False and report_file_path == 'default':
             #To generate pytest_report.log file add ">pytest_report.log" at end of py.test command e.g. py.test -k example_form -r F -v > log/pytest_report.log
-            test_report_file = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','','pytest_report.log'))#Change report file name & address here
+            test_report_file = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','','pytest_report.log'))#Change reports file name & address here
             print(test_report_file)
         else:
             test_report_file = report_file_path
@@ -75,8 +75,8 @@ class Email_Pytest_Report:
     def get_attachment(self,attachment_file_path = 'default'):
         "Get attachment and attach it to mail"
         if attachment_file_path == 'default':
-            #To generate report.html file use following command e.g. py.test --html = report.html
-            attachment_report_file = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','','report.html'))#Change report file name & address here
+            #To generate reports.html file use following command e.g. py.test --html = reports.html
+            attachment_report_file = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','','reports.html'))#Change reports file name & address here
             print(attachment_report_file)
         else:
             attachment_report_file = attachment_file_path
@@ -88,7 +88,7 @@ class Email_Pytest_Report:
         # Guess encoding type
         ctype, encoding = mimetypes.guess_type(attachment_report_file)
         if ctype is None or encoding is not None:
-            ctype = 'application/octet-stream'  # Use a binary type as guess couldn't made
+            ctype = 'applications/octet-stream'  # Use a binary type as guess couldn't made
 
         maintype, subtype = ctype.split('/', 1)
         if maintype == 'text':
@@ -119,15 +119,15 @@ class Email_Pytest_Report:
 
 
     def send_test_report_email(self,username, password, html_body_flag = True,attachment_flag = False,report_file_path = 'default'):
-        "send test report email"
+        "send test reports email"
         #1. Get html formatted email body data from report_file_path file (log/pytest_report.html) and do not add it as an attachment
         if html_body_flag == True and attachment_flag == False:
-            testdata = self.get_test_report_data(html_body_flag,report_file_path) #get html formatted test report data from log/pytest_report.html
+            testdata = self.get_test_report_data(html_body_flag,report_file_path) #get html formatted test reports data from log/pytest_report.html
             message = MIMEText(testdata,"html") # Add html formatted test data to email
 
         #2. Get text formatted email body data from report_file_path file (log/pytest_report.log) and do not add it as an attachment
         elif html_body_flag == False and attachment_flag == False:
-            testdata = self.get_test_report_data(html_body_flag,report_file_path) #get html test report data from log/pytest_report.log
+            testdata = self.get_test_report_data(html_body_flag,report_file_path) #get html test reports data from log/pytest_report.log
             message  = MIMEText(testdata) # Add text formatted test data to email
 
         #3. Add html formatted email body message along with an attachment file
@@ -135,7 +135,7 @@ class Email_Pytest_Report:
             message = MIMEMultipart()
             #add html formatted body message to email
             html_body = MIMEText('''<p>Hello,</p>
-                                     <p>&nbsp; &nbsp; &nbsp; &nbsp; Please check the attachment to see test built report.</p>
+                                     <p>&nbsp; &nbsp; &nbsp; &nbsp; Please check the attachment to see test built reports.</p>
                                      <p><strong>Note: For best UI experience, download the attachment and open using Chrome browser.</strong></p>
                                      <p>Regards</p>
                                      <p>Dimagi QA Team</p>   
@@ -149,7 +149,7 @@ class Email_Pytest_Report:
         else:
             message = MIMEMultipart()
             #add test formatted body message to email
-            plain_text_body = MIMEText('''Hello,\n\tPlease check attachment to see test built report.
+            plain_text_body = MIMEText('''Hello,\n\tPlease check attachment to see test built reports.
                                        \n\nNote: For best UI experience, download the attachment and open  using Chrome browser.
                                        \n\nRegards
                                        \nDimagi QA Team''')# Add/Update email body message here as per your requirement
@@ -162,7 +162,7 @@ class Email_Pytest_Report:
         # message['From'] = self.sender
         message['From'] = username
         message['To'] = ', '.join(self.targets)
-        message['Subject'] = 'Script generated test report '+ time_date # Update email subject here
+        message['Subject'] = 'Script generated test reports '+ time_date # Update email subject here
 
         #Send Email
         server = smtplib.SMTP_SSL(self.smtp_ssl_host, self.smtp_ssl_port)

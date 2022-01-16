@@ -1,9 +1,8 @@
-from HQSmokeTests.testPages.homePage import HomePage
-from HQSmokeTests.testPages.reportPage import ReportPage
-from selenium.common.exceptions import UnexpectedAlertPresentException
+from HQSmokeTests.testPages.others.home_page import HomePage
+from HQSmokeTests.testPages.reports.report_page import ReportPage
 
 
-def test_TC_13_report_loading(driver):
+def test_TC_14_report_loading(driver):
 
     report = HomePage(driver)
     report.reports_menu()
@@ -25,14 +24,6 @@ def test_TC_13_report_loading(driver):
     load.scheduled_messaging_report()
 
 
-def test_TC_16_create_case_report(driver):
-
-    report = HomePage(driver)
-    report.reports_menu()
-    load = ReportPage(driver)
-    load.create_report_builder_case_report()
-
-
 def test_TC_17_create_form_report(driver):
 
     report = HomePage(driver)
@@ -42,7 +33,15 @@ def test_TC_17_create_form_report(driver):
     load.create_report_builder_form_report()
 
 
-def test_TC_18_saved_report(driver):
+def test_TC_18_create_case_report(driver):
+
+    report = HomePage(driver)
+    report.reports_menu()
+    load = ReportPage(driver)
+    load.create_report_builder_case_report()
+
+
+def test_TC_19_saved_report(driver):
 
     report = HomePage(driver)
     report.reports_menu()
@@ -50,15 +49,7 @@ def test_TC_18_saved_report(driver):
     load.saved_report()
 
 
-def test_TC_19_scheduled_report(driver):
+def test_TC_20_scheduled_report(driver):
 
-    report = HomePage(driver)
-    driver.refresh()
-    try:
-        report.reports_menu()
-    except UnexpectedAlertPresentException:
-        alert = driver.switch_to.alert
-        alert.accept()
     load = ReportPage(driver)
     load.scheduled_report()
-    load.delete_scheduled_and_saved_reports()

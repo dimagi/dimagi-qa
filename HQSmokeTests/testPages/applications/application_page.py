@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as ec
 
 from HQSmokeTests.userInputs.generateUserInputs import fetch_random_string
 from HQSmokeTests.userInputs.userInputsData import UserInputsData
-from HQSmokeTests.testPages.organisationStructurePage import latest_download_file
+from HQSmokeTests.testPages.users.org_structure_page import latest_download_file
 
 
 class ApplicationPage:

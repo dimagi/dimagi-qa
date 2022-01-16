@@ -1,82 +1,82 @@
-from HQSmokeTests.testPages.exportDataPage import ExportDataPage
+from HQSmokeTests.testPages.data.data_page import DataPage
+from HQSmokeTests.testPages.data.export_data_page import ExportDataPage
 
 
-def test_TC_20_form_exports(driver):
+def test_TC_21_form_exports(driver):
     export = ExportDataPage(driver)
     export.data_tab()
     export.add_form_exports()
     export.form_exports()
     export.validate_downloaded_form_exports()
-    # export.delete_bulk_exports()
 
 
-def test_TC_20_case_exports(driver):
+def test_TC_21_case_exports(driver):
     export = ExportDataPage(driver)
-    export.data_tab()
     export.add_case_exports()
     export.case_exports()
     export.validate_downloaded_case_exports()
-    # export.delete_bulk_exports()
 
 
-def test_TC_21_sms_exports(driver):
+def test_TC_22_sms_exports(driver):
     export = ExportDataPage(driver)
-    export.data_tab()
     export.sms_exports()
 
 
-def test_TC_23_daily_saved_exports(driver):
+def test_TC_24_daily_saved_exports(driver):
     export = ExportDataPage(driver)
-    export.data_tab()
     export.daily_saved_exports_form()
     export.deletion()
     export.delete_bulk_exports()
     export.daily_saved_exports_case()
     export.deletion()
-    export.delete_bulk_exports()
 
 
-def test_TC_24_excel_dashboard_integration_form(driver):
+def test_TC_25_excel_dashboard_integration_form(driver):
     export = ExportDataPage(driver)
-    export.data_tab()
     export.excel_dashboard_integration_form()
-    export.deletion()
 
 
-
-def test_TC_25_excel_dashboard_integration_case(driver):
+def test_TC_26_excel_dashboard_integration_case(driver):
     export = ExportDataPage(driver)
-    export.data_tab()
     export.excel_dashboard_integration_case()
-    export.deletion()
 
 
-def test_TC_27_powerBI_tableau_integration_case(driver, settings):
+def test_TC_28_powerBI_tableau_integration_case(driver, settings):
     username = settings["login_username"]
     password = settings["login_password"]
     export = ExportDataPage(driver)
-    export.data_tab()
     export.power_bi_tableau_integration_case(username, password)
-    export.deletion()
 
 
-def test_TC_28_powerBI_tableau_integration_form(driver, settings):
+def test_TC_29_powerBI_tableau_integration_form(driver, settings):
     username = settings["login_username"]
     password = settings["login_password"]
     export = ExportDataPage(driver)
-    export.data_tab()
     export.power_bi_tableau_integration_form(username, password)
-    export.deletion()
 
 
-def test_TC_30_manage_forms(driver):
+def test_TC_31_manage_forms(driver):
     export = ExportDataPage(driver)
     driver.refresh()
-    export.data_tab()
     export.manage_forms()
 
 
-def test_delete_all_bulk_exports(driver):
-    export = ExportDataPage(driver)
-    export.data_tab()
-    export.delete_all_bulk_exports()
+def test_TC_32_auto_case_update(driver):
+
+    data = DataPage(driver)
+    data.open_auto_case_update_page()
+    data.add_new_rule()
+    data.remove_rule()
+
+
+def test_TC_33_create_lookup_table(driver):
+
+    data = DataPage(driver)
+    data.create_lookup_table()
+
+
+def test_TC_34_view_lookup_table(driver):
+
+    data = DataPage(driver)
+    data.view_lookup_table()
+    data.delete_lookup_table()

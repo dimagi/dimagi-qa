@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from HQSmokeTests.userInputs.userInputsData import UserInputsData
-from HQSmokeTests.testPages.loginPage import LoginPage
+from HQSmokeTests.testPages.others.login_page import LoginPage
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -114,17 +114,17 @@ def driver(settings):
 @pytest.hookimpl(hookwrapper=True)
 # @pytest.mark.hookwrapper
 def pytest_runtest_makereport(item):
-    # print("entering report formation")
+    # print("entering reports formation")
     pytest_html = item.config.pluginmanager.getplugin("html")
     outcome = yield
     report = outcome.get_result()
     extra = getattr(report, 'extra', [])
     # print(item.fixturenames)
     if report.when == "call" or report.when == "teardown":
-        # print(report.when)
+        # print(reports.when)
         xfail = hasattr(report, 'wasxfail')
         if (report.skipped and xfail) or (report.failed and not xfail):
-            print("report skipped or failed")
+            print("reports skipped or failed")
             file_name = report.nodeid.replace("::", "_") + ".png"
             screen_img = _capture_screenshot(item.funcargs["driver"])
             if file_name:
@@ -132,7 +132,7 @@ def pytest_runtest_makereport(item):
                        'onclick="window.open(this.src)" align="right"/></div>' % screen_img
                 extra.append(pytest_html.extras.html(html))
         report.extra = extra
-        # print("extra added to report")
+        # print("extra added to reports")
 
 
 def _capture_screenshot(driver):
@@ -150,7 +150,7 @@ def email_pytest_report(req):
 def pytest_addoption(parser):
     parser.addoption("--email_pytest_report",
                  dest="email_pytest_report",
-                 help="Email pytest report: Y or N",
+                 help="Email pytest reports: Y or N",
                  default="Y")
 
 
@@ -167,7 +167,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
             print("creating email")
             # Initialize the Email_Pytest_Report object
             email_obj = Email_Pytest_Report()
-            # Send html formatted email body message with pytest report as an attachment
-            email_obj.send_test_report_email(username,password,html_body_flag=True, attachment_flag=True, report_file_path='report.html')
+            # Send html formatted email body message with pytest reports as an attachment
+            email_obj.send_test_report_email(username,password,html_body_flag=True, attachment_flag=True, report_file_path='reports.html')
             print("send email: Yes")
 '''
