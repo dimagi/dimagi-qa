@@ -574,7 +574,7 @@ class ExportDataPage:
             self.wait_to_click(By.XPATH, self.select_all_btn)
             self.wait_to_click(By.XPATH, self.delete_selected_exports)
             self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Bulk exports deleted for Export Case data")
+            print("Bulk exports deleted for Power BI Reports")
         except TimeoutException:
             print("No exports available")
         try:
@@ -582,6 +582,6 @@ class ExportDataPage:
             self.wait_to_click(By.XPATH, self.select_all_btn)
             self.wait_to_click(By.XPATH, self.delete_selected_exports)
             self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Bulk exports deleted for Export Case data")
+            print("Bulk exports deleted for Export Excel Int Reports")
         except TimeoutException:
             print("No exports available")

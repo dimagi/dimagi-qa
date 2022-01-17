@@ -23,3 +23,4 @@ def test_TC_39_settings_exploration(driver):
 
     load = ApplicationPage(driver)
     load.app_settings_exploration()
+    load.delete_application()

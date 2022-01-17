@@ -53,6 +53,7 @@ def test_TC_29_powerBI_tableau_integration_form(driver, settings):
     password = settings["login_password"]
     export = ExportDataPage(driver)
     export.power_bi_tableau_integration_form(username, password)
+    export.delete_all_bulk_exports()
 
 
 def test_TC_31_manage_forms(driver):

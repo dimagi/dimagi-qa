@@ -94,7 +94,7 @@ class GroupPage:
         assert WebDriverWait(self.driver, 3).until(ec.element_to_be_clickable((
             By.ID, self.success_alert_id))).is_displayed(), "User deletion from group not successful"
         print("Removed added user from group")
-        time.sleep(1)
+        time.sleep(2)
 
     def cleanup_group(self):
         self.wait_to_click(By.LINK_TEXT, self.created_group + "_rename")

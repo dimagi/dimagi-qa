@@ -104,6 +104,7 @@ class ApplicationPage:
         self.wait_to_click(By.XPATH, self.actions_tab)
         self.wait_to_click(By.XPATH, self.delete_app)
         self.wait_to_click(By.XPATH, self.delete_confirm)
+        print("Deleted the application")
 
     def form_xml_download_upload(self):
         self.wait_to_click(By.XPATH, self.actions_tab)

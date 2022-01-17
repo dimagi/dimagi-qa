@@ -53,3 +53,4 @@ def test_TC_20_scheduled_report(driver):
 
     load = ReportPage(driver)
     load.scheduled_report()
+    load.delete_scheduled_and_saved_reports()
