@@ -46,7 +46,7 @@ jobs:
         echo "client_payload: ${{ toJson(github.event.client_payload) }}"
         echo "NOW=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
         echo ${{env.NOW}}
-        pytest -v --reruns 1 --capture=tee-sys --html=report.html --self-contained-html
+        pytest -v --reruns 1 --html=report.html --self-contained-html
 
     - name: Send Pass Email On Deploy Event
       uses: dawidd6/action-send-mail@v3
