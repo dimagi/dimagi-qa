@@ -111,7 +111,7 @@ class ExportDataPage:
         self.delete_selected_exports = '//a[@href= "#bulk-delete-export-modal"]'
         self.bulk_delete_confirmation_btn = '//button[@data-bind="click: BulkExportDelete"]'
 
-    def wait_to_click(self, *locator, timeout=15):
+    def wait_to_click(self, *locator, timeout=20):
         time.sleep(5)
         clickable = ec.element_to_be_clickable(locator)
         WebDriverWait(self.driver, timeout).until(clickable).click()

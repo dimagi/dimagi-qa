@@ -117,6 +117,7 @@ class OrganisationStructurePage:
             self.driver.find_element(By.ID, self.loc_name_input_id).clear()
             self.driver.find_element(By.ID, self.loc_name_input_id).send_keys("updated_on:" + str(date.today()))
             self.driver.find_element(By.XPATH, self.update_loc_xpath).click()
+            time.sleep(2)
             assert WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located((
                 By.XPATH, self.loc_saved_success_msg))).is_displayed(),  "Location editing not successful!"
             self.driver.find_element(By.LINK_TEXT, self.org_menu_link_text).click()
@@ -210,7 +211,11 @@ class OrganisationStructurePage:
             self.driver.find_element(By.XPATH, self.delete_confirm).send_keys("1")
             self.driver.find_element(By.XPATH, self.delete_confirm_button).click()
         except StaleElementReferenceException:
-            print(StaleElementReferenceException)
+            self.driver.refresh()
+            self.wait_to_click(By.XPATH, self.delete_location_created)
+            time.sleep(1)
+            self.driver.find_element(By.XPATH, self.delete_confirm).send_keys("1")
+            self.driver.find_element(By.XPATH, self.delete_confirm_button).click()
         assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
             By.XPATH, self.delete_success))).is_displayed(), "Location Not Deleted!"
         print("Location deleted successfully")
