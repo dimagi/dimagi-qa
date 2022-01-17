@@ -80,7 +80,7 @@ class OrganisationStructurePage:
         self.delete_confirm_button = "//button[@data-bind ='click: delete_fn, css: {disabled: !(signOff() == count)}']"
         self.delete_loc_field = "(//a[@class='btn btn-danger'])[last()]"
         self.delete_org_level = "(//button[@class='btn btn-danger'])[last()]"
-        self.delete_success ="//span[text()='You have successfully deleted the location ss and all of its child locations']"
+        self.delete_success = "//div[@class='alert fade in message-alert alert-success']"
 
     def wait_to_click(self, *locator, timeout=10):
         try:

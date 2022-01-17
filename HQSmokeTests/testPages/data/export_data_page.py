@@ -112,7 +112,7 @@ class ExportDataPage:
         self.bulk_delete_confirmation_btn = '//button[@data-bind="click: BulkExportDelete"]'
 
     def wait_to_click(self, *locator, timeout=10):
-        time.sleep(2)
+        time.sleep(3)
         clickable = ec.element_to_be_clickable(locator)
         WebDriverWait(self.driver, timeout).until(clickable).click()
 
@@ -233,6 +233,7 @@ class ExportDataPage:
 
     # Test Case 20_b - Verify Export functionality for Cases
     def add_case_exports(self):
+        time.sleep(2)
         self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
         self.driver.find_element(By.XPATH, self.add_export_button).click()
         self.wait_to_click(By.XPATH, self.app_dropdown)
@@ -275,6 +276,7 @@ class ExportDataPage:
 
     # Test Case 21 - Export SMS Messages
     def sms_exports(self):
+        time.sleep(2)
         self.wait_to_click(By.LINK_TEXT, self.export_sms_link)
         self.wait_to_click(By.XPATH, self.prepare_export_button)
         self.wait_to_click(By.XPATH, self.download_button)
@@ -292,6 +294,7 @@ class ExportDataPage:
 
     # Test Case 23_a - Daily saved export, form
     def daily_saved_exports_form(self):
+        time.sleep(2)
         self.wait_to_click(By.LINK_TEXT, self.export_form_data_link)
         self.driver.refresh()
         self.wait_to_click(By.XPATH, self.edit_form_case_export)
@@ -364,6 +367,7 @@ class ExportDataPage:
 
     # Test Case - 24 - Excel Dashboard Integration, form
     def excel_dashboard_integration_form(self):
+        time.sleep(2)
         self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
         self.wait_to_click(By.XPATH, self.add_export_button)
         time.sleep(2)
@@ -409,6 +413,7 @@ class ExportDataPage:
     # Test Case - 25 - Excel Dashboard Integration, case
 
     def excel_dashboard_integration_case(self):
+        time.sleep(2)
         self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
         self.wait_to_click(By.XPATH, self.add_export_button)
         self.wait_to_click(By.XPATH, self.model_dropdown)
@@ -507,7 +512,7 @@ class ExportDataPage:
         self.wait_to_click(By.ID, self.select_app_dropdown)
         self.wait_to_click(By.XPATH, self.village_app)
         self.wait_to_click(By.XPATH, self.apply_button)
-        time.sleep(2)
+        time.sleep(10)
         self.wait_to_click(By.XPATH, self.checkbox1)
         self.wait_to_click(By.XPATH, self.archive_button)
         assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
