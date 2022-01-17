@@ -516,6 +516,8 @@ class ExportDataPage:
 
         # View Archived Forms
         self.wait_to_click(By.XPATH, self.manage_forms_link)
+        self.wait_to_click(By.ID, self.select_app_dropdown)
+        self.wait_to_click(By.XPATH, self.village_app)
         self.wait_to_click(By.XPATH, self.archived_restored_dropdown)
         self.wait_to_click(By.XPATH, self.archived_forms_option)
         self.wait_to_click(By.XPATH, self.apply_button)
