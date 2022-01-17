@@ -196,7 +196,6 @@ class MobileWorkerPage:
             print("Username is " + login_with_username[j].text)
             assert login_with_username[j].text != self.username, "Deactivated mobile worker still visible"
             print("Username not in list - Successfully deactivated!")
-        self.driver.refresh()
         self.wait_to_click(By.ID, self.show_full_menu_id)
 
     def reactivate_user(self):
