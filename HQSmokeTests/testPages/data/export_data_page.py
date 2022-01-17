@@ -112,7 +112,7 @@ class ExportDataPage:
         self.bulk_delete_confirmation_btn = '//button[@data-bind="click: BulkExportDelete"]'
 
     def wait_to_click(self, *locator, timeout=10):
-        time.sleep(3)
+        time.sleep(2)
         clickable = ec.element_to_be_clickable(locator)
         WebDriverWait(self.driver, timeout).until(clickable).click()
 
@@ -181,12 +181,12 @@ class ExportDataPage:
     def add_form_exports(self):
         self.driver.find_element(By.XPATH, self.add_export_button).click()
         self.wait_to_click(By.XPATH, self.app_dropdown)
-        self.driver.find_element(By.XPATH, self.select_app).click()
-        self.driver.find_element(By.XPATH, self.menu_dropdown).click()
-        self.driver.find_element(By.XPATH, self.select_menu).click()
-        self.driver.find_element(By.XPATH, self.form_dropdown).click()
-        self.driver.find_element(By.XPATH, self.select_form).click()
-        self.driver.find_element(By.XPATH, self.add_export_conf).click()
+        self.wait_to_click(By.XPATH, self.select_app)
+        self.wait_to_click(By.XPATH, self.menu_dropdown)
+        self.wait_to_click(By.XPATH, self.select_menu)
+        self.wait_to_click(By.XPATH, self.form_dropdown)
+        self.wait_to_click(By.XPATH, self.select_form)
+        self.wait_to_click(By.XPATH, self.add_export_conf)
         self.driver.find_element(By.XPATH, self.export_settings_create).click()
         print("Export created!!")
 
@@ -236,10 +236,10 @@ class ExportDataPage:
         self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
         self.driver.find_element(By.XPATH, self.add_export_button).click()
         self.wait_to_click(By.XPATH, self.app_dropdown)
-        self.driver.find_element(By.XPATH, self.select_app).click()
-        self.driver.find_element(By.XPATH, self.case_type_dropdown).click()
-        self.driver.find_element(By.XPATH, self.select_case_type).click()
-        self.driver.find_element(By.XPATH, self.add_export_conf).click()
+        self.wait_to_click(By.XPATH, self.select_app)
+        self.wait_to_click(By.XPATH, self.case_type_dropdown)
+        self.wait_to_click(By.XPATH, self.select_case_type)
+        self.wait_to_click(By.XPATH, self.add_export_conf)
         self.driver.find_element(By.XPATH, self.export_settings_create).click()
         print("Export created!!")
 

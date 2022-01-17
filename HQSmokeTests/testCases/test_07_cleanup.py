@@ -30,5 +30,5 @@ def test_cleanup(driver):
     clean3.cleanup_role()
     print("Deleted the role")
 
-    clean4.cleanup()
+    clean4.cleanup_location()
     print("Deleted the location and location field")

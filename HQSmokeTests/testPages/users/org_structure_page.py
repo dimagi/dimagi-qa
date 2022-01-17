@@ -193,13 +193,14 @@ class OrganisationStructurePage:
             By.XPATH, self.import_complete))).is_displayed(), "Upload not completed!"
         print("File uploaded successfully")
 
-    def cleanup(self):
+    def cleanup_location(self):
         # Delete User Field
         self.wait_to_click(By.LINK_TEXT, self.org_menu_link_text)
         self.wait_to_click(By.XPATH, self.edit_loc_field_btn_xpath)
         self.wait_to_click(By.XPATH, self.delete_loc_field)
         self.wait_to_click(By.XPATH, self.delete_org_level)
         self.wait_to_click(By.ID, self.save_btn_id)
+        print("Location field deleted successfully")
         # Delete Location
         try:
             self.wait_to_click(By.LINK_TEXT, self.org_menu_link_text)
@@ -210,12 +211,13 @@ class OrganisationStructurePage:
             self.driver.find_element(By.XPATH, self.delete_confirm_button).click()
         except StaleElementReferenceException:
             print(StaleElementReferenceException)
+        assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
+            By.XPATH, self.delete_success))).is_displayed(), "Location Not Deleted!"
+        print("Location deleted successfully")
         # Delete Org Level
         org_level_menu = self.driver.find_element(By.LINK_TEXT, self.org_level_menu_link_text)
         self.driver.execute_script("arguments[0].click();", org_level_menu)
         time.sleep(1)
         self.driver.find_element(By.XPATH, self.delete_org_level).click()
         self.wait_to_click(By.XPATH, self.save_btn_delete)
-        assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
-            By.XPATH, self.delete_success))).is_displayed(), "Location Not Deleted!"
-        print("Location deleted successfully")
+        print("Org level deleted successfully")
