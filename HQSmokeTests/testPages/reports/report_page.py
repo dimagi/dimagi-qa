@@ -246,9 +246,13 @@ class ReportPage:
         print("Deleted Saved Report")
         time.sleep(1)
         self.driver.find_element(By.XPATH, self.scheduled_reports_menu_xpath).click()
-        self.wait_to_click(By.XPATH, self.select_all)
-        self.wait_to_click(By.XPATH, self.delete_selected)
-        self.driver.find_element(By.XPATH, self.delete_scheduled_confirm).click()
-        assert True == WebDriverWait(self.driver, 10).until(ec.visibility_of_element_located(
-            (By.XPATH, self.delete_success_scheduled))).is_displayed()
-        print("Deleted Scheduled Report")
+        try:
+            self.wait_to_click(By.XPATH, self.select_all)
+            self.wait_to_click(By.XPATH, self.delete_selected)
+            self.driver.find_element(By.XPATH, self.delete_scheduled_confirm).click()
+            assert True == WebDriverWait(self.driver, 10).until(ec.visibility_of_element_located(
+                (By.XPATH, self.delete_success_scheduled))).is_displayed()
+            print("Deleted Scheduled Report")
+        except TimeoutException:
+            print("No exports available")
+
