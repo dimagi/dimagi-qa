@@ -290,7 +290,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Messages" in newest_file and diff_seconds in range(0, 600)
+        assert "Messages" in newest_file and diff_seconds in range(0, 600), "Export not completed"
         print("Export successful")
 
     # Test Case 23_a - Daily saved export, form
@@ -326,7 +326,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Form Export DSE" in newest_file and diff_seconds in range(0, 600)
+        assert "Form Export DSE" in newest_file and diff_seconds in range(0, 600) , "Export not completed"
         print("DSE Form Export successful")
 
     # Test Case 23_b - Daily saved export, case
@@ -362,7 +362,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Case Export DSE" in newest_file and diff_seconds in range(0, 600)
+        assert "Case Export DSE" in newest_file and diff_seconds in range(0, 600), "Export not completed"
         print("DSE Case Export successful")
 
     # Test Case - 24 - Excel Dashboard Integration, form

@@ -89,12 +89,8 @@ class ReportPage:
         self.delete_success_scheduled = "//div[@class='alert alert-margin-top fade in alert-success']"
 
     def wait_to_click(self, *locator, timeout=10):
-        try:
-            clickable = ec.element_to_be_clickable(locator)
-            WebDriverWait(self.driver, timeout).until(clickable).click()
-            
-        except (NoSuchElementException, TimeoutException):
-            print("It timedout!")
+        clickable = ec.element_to_be_clickable(locator)
+        WebDriverWait(self.driver, timeout).until(clickable).click()
 
     def check_if_report_loaded(self):
         try:
@@ -233,11 +229,13 @@ class ReportPage:
 
     def scheduled_report(self):
         self.wait_to_click(By.XPATH, self.scheduled_reports_menu_xpath)
+        time.sleep(2)
         self.wait_to_click(By.XPATH, self.create_scheduled_report)
         self.wait_to_click(By.XPATH, self.available_reports)
         self.wait_to_click(By.ID, self.submit_id)
         assert True == WebDriverWait(self.driver, 10).until(ec.presence_of_element_located((
             By.XPATH, self.success_alert))).is_displayed()
+        print("Scheduled Report Created Successfully")
 
     def delete_scheduled_and_saved_reports(self):
         saved_rep = self.driver.find_element(By.LINK_TEXT, self.saved_reports_menu_link)
