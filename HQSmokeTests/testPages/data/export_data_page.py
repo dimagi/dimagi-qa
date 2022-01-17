@@ -310,13 +310,13 @@ class ExportDataPage:
         print("Display message:", display_msg.text)
         self.driver.refresh()
         time.sleep(5)
-        # try:
-        self.wait_to_click(By.XPATH, self.download_dse_form)
-        # except (NoSuchElementException, TimeoutException):
-        #     self.wait_to_click(By.XPATH, self.update_data_conf)
-        #     time.sleep(5)
-        #     self.driver.refresh()
-        #     self.wait_to_click(By.XPATH, self.download_dse_form)
+        try:
+            self.wait_to_click(By.XPATH, self.download_dse_form)
+        except TimeoutException:
+            self.wait_to_click(By.XPATH, self.update_data_conf)
+            time.sleep(5)
+            self.driver.refresh()
+            self.wait_to_click(By.XPATH, self.download_dse_form)
         time.sleep(3)
         newest_file = latest_download_file()
         print("Newest:", newest_file)
@@ -326,7 +326,7 @@ class ExportDataPage:
         diff_seconds = round((timeNow - modificationTime).total_seconds())
         print("Last Modified Time : ", str(modificationTime) + 'Current Time : ', str(timeNow),
               "Diff: " + str(diff_seconds))
-        assert "Form Export DSE" in newest_file and diff_seconds in range(0, 600) , "Export not completed"
+        assert "Form Export DSE" in newest_file and diff_seconds in range(0, 600), "Export not completed"
         print("DSE Form Export successful")
 
     # Test Case 23_b - Daily saved export, case
