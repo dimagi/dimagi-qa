@@ -62,6 +62,7 @@ class ExportDataPage:
         self.export_sms_link = "Export SMS Messages"  # Export Case Data on the left panel
 
         # Daily Saved Export variables, form, case
+        self.daily_saved_export_link = 'Daily Saved Exports'
         self.edit_form_case_export = "(//a[@data-bind='click: editExport'])[1]"  # Edit an existing form/case export
         self.create_DSE_checkbox = '//*[@id="daily-saved-export-checkbox"]'  # Create a Daily Saved Export checkbox
         self.download_dse_form = "(//span[text()='" + UserInputsData.form_export_name + \
@@ -170,12 +171,12 @@ class ExportDataPage:
         self.wait_to_click(By.LINK_TEXT, self.data_dropdown)
         self.wait_to_click(By.LINK_TEXT, self.view_all_link)
 
-    def deletion(self):
-        time.sleep(2)
-        self.driver.find_element(By.XPATH, self.delete_button).click()
-        time.sleep(2)
-        self.driver.find_element(By.XPATH, self.delete_confirmation_button).click()
-        print("Delete Confirmation Button clicked")
+    # def deletion(self):
+    #     time.sleep(2)
+    #     self.driver.find_element(By.XPATH, self.delete_button).click()
+    #     time.sleep(2)
+    #     self.driver.find_element(By.XPATH, self.delete_confirmation_button).click()
+    #     print("Delete Confirmation Button clicked")
 
     # Test Case 20_a - Verify Export functionality for Forms
     def add_form_exports(self):
@@ -222,17 +223,6 @@ class ExportDataPage:
         print("Downloaded file has the required data!")
         self.driver.close()
         self.switch_back_to_prev_tab()
-
-    def delete_bulk_exports(self):
-        try:
-            time.sleep(2)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            time.sleep(2)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Exports Deleted successfully")
-        except TimeoutException:
-            print("No exports present")
 
     # Test Case 20_b - Verify Export functionality for Cases
     def add_case_exports(self):
@@ -551,36 +541,27 @@ class ExportDataPage:
         self.driver.close()
         self.switch_back_to_prev_tab()
 
+    def delete_bulk_exports(self):
+        try:
+            self.wait_to_click(By.XPATH, self.select_all_btn)
+            self.wait_to_click(By.XPATH, self.delete_selected_exports)
+            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
+        except TimeoutException:
+            print("No exports available")
+
     def delete_all_bulk_exports(self):
         self.wait_to_click(By.LINK_TEXT, self.export_form_data_link)
-        try:
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Bulk exports deleted for Export Form data")
-        except TimeoutException:
-            print("No exports available")
-        try:
-            self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Bulk exports deleted for Export Case data")
-        except TimeoutException:
-            print("No exports available")
-        try:
-            self.wait_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Bulk exports deleted for Power BI Reports")
-        except TimeoutException:
-            print("No exports available")
-        try:
-            self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
-            print("Bulk exports deleted for Export Excel Int Reports")
-        except TimeoutException:
-            print("No exports available")
+        self.delete_bulk_exports()
+        print("Bulk exports deleted for Export Form data")
+        self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
+        self.delete_bulk_exports()
+        print("Bulk exports deleted for Export Case data")
+        self.wait_to_click(By.LINK_TEXT, self.daily_saved_export_link)
+        self.delete_bulk_exports()
+        print("Bulk exports deleted for Daily Saved Export Cases")
+        self.wait_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
+        self.delete_bulk_exports()
+        print("Bulk exports deleted for Power BI Reports")
+        self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
+        self.delete_bulk_exports()
+        print("Bulk exports deleted for Export Excel Int Reports")

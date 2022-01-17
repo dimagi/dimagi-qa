@@ -25,10 +25,8 @@ def test_TC_22_sms_exports(driver):
 def test_TC_24_daily_saved_exports(driver):
     export = ExportDataPage(driver)
     export.daily_saved_exports_form()
-    export.deletion()
     export.delete_bulk_exports()
     export.daily_saved_exports_case()
-    export.deletion()
 
 
 def test_TC_25_excel_dashboard_integration_form(driver):
