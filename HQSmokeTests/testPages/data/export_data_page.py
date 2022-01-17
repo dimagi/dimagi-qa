@@ -111,8 +111,12 @@ class ExportDataPage:
         self.delete_selected_exports = '//a[@href= "#bulk-delete-export-modal"]'
         self.bulk_delete_confirmation_btn = '//button[@data-bind="click: BulkExportDelete"]'
 
-    def wait_to_click(self, *locator, timeout=10):
-        time.sleep(3)
+    def wait_20_secs_to_click(self, *locator, timeout=20):
+        clickable = ec.element_to_be_clickable(locator)
+        WebDriverWait(self.driver, timeout).until(clickable).click()
+
+    def wait_10_secs_to_click(self, *locator, timeout=10):
+        # time.sleep(2)
         clickable = ec.element_to_be_clickable(locator)
         WebDriverWait(self.driver, timeout).until(clickable).click()
 
@@ -137,9 +141,9 @@ class ExportDataPage:
         self.driver.switch_to.window(window_before)
 
     def get_url_paste_browser_case(self, username, password):
-        self.wait_to_click(By.XPATH, self.copy_odatafeed_link)
+        self.wait_10_secs_to_click(By.XPATH, self.copy_odatafeed_link)
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.edit_button)
+        self.wait_10_secs_to_click(By.XPATH, self.edit_button)
         time.sleep(2)
         get_url = self.driver.current_url
         ID = get_url.split("/")[10]
@@ -148,13 +152,13 @@ class ExportDataPage:
         # self.driver.execute_script("window.open('');")  # Open a new tab
         self.switch_to_new_tab()
         final_URL_case = f"https://{username}:{password}@{odata_feed_link_case[8:]}"
-        print(final_URL_case)
+        # print(final_URL_case)
         self.driver.get(final_URL_case)
 
     def get_url_paste_browser_form(self, username, password):
-        self.wait_to_click(By.XPATH, self.copy_odatafeed_link)
+        self.wait_10_secs_to_click(By.XPATH, self.copy_odatafeed_link)
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.edit_button)
+        self.wait_10_secs_to_click(By.XPATH, self.edit_button)
         time.sleep(2)
         get_url = self.driver.current_url
         ID = get_url.split("/")[10]
@@ -162,7 +166,7 @@ class ExportDataPage:
         self.driver.back()
         self.switch_to_new_tab()
         final_URL_form = f"https://{username}:{password}@{odata_feed_link_form[8:]}"
-        print(final_URL_form)
+        # print(final_URL_form)
         self.driver.get(final_URL_form)
 
     def data_tab(self):
@@ -180,26 +184,26 @@ class ExportDataPage:
     # Test Case 20_a - Verify Export functionality for Forms
     def add_form_exports(self):
         self.driver.find_element(By.XPATH, self.add_export_button).click()
-        self.wait_to_click(By.XPATH, self.app_dropdown)
-        self.wait_to_click(By.XPATH, self.select_app)
-        self.wait_to_click(By.XPATH, self.menu_dropdown)
-        self.wait_to_click(By.XPATH, self.select_menu)
-        self.wait_to_click(By.XPATH, self.form_dropdown)
-        self.wait_to_click(By.XPATH, self.select_form)
-        self.wait_to_click(By.XPATH, self.add_export_conf)
-        self.driver.find_element(By.XPATH, self.export_settings_create).click()
+        self.wait_10_secs_to_click(By.XPATH, self.app_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_app)
+        self.wait_10_secs_to_click(By.XPATH, self.menu_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_menu)
+        self.wait_10_secs_to_click(By.XPATH, self.form_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_form)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.export_settings_create)
         print("Export created!!")
 
     def form_exports(self):
-        self.wait_to_click(By.XPATH, self.export_form_case_data_button)
-        self.wait_to_click(By.XPATH, self.prepare_export_button)
-        self.wait_to_click(By.XPATH, self.download_button)
+        self.wait_10_secs_to_click(By.XPATH, self.export_form_case_data_button)
+        self.wait_10_secs_to_click(By.XPATH, self.prepare_export_button)
+        self.wait_10_secs_to_click(By.XPATH, self.download_button)
         print("Download form button clicked")
         time.sleep(3)
 
     # Test Case 22_a -  Find Data By ID, forms
     def validate_downloaded_form_exports(self):
-        self.wait_to_click(By.LINK_TEXT, self.find_data_by_ID_link)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.find_data_by_ID_link)
         newest_file = latest_download_file()
         print("Newest file:" + newest_file)
         data = pd.read_excel(newest_file)
@@ -209,8 +213,8 @@ class ExportDataPage:
 
         WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
             By.XPATH, self.find_data_by_ID_textbox))).send_keys(str(formID))
-        self.wait_to_click(By.XPATH, self.find_data_by_ID_button)
-        self.wait_to_click(By.LINK_TEXT, self.view_FormID_CaseID)
+        self.wait_10_secs_to_click(By.XPATH, self.find_data_by_ID_button)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.view_FormID_CaseID)
         self.switch_to_next_tab()
         time.sleep(3)
         womanName_HQ = WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located((
@@ -223,10 +227,10 @@ class ExportDataPage:
     def delete_bulk_exports(self):
         try:
             time.sleep(2)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.select_all_btn)
             time.sleep(2)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.delete_selected_exports)
+            self.wait_10_secs_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
             print("Exports Deleted successfully")
         except TimeoutException:
             print("No exports present")
@@ -234,26 +238,26 @@ class ExportDataPage:
     # Test Case 20_b - Verify Export functionality for Cases
     def add_case_exports(self):
         time.sleep(2)
-        self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_case_data_link)
         self.driver.find_element(By.XPATH, self.add_export_button).click()
-        self.wait_to_click(By.XPATH, self.app_dropdown)
-        self.wait_to_click(By.XPATH, self.select_app)
-        self.wait_to_click(By.XPATH, self.case_type_dropdown)
-        self.wait_to_click(By.XPATH, self.select_case_type)
-        self.wait_to_click(By.XPATH, self.add_export_conf)
-        self.driver.find_element(By.XPATH, self.export_settings_create).click()
+        self.wait_10_secs_to_click(By.XPATH, self.app_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_app)
+        self.wait_10_secs_to_click(By.XPATH, self.case_type_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_case_type)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.export_settings_create)
         print("Export created!!")
 
     def case_exports(self):
-        self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
-        self.wait_to_click(By.XPATH, self.export_form_case_data_button)
-        self.wait_to_click(By.XPATH, self.prepare_export_button)
-        self.wait_to_click(By.XPATH, self.download_button)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_case_data_link)
+        self.wait_10_secs_to_click(By.XPATH, self.export_form_case_data_button)
+        self.wait_10_secs_to_click(By.XPATH, self.prepare_export_button)
+        self.wait_10_secs_to_click(By.XPATH, self.download_button)
         time.sleep(3)
 
     # Test Case 22_b - Find Data by ID for Case Exports
     def validate_downloaded_case_exports(self):
-        self.wait_to_click(By.LINK_TEXT, self.find_data_by_ID_link)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.find_data_by_ID_link)
         newest_file = latest_download_file()
         print("Newest file:" + newest_file)
         data2 = pd.read_excel(newest_file)
@@ -263,8 +267,8 @@ class ExportDataPage:
 
         WebDriverWait(self.driver, 3).until(ec.visibility_of_element_located((
             By.XPATH, self.find_data_by_ID_textbox))).send_keys(str(caseID))
-        self.wait_to_click(By.XPATH, self.find_data_by_ID_button)
-        self.wait_to_click(By.LINK_TEXT, self.view_FormID_CaseID)
+        self.wait_10_secs_to_click(By.XPATH, self.find_data_by_ID_button)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.view_FormID_CaseID)
         time.sleep(3)
         self.switch_to_next_tab()
         womanName_HQ = WebDriverWait(self.driver, 15).until(ec.presence_of_element_located((
@@ -277,9 +281,9 @@ class ExportDataPage:
     # Test Case 21 - Export SMS Messages
     def sms_exports(self):
         time.sleep(2)
-        self.wait_to_click(By.LINK_TEXT, self.export_sms_link)
-        self.wait_to_click(By.XPATH, self.prepare_export_button)
-        self.wait_to_click(By.XPATH, self.download_button)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_sms_link)
+        self.wait_10_secs_to_click(By.XPATH, self.prepare_export_button)
+        self.wait_10_secs_to_click(By.XPATH, self.download_button)
         time.sleep(3)
         newest_file = latest_download_file()
         print("Newest:", newest_file)
@@ -295,28 +299,28 @@ class ExportDataPage:
     # Test Case 23_a - Daily saved export, form
     def daily_saved_exports_form(self):
         time.sleep(2)
-        self.wait_to_click(By.LINK_TEXT, self.export_form_data_link)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_form_data_link)
         self.driver.refresh()
-        self.wait_to_click(By.XPATH, self.edit_form_case_export)
+        self.wait_10_secs_to_click(By.XPATH, self.edit_form_case_export)
         self.wait_to_clear(By.XPATH, self.export_name)
         self.driver.find_element(By.XPATH, self.export_name).send_keys(UserInputsData.form_export_name)
-        self.wait_to_click(By.XPATH, self.create_DSE_checkbox)
-        self.wait_to_click(By.XPATH, self.export_settings_create)
-        self.wait_to_click(By.XPATH, self.update_data)
+        self.wait_10_secs_to_click(By.XPATH, self.create_DSE_checkbox)
+        self.wait_10_secs_to_click(By.XPATH, self.export_settings_create)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data)
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.update_data_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data_conf)
         display_msg = WebDriverWait(self.driver, 20).until(
             ec.visibility_of_element_located((By.XPATH, self.data_upload_msg)))
         print("Display message:", display_msg.text)
         self.driver.refresh()
         time.sleep(5)
         # try:
-        self.wait_to_click(By.XPATH, self.download_dse_form)
+        self.wait_10_secs_to_click(By.XPATH, self.download_dse_form)
         # except (NoSuchElementException, TimeoutException):
-        #     self.wait_to_click(By.XPATH, self.update_data_conf)
+        #     self.wait_10_secs_to_click(By.XPATH, self.update_data_conf)
         #     time.sleep(5)
         #     self.driver.refresh()
-        #     self.wait_to_click(By.XPATH, self.download_dse_form)
+        #     self.wait_10_secs_to_click(By.XPATH, self.download_dse_form)
         time.sleep(3)
         newest_file = latest_download_file()
         print("Newest:", newest_file)
@@ -331,28 +335,28 @@ class ExportDataPage:
 
     # Test Case 23_b - Daily saved export, case
     def daily_saved_exports_case(self):
-        self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
-        self.wait_to_click(By.XPATH, self.edit_form_case_export)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_case_data_link)
+        self.wait_10_secs_to_click(By.XPATH, self.edit_form_case_export)
         self.wait_to_clear(By.XPATH, self.export_name)
         self.driver.find_element(By.XPATH, self.export_name).send_keys(UserInputsData.case_export_name)
-        self.wait_to_click(By.XPATH, self.create_DSE_checkbox)
-        self.wait_to_click(By.XPATH, self.export_settings_create)
-        self.wait_to_click(By.XPATH, self.update_data)
+        self.wait_10_secs_to_click(By.XPATH, self.create_DSE_checkbox)
+        self.wait_10_secs_to_click(By.XPATH, self.export_settings_create)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data)
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.update_data_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data_conf)
         display_msg = WebDriverWait(self.driver, 20).until(
             ec.visibility_of_element_located((By.XPATH, self.data_upload_msg)))
         print("Display message:", display_msg.text)
         self.driver.refresh()
-        # self.wait_to_click(By.XPATH, self.download_dse_case)
+        # self.wait_10_secs_to_click(By.XPATH, self.download_dse_case)
         time.sleep(5)
         # try:
-        #     self.wait_to_click(By.XPATH, self.download_dse_case)
+        #     self.wait_10_secs_to_click(By.XPATH, self.download_dse_case)
         # except (NoSuchElementException, TimeoutException):
-        #     self.wait_to_click(By.XPATH, self.update_data_conf)
+        #     self.wait_10_secs_to_click(By.XPATH, self.update_data_conf)
         #     time.sleep(5)
         #     self.driver.refresh()
-        self.wait_to_click(By.XPATH, self.download_dse_case)
+        self.wait_10_secs_to_click(By.XPATH, self.download_dse_case)
         time.sleep(5)
         newest_file = latest_download_file()
         print("Newest:", newest_file)
@@ -368,10 +372,10 @@ class ExportDataPage:
     # Test Case - 24 - Excel Dashboard Integration, form
     def excel_dashboard_integration_form(self):
         time.sleep(2)
-        self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
-        self.wait_to_click(By.XPATH, self.add_export_button)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_button)
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.model_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.model_dropdown)
         self.driver.find_element(By.XPATH, self.select_form_model).click()
         self.driver.find_element(By.XPATH, self.app_dropdown).click()
         self.driver.find_element(By.XPATH, self.select_app).click()
@@ -387,9 +391,9 @@ class ExportDataPage:
         self.driver.find_element(By.XPATH, self.export_settings_create).click()
         print("Dashboard Form Feed created!!")
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.update_data)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data)
         time.sleep(2)
-        self.wait_to_click(By.XPATH, self.update_data_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data_conf)
         time.sleep(2)
         self.driver.refresh()
         try:
@@ -414,9 +418,9 @@ class ExportDataPage:
 
     def excel_dashboard_integration_case(self):
         time.sleep(2)
-        self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
-        self.wait_to_click(By.XPATH, self.add_export_button)
-        self.wait_to_click(By.XPATH, self.model_dropdown)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_button)
+        self.wait_10_secs_to_click(By.XPATH, self.model_dropdown)
         time.sleep(2)
         self.driver.find_element(By.XPATH, self.select_case_model).click()
         self.driver.find_element(By.XPATH, self.app_dropdown).click()
@@ -429,8 +433,8 @@ class ExportDataPage:
         self.driver.find_element(By.XPATH, self.export_name).send_keys(UserInputsData.dashboard_feed_case)
         self.driver.find_element(By.XPATH, self.export_settings_create).click()
         print("Dashboard Form Feed created!!")
-        self.wait_to_click(By.XPATH, self.update_data)
-        self.wait_to_click(By.XPATH, self.update_data_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data)
+        self.wait_10_secs_to_click(By.XPATH, self.update_data_conf)
         time.sleep(2)
         self.driver.refresh()
         try:
@@ -453,17 +457,17 @@ class ExportDataPage:
 
     # Test Case - 28 - Power BI / Tableau Integration, Form
     def power_bi_tableau_integration_form(self, username, password):
-        self.wait_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
-        self.wait_to_click(By.XPATH, self.add_export_button)
-        self.wait_to_click(By.XPATH, self.model_dropdown)
-        self.wait_to_click(By.XPATH, self.select_form_model)
-        self.wait_to_click(By.XPATH, self.app_dropdown)
-        self.wait_to_click(By.XPATH, self.select_app)
-        self.wait_to_click(By.XPATH, self.menu_dropdown)
-        self.wait_to_click(By.XPATH, self.select_menu)
-        self.wait_to_click(By.XPATH, self.form_dropdown)
-        self.wait_to_click(By.XPATH, self.select_form)
-        self.wait_to_click(By.XPATH, self.add_export_conf)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_button)
+        self.wait_10_secs_to_click(By.XPATH, self.model_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_form_model)
+        self.wait_10_secs_to_click(By.XPATH, self.app_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_app)
+        self.wait_10_secs_to_click(By.XPATH, self.menu_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_menu)
+        self.wait_10_secs_to_click(By.XPATH, self.form_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_form)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_conf)
         print("Odata form Feed added!!")
         self.wait_to_clear(By.XPATH, self.export_name)
         self.driver.find_element(By.XPATH, self.export_name).send_keys(UserInputsData.odata_feed_form)
@@ -480,16 +484,16 @@ class ExportDataPage:
     # Test Case - 27 - Power BI / Tableau Integration, Case`
     def power_bi_tableau_integration_case(self, username, password):
         self.driver.refresh()
-        self.wait_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
-        self.wait_to_click(By.XPATH, self.add_export_button)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_button)
         print("Add OData_feed_button clicked")
-        self.wait_to_click(By.XPATH, self.model_dropdown)
-        self.wait_to_click(By.XPATH, self.select_case_model)
-        self.wait_to_click(By.XPATH, self.app_dropdown)
-        self.wait_to_click(By.XPATH, self.select_app)
-        self.wait_to_click(By.XPATH, self.case_type_dropdown)
-        self.wait_to_click(By.XPATH, self.select_case_type)
-        self.wait_to_click(By.XPATH, self.add_export_conf)
+        self.wait_10_secs_to_click(By.XPATH, self.model_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_case_model)
+        self.wait_10_secs_to_click(By.XPATH, self.app_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_app)
+        self.wait_10_secs_to_click(By.XPATH, self.case_type_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.select_case_type)
+        self.wait_10_secs_to_click(By.XPATH, self.add_export_conf)
         print("Odata Case Feed added!!")
         time.sleep(5)
         self.wait_to_clear(By.XPATH, self.export_name)
@@ -508,27 +512,27 @@ class ExportDataPage:
     # Test Case - 30 - Verify user is able to manage forms and archive a form
     def manage_forms(self):
         # Forms archival
-        self.wait_to_click(By.XPATH, self.manage_forms_link)
-        self.wait_to_click(By.ID, self.select_app_dropdown)
-        self.wait_to_click(By.XPATH, self.village_app)
-        self.wait_to_click(By.XPATH, self.apply_button)
-        time.sleep(10)
-        self.wait_to_click(By.XPATH, self.checkbox1)
-        self.wait_to_click(By.XPATH, self.archive_button)
+        self.wait_10_secs_to_click(By.XPATH, self.manage_forms_link)
+        self.wait_10_secs_to_click(By.ID, self.select_app_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.village_app)
+        self.wait_10_secs_to_click(By.XPATH, self.apply_button)
+        time.sleep(2)
+        self.wait_20_secs_to_click(By.XPATH, self.checkbox1)
+        self.wait_10_secs_to_click(By.XPATH, self.archive_button)
         assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
             By.XPATH, self.success_message))).is_displayed(), "Form archival not completed.."
         print("Forms archival successful!!")
         time.sleep(5)
 
         # View Archived Forms
-        self.wait_to_click(By.XPATH, self.manage_forms_link)
+        self.wait_10_secs_to_click(By.XPATH, self.manage_forms_link)
         self.driver.find_element(By.ID, self.select_app_dropdown)
-        self.wait_to_click(By.XPATH, self.village_app)
-        self.wait_to_click(By.XPATH, self.archived_restored_dropdown)
-        self.wait_to_click(By.XPATH, self.archived_forms_option)
-        self.wait_to_click(By.XPATH, self.apply_button)
+        self.wait_10_secs_to_click(By.XPATH, self.village_app)
+        self.wait_10_secs_to_click(By.XPATH, self.archived_restored_dropdown)
+        self.wait_10_secs_to_click(By.XPATH, self.archived_forms_option)
+        self.wait_10_secs_to_click(By.XPATH, self.apply_button)
         self.driver.refresh()
-        self.wait_to_click(By.XPATH, self.view_form_link)
+        self.wait_10_secs_to_click(By.XPATH, self.view_form_link)
         self.switch_to_next_tab()
         normal_form_data = self.driver.page_source
         assert normal_form_data != "","No Data!" # This condition can be improvised
@@ -538,8 +542,8 @@ class ExportDataPage:
 
         # Restore Archived Forms
         try:
-            self.wait_to_click(By.XPATH, self.checkbox1)
-            self.wait_to_click(By.XPATH, self.archive_button)
+            self.wait_10_secs_to_click(By.XPATH, self.checkbox1)
+            self.wait_10_secs_to_click(By.XPATH, self.archive_button)
             assert WebDriverWait(self.driver, 100).until(ec.presence_of_element_located((
                 By.XPATH, self.success_message))).is_displayed(), "Restore not completed"
             print("Forms restoration successful!!")
@@ -547,9 +551,9 @@ class ExportDataPage:
             print(TimeoutException)
 
         # View Normal Forms
-        self.wait_to_click(By.XPATH, self.manage_forms_link)
-        self.wait_to_click(By.XPATH, self.apply_button)
-        self.wait_to_click(By.XPATH, self.view_form_link)
+        self.wait_10_secs_to_click(By.XPATH, self.manage_forms_link)
+        self.wait_10_secs_to_click(By.XPATH, self.apply_button)
+        self.wait_10_secs_to_click(By.XPATH, self.view_form_link)
         self.switch_to_next_tab()
         normal_form_data = self.driver.page_source
         assert normal_form_data != "", "No Data!"  # This condition can be improvised
@@ -558,35 +562,35 @@ class ExportDataPage:
         self.switch_back_to_prev_tab()
 
     def delete_all_bulk_exports(self):
-        self.wait_to_click(By.LINK_TEXT, self.export_form_data_link)
+        self.wait_10_secs_to_click(By.LINK_TEXT, self.export_form_data_link)
         try:
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.select_all_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.delete_selected_exports)
+            self.wait_10_secs_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
             print("Bulk exports deleted for Export Form data")
         except TimeoutException:
             print("No exports available")
         try:
-            self.wait_to_click(By.LINK_TEXT, self.export_case_data_link)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
+            self.wait_10_secs_to_click(By.LINK_TEXT, self.export_case_data_link)
+            self.wait_10_secs_to_click(By.XPATH, self.select_all_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.delete_selected_exports)
+            self.wait_10_secs_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
             print("Bulk exports deleted for Export Case data")
         except TimeoutException:
             print("No exports available")
         try:
-            self.wait_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
+            self.wait_10_secs_to_click(By.LINK_TEXT, self.powerBI_tab_int_link)
+            self.wait_10_secs_to_click(By.XPATH, self.select_all_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.delete_selected_exports)
+            self.wait_10_secs_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
             print("Bulk exports deleted for Power BI Reports")
         except TimeoutException:
             print("No exports available")
         try:
-            self.wait_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
-            self.wait_to_click(By.XPATH, self.select_all_btn)
-            self.wait_to_click(By.XPATH, self.delete_selected_exports)
-            self.wait_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
+            self.wait_10_secs_to_click(By.LINK_TEXT, self.export_excel_dash_int_link)
+            self.wait_10_secs_to_click(By.XPATH, self.select_all_btn)
+            self.wait_10_secs_to_click(By.XPATH, self.delete_selected_exports)
+            self.wait_10_secs_to_click(By.XPATH, self.bulk_delete_confirmation_btn)
             print("Bulk exports deleted for Export Excel Int Reports")
         except TimeoutException:
             print("No exports available")
