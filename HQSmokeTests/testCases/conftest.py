@@ -37,7 +37,7 @@ def environment_settings():
         env = os.environ.get("DIMAGIQA_ENV") or "staging"
         subdomain = "www" if env == "production" else env
         settings["url"] = f"https://{subdomain}.commcarehq.org/"
-        print(settings)
+        # print(settings)
     return settings
 
 
@@ -46,7 +46,7 @@ def settings(environment_settings):
     if os.environ.get("CI") == "true":
         settings = environment_settings
         settings["CI"] = "true"
-        print(settings)
+        # print(settings)
         if any(x not in settings for x in ["url", "login_username", "login_password", "mail_username", "mail_password"]):
             lines = environment_settings.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
