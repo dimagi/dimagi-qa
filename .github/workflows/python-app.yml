@@ -86,7 +86,7 @@ jobs:
         from: <no-reply@dimagi.com>
         body: Build job of ${{github.repository}} completed with failure!
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_fail.html
-        attachments: /home/runner/work/dimagi-qa/dimagi-qa/reports.html
+        attachments: /home/runner/work/dimagi-qa/dimagi-qa/report.html
         priority: normal
 
     - name: Send Failure Email on Push or Pull
@@ -102,7 +102,7 @@ jobs:
         from: <no-reply@dimagi.com>
         body: Build job of ${{github.repository}} completed with failure!
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_fail.html
-        attachments: /home/runner/work/dimagi-qa/dimagi-qa/reports.html
+        attachments: /home/runner/work/dimagi-qa/dimagi-qa/report.html
         priority: normal
 
     - name: Send Pass Email on Push or Pull
@@ -125,5 +125,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: test-result-reports
-        path: /home/runner/work/dimagi-qa/dimagi-qa/reports.html
+        path: /home/runner/work/dimagi-qa/dimagi-qa/report.html
         retention-days: 2

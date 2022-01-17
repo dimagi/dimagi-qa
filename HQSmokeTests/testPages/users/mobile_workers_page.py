@@ -176,6 +176,7 @@ class MobileWorkerPage:
         self.driver.execute_script("arguments[0].click();", button)
         assert self.driver.find_element(By.XPATH, self.user_field_success_msg).is_displayed(), "Unable to update user."
         print("User Field Visible and Added for User")
+        time.sleep(2)
 
     def deactivate_user(self):
         try:
