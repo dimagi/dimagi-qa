@@ -3,7 +3,7 @@ name: Capture metrics on Datadog
 on:
   workflow_run:
     workflows:
-      - python-app
+      - HQ Smoke Tests
     types:
       - completed
     branches: [ master, kt/new2 ]
