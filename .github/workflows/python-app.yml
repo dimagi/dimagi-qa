@@ -5,7 +5,7 @@ name: HQ Smoke Tests
 
 on:
   push:
-    branches: [ master,kt/new2 ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
   repository_dispatch:

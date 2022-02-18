@@ -4,8 +4,8 @@ on:
   workflow_run:
     workflows:
       - python-app
-      types:
-        - completed
+    types:
+      - completed
     branches: [ master, kt/new2 ]
 
 jobs:
