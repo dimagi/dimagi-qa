@@ -56,7 +56,7 @@ class ReportPage(BasePage):
         self.save_xpath = (By.XPATH, "//button[@data-bind='click: setConfigBeingEdited']")
         self.custom_report_content_id = (By.ID, "report_table_configurable_wrapper")
         self.edit_report_id = (By.ID, "edit-report-link")
-        self.delete_report_xpath = (By.XPATH, "//input[@value='Delete Report']")
+        self.delete_report_xpath = (By.XPATH, "//input[@class='submit']")
         self.homepage = (By.XPATH, ".//a[@href='/homepage/']")
 
         # Report Builder
