@@ -98,7 +98,7 @@ class ExportDataPage(BasePage):
         ID = get_url.split("/")[10]
         odata_feed_link_case = "https://" + self.get_environment() + "/a/" + self.get_domain() + "/api/v0.5/odata/"+item+"/" + ID + "/feed/"
         self.driver.back()
-        self.switch_to_new_tab()
+        # self.switch_to_new_tab()
         return odata_feed_link_case
 
     def get_url_paste_browser(self, username, password, item):
@@ -154,6 +154,7 @@ class ExportDataPage(BasePage):
     # Test Case 20_a - Verify Export functionality for Forms
 
     def add_form_exports(self):
+        self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
         self.is_visible_and_displayed(self.app_type)
         self.select_by_text(self.app_type, UserData.app_type)
@@ -173,6 +174,7 @@ class ExportDataPage(BasePage):
 
     def add_case_exports(self):
         self.wait_to_click(self.export_case_data_link)
+        self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
         self.is_visible_and_displayed(self.application)
         self.select_by_text(self.application, UserData.village_application)
@@ -285,15 +287,15 @@ class ExportDataPage(BasePage):
             self.wait_and_sleep_to_click(self.copy_dashfeed_link)
             dashboard_feed_link = self.get_attribute(self.dashboard_feed_link, "href")
             print(dashboard_feed_link)
-            self.switch_to_new_tab()
+            # self.switch_to_new_tab()
             self.driver.get(dashboard_feed_link)
             dashboard_feed_data = self.driver.page_source
             if dashboard_feed_data != "":
                 print("Excel Dashboard has data")
             else:
                 print("Excel Dashboard is empty")
-            self.driver.close()
-            self.switch_back_to_prev_tab()
+            # self.driver.close()
+            self.driver.back()
         except StaleElementReferenceException:
             print(StaleElementReferenceException)
 
@@ -376,5 +378,5 @@ class ExportDataPage(BasePage):
         odata_feed_data = self.driver.page_source
         assert odata_feed_data != ""  # This condition can be improvised
         print("Odata case feed has data")
-        self.driver.close()  # Close the feed URL
-        self.switch_back_to_prev_tab()
+        # self.driver.close()  # Close the feed URL
+        self.driver.back()

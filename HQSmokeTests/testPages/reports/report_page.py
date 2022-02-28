@@ -5,7 +5,7 @@ from HQSmokeTests.testPages.base.base_page import BasePage
 from HQSmokeTests.userInputs.generate_random_string import fetch_random_string
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver import Keys
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
 from HQSmokeTests.userInputs.user_inputs import UserData
@@ -56,7 +56,7 @@ class ReportPage(BasePage):
         self.save_xpath = (By.XPATH, "//button[@data-bind='click: setConfigBeingEdited']")
         self.custom_report_content_id = (By.ID, "report_table_configurable_wrapper")
         self.edit_report_id = (By.ID, "edit-report-link")
-        self.delete_report_xpath = (By.XPATH, "//input[@class='submit']")
+        self.delete_report_xpath = (By.XPATH, "//input[contains(@value,'Delete')]")
         self.homepage = (By.XPATH, ".//a[@href='/homepage/']")
 
         # Report Builder
@@ -294,13 +294,14 @@ class ReportPage(BasePage):
         self.is_present_and_displayed(self.view_form_link)
         form_link = self.get_attribute(self.view_form_link, "href")
         print("View Form Link: ", form_link)
-        self.switch_to_new_tab()
+        # self.switch_to_new_tab()
         self.driver.get(form_link)
         time.sleep(3)
         self.page_source_contains(case_name)
         assert True, "Case name is present in Submit history"
-        self.driver.close()
-        self.switch_back_to_prev_tab()
+        # self.driver.close()
+        # self.switch_back_to_prev_tab()
+        self.driver.back()
 
     def verify_form_data_case_list(self, case_name):
         self.wait_to_click(self.case_list_rep)
@@ -313,9 +314,37 @@ class ReportPage(BasePage):
         self.verify_table_not_empty(self.case_list_table)
         self.page_source_contains(case_name)
         self.wait_and_sleep_to_click((By.LINK_TEXT, str(case_name)))
-        self.switch_to_next_tab()
+        # self.switch_to_next_tab()
         time.sleep(3)
         self.page_source_contains(case_name)
         assert True, "Case name is present in Case List"
-        self.driver.close()
-        self.switch_back_to_prev_tab()
+        # self.driver.close()
+        # self.switch_back_to_prev_tab()
+        self.driver.back()
+
+
+    def verify_app_data_submit_history(self, case_name):
+
+        print("Sleeping for sometime for the case to get registered.")
+        time.sleep(20)
+        self.wait_to_click(self.submit_history_rep)
+        # self.wait_to_click(self.users_box)
+        # self.wait_to_click(self.select_user)
+        self.select_by_text(self.application_select, UserData.reassign_cases_application)
+        self.select_by_text(self.module_select, UserData.case_list_name)
+        self.select_by_text(self.form_select, UserData.new_form_name)
+        date_range = self.get_yesterday_tomorrow_dates()
+        self.clear(self.date_input)
+        self.send_keys(self.date_input, date_range+Keys.TAB)
+        self.wait_to_click(self.apply_id)
+        time.sleep(15)
+        self.scroll_to_bottom()
+        self.verify_table_not_empty(self.submit_history_table)
+        self.is_present_and_displayed(self.view_form_link)
+        form_link = self.get_attribute(self.view_form_link, "href")
+        print("View Form Link: ", form_link)
+        # self.switch_to_new_tab()
+        self.driver.get(form_link)
+        time.sleep(3)
+        self.page_source_contains(case_name)
+        assert True, "Case name is present in Submit history"

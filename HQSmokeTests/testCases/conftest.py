@@ -29,7 +29,7 @@ def environment_settings():
             for instructions on how to set them.
             """
     settings = {}
-    for name in ["url", "login_username", "login_password", "mail_username", "mail_password"]:
+    for name in ["url", "login_username", "login_password", "mail_username", "mail_password","bs_user", "bs_key"]:
         var = f"DIMAGIQA_{name.upper()}"
         if var in os.environ:
             settings[name] = os.environ[var]
@@ -45,7 +45,7 @@ def settings(environment_settings):
     if os.environ.get("CI") == "true":
         settings = environment_settings
         settings["CI"] = "true"
-        if any(x not in settings for x in ["url", "login_username", "login_password", "mail_username", "mail_password"]):
+        if any(x not in settings for x in ["url", "login_username", "login_password", "mail_username", "mail_password", "bs_user", "bs_key"]):
             lines = environment_settings.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
@@ -58,7 +58,7 @@ def settings(environment_settings):
     if not path.exists():
         raise RuntimeError(
             f"Not found: {path}\n\n"
-            "Copy settings-sample.cfg to settings.cfg and populate "
+            "Copy settings-sample.cfg to settings-sample.cfg and populate "
             "it with values for the environment you want to test."
         )
     settings = ConfigParser()
@@ -99,8 +99,10 @@ def driver(settings):
             "download.default_directory": str(UserData.DOWNLOAD_PATH),
             "download.prompt_for_download": False,
             "safebrowsing.enabled": True})
-    web_driver = Service(executable_path=ChromeDriverManager().install(), service_args=['--verbose', 'log_path="/logs/chrome.log"'])
-    driver = webdriver.Chrome(service=web_driver, options=chrome_options)
+
+    # web_driver = Service(executable_path=ChromeDriverManager().install(), service_args=['--verbose', 'log_path="/logs/chrome.log"'])
+    # driver = webdriver.Chrome(service=web_driver, options=chrome_options)
+    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
     print("Chrome version:", driver.capabilities['browserVersion'])
     login = LoginPage(driver, settings["url"])
     login.login(settings["login_username"], settings["login_password"])

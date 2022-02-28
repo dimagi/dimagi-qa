@@ -21,6 +21,9 @@ class UserData:
     case_reassign = "reassign"
     model_type_case = "case"
     model_type_form = "form"
+    new_form_name = "Android Test Form"
+    app_login = "AppiumTest"
+    app_password = "pass123"
 
     # invite_web_user user email
     web_user_mail = 'automation.user.commcarehq+test@gmail.com'

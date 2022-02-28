@@ -1,5 +1,5 @@
 HQSmokeTests/report.html
-HQSmokeTests/settings.cfg
+HQSmokeTests/settings-sample.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
