@@ -2,6 +2,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 from selenium.webdriver.common.by import By
 
 from HQSmokeTests.testPages.base.base_page import BasePage
+from HQSmokeTests.testPages.base.generate_2FA import generate_auth_token
 
 
 class LoginPage(BasePage):
@@ -11,7 +12,8 @@ class LoginPage(BasePage):
 
         self.username_textbox_id = (By.ID, "id_auth-username")
         self.password_textbox_id = (By.ID, "id_auth-password")
-        self.submit_button_xpath = (By.XPATH, '//button[@type="submit"]')
+        self.submit_button_xpath = (By.XPATH, '(//button[@type="submit"])[last()]')
+        self.otp_token_id = (By.ID, 'id_token-otp_token')
         self.alert_button_accept = (By.ID, "hs-eu-confirmation-button")
         self.continue_button_xpath = (By.XPATH, '//button[@class="btn btn-primary btn-lg" and @type ="button"]')
         self.close_notification = (By.XPATH, "//div[@class='frame-close']/button[1]")
@@ -39,6 +41,11 @@ class LoginPage(BasePage):
     def click_submit(self):
         self.click(self.submit_button_xpath)
 
+    def enter_otp(self, settings):
+        otp = generate_auth_token(settings["auth_secret"])
+        self.send_keys(self.otp_token_id, otp)
+        self.click(self.submit_button_xpath)
+
     def accept_alert(self):
         try:
             self.wait_to_click(self.alert_button_accept)
@@ -57,10 +64,11 @@ class LoginPage(BasePage):
         except TimeoutException:
             pass  # ignore if alert not on page
 
-    def login(self, username, password):
+    def login(self, username, password, secret):
         self.enter_username(username)
         self.click_continue()
         self.enter_password(password)
+        self.enter_otp(secret)
         self.dismiss_notification()
         self.accept_alert()
         self.click_submit()

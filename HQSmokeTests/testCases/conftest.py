@@ -6,7 +6,6 @@ import pytest
 from HQSmokeTests.userInputs.user_inputs import UserData
 from HQSmokeTests.testPages.base.login_page import LoginPage
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 # from HQSmokeTests.utilities.email_pytest_report import Email_Pytest_Report
 
@@ -29,7 +28,7 @@ def environment_settings():
             for instructions on how to set them.
             """
     settings = {}
-    for name in ["url", "login_username", "login_password", "mail_username", "mail_password","bs_user", "bs_key"]:
+    for name in ["url", "login_username", "login_password", "mail_username", "mail_password","bs_user", "bs_key", "auth_secret"]:
         var = f"DIMAGIQA_{name.upper()}"
         if var in os.environ:
             settings[name] = os.environ[var]
@@ -45,7 +44,7 @@ def settings(environment_settings):
     if os.environ.get("CI") == "true":
         settings = environment_settings
         settings["CI"] = "true"
-        if any(x not in settings for x in ["url", "login_username", "login_password", "mail_username", "mail_password", "bs_user", "bs_key"]):
+        if any(x not in settings for x in ["url", "login_username", "login_password", "mail_username", "mail_password", "bs_user", "bs_key", "auth_secret"]):
             lines = environment_settings.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
