@@ -25,8 +25,7 @@ class LoginPage(BasePage):
         self.driver.implicitly_wait(10)
 
     def enter_username(self, username):
-        self.clear(self.username_textbox_id)
-        self.send_keys(self.username_textbox_id, username)
+        self.wait_to_clear_and_send_keys(self.username_textbox_id, username)
 
     def click_continue(self):
         try:
@@ -35,20 +34,19 @@ class LoginPage(BasePage):
             print("Non SSO workflow")
 
     def enter_password(self, password):
-        self.clear(self.password_textbox_id)
-        self.send_keys(self.password_textbox_id, password)
+        self.wait_to_clear_and_send_keys(self.password_textbox_id, password)
 
     def click_submit(self):
         self.click(self.submit_button_xpath)
 
-    def enter_otp(self, settings):
-        otp = generate_auth_token(settings["auth_secret"])
+    def enter_otp(self, secret):
+        otp = generate_auth_token(secret)
         self.send_keys(self.otp_token_id, otp)
-        self.click(self.submit_button_xpath)
+        self.wait_to_click(self.submit_button_xpath)
 
     def accept_alert(self):
         try:
-            self.wait_to_click(self.alert_button_accept)
+            self.click(self.alert_button_accept)
         except TimeoutException:
             pass  # ignore if alert not on page
 
@@ -68,8 +66,8 @@ class LoginPage(BasePage):
         self.enter_username(username)
         self.click_continue()
         self.enter_password(password)
-        self.enter_otp(secret)
         self.dismiss_notification()
         self.accept_alert()
         self.click_submit()
+        self.enter_otp(secret)
         self.assert_logged_in()
