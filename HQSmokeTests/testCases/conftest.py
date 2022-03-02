@@ -67,44 +67,8 @@ def settings(environment_settings):
     return settings["default"]
 
 
-# @pytest.fixture(scope="module")
-# def driver(settings):
-#     chrome_options = webdriver.ChromeOptions()
-#     if settings.get("CI") == "true":
-#         chrome_options.add_argument('--no-sandbox')
-#         chrome_options.add_argument('disable-extensions')
-#         chrome_options.add_argument('--safebrowsing-disable-download-protection')
-#         chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
-#         chrome_options.add_argument('window-size=1920,1080')
-#         chrome_options.add_argument("--disable-setuid-sandbox")
-#         chrome_options.add_argument('--start-maximized')
-#         chrome_options.add_argument('--disable-dev-shm-usage')
-#         chrome_options.add_argument('--headless')
-#         chrome_options.add_argument("--disable-notifications")
-#         chrome_options.add_experimental_option("prefs", {
-#             "download.default_directory": str(UserData.DOWNLOAD_PATH),
-#             "download.prompt_for_download": False,
-#             "download.directory_upgrade": True,
-#             "safebrowsing.enabled": True})
-#     else:
-#         chrome_options.add_argument('--safebrowsing-disable-download-protection')
-#         chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
-#         chrome_options.add_experimental_option("prefs", {
-#             "download.default_directory": str(UserData.DOWNLOAD_PATH),
-#             "download.prompt_for_download": False,
-#             "safebrowsing.enabled": True})
-#     chrome_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
-#     print("Chrome version:", chrome_driver.capabilities['browserVersion'])
-#     login = LoginPage(chrome_driver, settings["url"])
-#     login.login(settings["login_username"], settings["login_password"], settings["auth_key"])
-#     yield chrome_driver
-#     chrome_driver.close()
-#     chrome_driver.quit()
-
-
-@pytest.fixture(scope="class", params=["chrome", "firefox"])
-def driver(request, settings):
-    web_driver = None
+@pytest.fixture(scope="module")
+def driver(settings):
     chrome_options = webdriver.ChromeOptions()
     if settings.get("CI") == "true":
         chrome_options.add_argument('--no-sandbox')
@@ -122,31 +86,67 @@ def driver(request, settings):
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True})
-    firefox_options = webdriver.FirefoxOptions()
-    if settings.get("CI") == "true":
-        firefox_options.set_headless()
-        firefox_options.add_argument('--no-sandbox')
-        firefox_options.add_argument('disable-extensions')
-        firefox_options.add_argument('--safebrowsing-disable-download-protection')
-        firefox_options.add_argument('--safebrowsing-disable-extension-blacklist')
-        firefox_options.add_argument('window-size=1920,1080')
-        firefox_options.add_argument("--disable-setuid-sandbox")
-        firefox_options.add_argument('--start-maximized')
-        firefox_options.add_argument('--disable-dev-shm-usage')
-        firefox_options.add_argument('--headless')
-        firefox_options.add_argument("--disable-notifications")
-        firefox_options.set_preference("browser.download.dir", str(UserData.DOWNLOAD_PATH))
-    if request.param == "chrome":
-        web_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
-        print("Chrome version:", web_driver.capabilities['browserVersion'])
-    elif request.param == "firefox":
-        web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
     else:
-        print("Provide valid browser")
-    login = LoginPage(web_driver, settings["url"])
+        chrome_options.add_argument('--safebrowsing-disable-download-protection')
+        chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
+        chrome_options.add_experimental_option("prefs", {
+            "download.default_directory": str(UserData.DOWNLOAD_PATH),
+            "download.prompt_for_download": False,
+            "safebrowsing.enabled": True})
+    chrome_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
+    print("Chrome version:", chrome_driver.capabilities['browserVersion'])
+    login = LoginPage(chrome_driver, settings["url"])
     login.login(settings["login_username"], settings["login_password"], settings["auth_key"])
-    yield web_driver
-    web_driver.close()
+    yield chrome_driver
+    chrome_driver.close()
+    chrome_driver.quit()
+
+#
+# @pytest.fixture(scope="class", params=["chrome", "firefox"])
+# def driver(request, settings):
+#     web_driver = None
+#     chrome_options = webdriver.ChromeOptions()
+#     if settings.get("CI") == "true":
+#         chrome_options.add_argument('--no-sandbox')
+#         chrome_options.add_argument('disable-extensions')
+#         chrome_options.add_argument('--safebrowsing-disable-download-protection')
+#         chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
+#         chrome_options.add_argument('window-size=1920,1080')
+#         chrome_options.add_argument("--disable-setuid-sandbox")
+#         chrome_options.add_argument('--start-maximized')
+#         chrome_options.add_argument('--disable-dev-shm-usage')
+#         chrome_options.add_argument('--headless')
+#         chrome_options.add_argument("--disable-notifications")
+#         chrome_options.add_experimental_option("prefs", {
+#             "download.default_directory": str(UserData.DOWNLOAD_PATH),
+#             "download.prompt_for_download": False,
+#             "download.directory_upgrade": True,
+#             "safebrowsing.enabled": True})
+#     firefox_options = webdriver.FirefoxOptions()
+#     if settings.get("CI") == "true":
+#         firefox_options.set_headless()
+#         firefox_options.add_argument('--no-sandbox')
+#         firefox_options.add_argument('disable-extensions')
+#         firefox_options.add_argument('--safebrowsing-disable-download-protection')
+#         firefox_options.add_argument('--safebrowsing-disable-extension-blacklist')
+#         firefox_options.add_argument('window-size=1920,1080')
+#         firefox_options.add_argument("--disable-setuid-sandbox")
+#         firefox_options.add_argument('--start-maximized')
+#         firefox_options.add_argument('--disable-dev-shm-usage')
+#         firefox_options.add_argument('--headless')
+#         firefox_options.add_argument("--disable-notifications")
+#         firefox_options.set_preference("browser.download.dir", str(UserData.DOWNLOAD_PATH))
+#     if request.param == "chrome":
+#         web_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
+#         print("Chrome version:", web_driver.capabilities['browserVersion'])
+#     elif request.param == "firefox":
+#         web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
+#     else:
+#         print("Provide valid browser")
+#     login = LoginPage(web_driver, settings["url"])
+#     login.login(settings["login_username"], settings["login_password"], settings["auth_key"])
+#     yield web_driver
+#     web_driver.close()
 
 
 @pytest.hookimpl(hookwrapper=True)
