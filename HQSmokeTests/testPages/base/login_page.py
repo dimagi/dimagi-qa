@@ -40,9 +40,12 @@ class LoginPage(BasePage):
         self.click(self.submit_button_xpath)
 
     def enter_otp(self, secret):
-        otp = generate_auth_token(secret)
-        self.send_keys(self.otp_token_id, otp)
-        self.wait_to_click(self.submit_button_xpath)
+        try:
+            otp = generate_auth_token(secret)
+            self.send_keys(self.otp_token_id, otp)
+            self.wait_to_click(self.submit_button_xpath)
+        except TimeoutException:
+            pass  # ignore if 2FA not setup
 
     def accept_alert(self):
         try:
