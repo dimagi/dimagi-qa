@@ -260,3 +260,20 @@ class BasePage:
         element_2 = self.driver.find_element(locator2)
         # hover over element and click
         action.move_to_element(element_2).click().perform()
+
+    def double_click(self, locator, timeout=20):
+        clickable = ec.element_to_be_clickable(locator)
+        element = WebDriverWait(self.driver, timeout).until(clickable,
+                                                            message="Couldn't find locator: "
+                                                                    + str(locator))
+        # action chain object
+        action = ActionChains(self.driver)
+        # double click operation
+        action.double_click(element)
+
+    def js_click(self, locator, timeout=20):
+        clickable = ec.element_to_be_clickable(locator)
+        element = WebDriverWait(self.driver, timeout).until(clickable,
+                                                            message="Couldn't find locator: "
+                                                                    + str(locator))
+        self.driver.execute_script("arguments[0].click();", element)

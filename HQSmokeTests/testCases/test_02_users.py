@@ -169,3 +169,30 @@ def test_case_13_new_webuser_invitation(driver):
     webuser.invite_new_web_user('admin')
     webuser.assert_invite()
     webuser.delete_invite()
+
+def test_case_54_add_custom_user_data_profile_to_mobile_worker(driver):
+
+    create = MobileWorkerPage(driver)
+    create.mobile_worker_menu()
+    create.create_new_mobile_worker()
+    create.create_new_user_fields("field_" + fetch_random_string())
+    create.click_profile()
+    create.add_profile("field_" + fetch_random_string())
+    create.save_field()
+    create.select_user_and_update_fields("user_" + str(fetch_random_string()))
+    create.add_phone_number()
+    create.select_profile()
+    create.update_information()
+    create.select_location()
+    create.mobile_worker_menu()
+    create.select_and_delete_mobile_worker("user_" + str(fetch_random_string()))
+    create.mobile_worker_menu()
+    create.edit_user_field()
+    create.click_profile()
+    create.remove_profile()
+    create.save_field()
+    create.click_fields()
+    create.remove_user_field()
+    create.save_field()
+
+

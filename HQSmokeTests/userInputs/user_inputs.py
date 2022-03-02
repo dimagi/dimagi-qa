@@ -25,6 +25,8 @@ class UserData:
     app_login = "AppiumTest"
     app_password = "pass123"
 
+    # Phone Number
+    area_code = "91"
     # invite_web_user user email
     web_user_mail = 'automation.user.commcarehq+test@gmail.com'
 
