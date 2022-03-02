@@ -141,7 +141,7 @@ def driver(request, settings):
         web_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
         print("Chrome version:", web_driver.capabilities['browserVersion'])
     elif request.param == "firefox":
-        web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install())
+        web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
     else:
         print("Provide valid browser")
     login = LoginPage(web_driver, settings["url"])
