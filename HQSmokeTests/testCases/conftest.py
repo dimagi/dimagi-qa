@@ -45,7 +45,8 @@ def settings(environment_settings):
         settings = environment_settings
         settings["CI"] = "true"
         if any(x not in settings for x in
-               ["url", "login_username", "login_password", "mail_username", "mail_password", "bs_user", "bs_key", "auth_key"]):
+               ["url", "login_username", "login_password", "mail_username",
+                "mail_password", "bs_user", "bs_key", "auth_key"]):
             lines = environment_settings.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
