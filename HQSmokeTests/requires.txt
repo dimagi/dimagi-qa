@@ -10,3 +10,4 @@ pytest-rerunfailures>=10.2
 pytest-xdist>=2.4.0
 pytest-xdist[psutil]
 Appium-Python-Client == 0.52
+pyotp >=2.6.0
