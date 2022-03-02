@@ -19,6 +19,8 @@ class LoginPage(BasePage):
         self.close_notification = (By.XPATH, "//div[@class='frame-close']/button[1]")
         self.iframe = (By.XPATH, "//iframe[contains(@src,'/embed/frame')]")
         self.view_latest_updates = (By.XPATH, "//*[.='View latest updates']")
+        self.settings = (By.XPATH, "//a[@data-action='Click Gear Icon']")
+        self.sign_out = (By.XPATH, "//a[contains(@data-label,'Sign Out')]")
 
         self.driver.get(url)
         self.driver.maximize_window()
@@ -39,9 +41,8 @@ class LoginPage(BasePage):
     def click_submit(self):
         self.click(self.submit_button_xpath)
 
-    def enter_otp(self, secret):
+    def enter_otp(self, otp):
         try:
-            otp = generate_auth_token(secret)
             self.send_keys(self.otp_token_id, otp)
             self.wait_to_click(self.submit_button_xpath)
         except TimeoutException:
@@ -65,12 +66,25 @@ class LoginPage(BasePage):
         except TimeoutException:
             pass  # ignore if alert not on page
 
-    def login(self, username, password, secret):
+    def logout(self):
+        self.wait_to_click(self.settings)
+        self.wait_to_click(self.sign_out)
+
+    def login(self, username, password):
         self.enter_username(username)
         self.click_continue()
         self.enter_password(password)
         self.dismiss_notification()
         self.accept_alert()
         self.click_submit()
-        self.enter_otp(secret)
         self.assert_logged_in()
+
+    def two_factor_auth(self, username, password, secret):
+        self.logout()
+        self.enter_username(username)
+        self.click_continue()
+        self.enter_password(password)
+        self.click_submit()
+        self.enter_otp(generate_auth_token(secret))
+        self.assert_logged_in()
+

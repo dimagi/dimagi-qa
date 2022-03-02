@@ -29,6 +29,7 @@ class UserData:
     area_code = "91"
     # invite_web_user user email
     web_user_mail = 'automation.user.commcarehq+test@gmail.com'
+    two_fa_user = "2fa.commcare.user@gmail.com"
 
     #  web app
     app_type = "Applications"
