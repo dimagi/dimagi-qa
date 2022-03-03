@@ -209,12 +209,12 @@ def browser(request):
     return request.config.getoption("--browser")
 
 
-def pytest_generate_tests(metafunc):
-    """To generate the parametrized tests"""
-    browsers = metafunc.config.getoption("--browser")
-    print(browsers)
-    if browser in metafunc.fixturenames:
-        metafunc.parametrize(browser, browsers)
+# def pytest_generate_tests(metafunc):
+#     """To generate the parametrized tests"""
+#     browsers = metafunc.config.getoption("--browser")
+#     print(browsers)
+#     if browser in metafunc.fixturenames:
+#         metafunc.parametrize(browser, browsers)
 
 
 @pytest.hookimpl(hookwrapper=True)
