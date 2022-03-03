@@ -102,9 +102,56 @@ def settings(environment_settings):
 #     chrome_driver.close()
 #     chrome_driver.quit()
 
+# Browser
+# @pytest.fixture(scope="class", params=["chrome", "firefox"])
+# def driver(request, settings):
+#     web_driver = None
+#     chrome_options = webdriver.ChromeOptions()
+#     if settings.get("CI") == "true":
+#         chrome_options.add_argument('--no-sandbox')
+#         chrome_options.add_argument('disable-extensions')
+#         chrome_options.add_argument('--safebrowsing-disable-download-protection')
+#         chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
+#         chrome_options.add_argument('window-size=1920,1080')
+#         chrome_options.add_argument("--disable-setuid-sandbox")
+#         chrome_options.add_argument('--start-maximized')
+#         chrome_options.add_argument('--disable-dev-shm-usage')
+#         chrome_options.add_argument('--headless')
+#         chrome_options.add_argument("--disable-notifications")
+#         chrome_options.add_experimental_option("prefs", {
+#             "download.default_directory": str(UserData.DOWNLOAD_PATH),
+#             "download.prompt_for_download": False,
+#             "download.directory_upgrade": True,
+#             "safebrowsing.enabled": True})
+#     firefox_options = webdriver.FirefoxOptions()
+#     if settings.get("CI") == "true":
+#         firefox_options.set_headless()
+#         firefox_options.add_argument('--no-sandbox')
+#         firefox_options.add_argument('disable-extensions')
+#         firefox_options.add_argument('--safebrowsing-disable-download-protection')
+#         firefox_options.add_argument('--safebrowsing-disable-extension-blacklist')
+#         firefox_options.add_argument('window-size=1920,1080')
+#         firefox_options.add_argument("--disable-setuid-sandbox")
+#         firefox_options.add_argument('--start-maximized')
+#         firefox_options.add_argument('--disable-dev-shm-usage')
+#         firefox_options.add_argument('--headless')
+#         firefox_options.add_argument("--disable-notifications")
+#         firefox_options.set_preference("browser.download.dir", str(UserData.DOWNLOAD_PATH))
+#     if request.param == "chrome":
+#         web_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
+#         print("Chrome version:", web_driver.capabilities['browserVersion'])
+#     elif request.param == "firefox":
+#         web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
+#     else:
+#         print("Provide valid browser")
+#     login = LoginPage(web_driver, settings["url"])
+#     login.login(settings["login_username"], settings["login_password"])
+#     yield web_driver
+#     web_driver.close()
 
-@pytest.fixture(scope="class", params=["chrome", "firefox"])
-def driver(request, settings):
+
+@pytest.fixture(scope="class", autouse=True)
+def driver(settings, browser):
     web_driver = None
     chrome_options = webdriver.ChromeOptions()
     if settings.get("CI") == "true":
@@ -137,10 +184,10 @@ def driver(request, settings):
         firefox_options.add_argument('--headless')
         firefox_options.add_argument("--disable-notifications")
         firefox_options.set_preference("browser.download.dir", str(UserData.DOWNLOAD_PATH))
-    if request.param == "chrome":
+    if browser == "chrome":
         web_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
         print("Chrome version:", web_driver.capabilities['browserVersion'])
-    elif request.param == "firefox":
+    elif browser == "firefox":
         web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
     else:
         print("Provide valid browser")
@@ -148,6 +195,26 @@ def driver(request, settings):
     login.login(settings["login_username"], settings["login_password"])
     yield web_driver
     web_driver.close()
+
+
+def pytest_addoption(parser):
+    """CLI args which can be used to run the tests with specified values."""
+    parser.addoption("--browser", action="store", default=[], choices=['chrome', 'firefox'],
+                     help='Your choice of browser to run tests.')
+
+
+@pytest.fixture(scope="session")
+def browser(request):
+    """Pytest fixture for browser"""
+    return request.config.getoption("--browser")
+
+
+# def pytest_generate_tests(metafunc):
+#     """To generate the parametrized tests"""
+#     browsers = metafunc.config.getoption("--browser")
+#     print(browsers)
+#     if "browser" in metafunc.fixturenames:
+#         metafunc.parametrize("browser", browsers)
 
 
 @pytest.hookimpl(hookwrapper=True)
