@@ -199,7 +199,7 @@ def driver(settings, browser):
 
 def pytest_addoption(parser):
     """CLI args which can be used to run the tests with specified values."""
-    parser.addoption("--browser", action="store", default=[], choices=['chrome', 'firefox'],
+    parser.addoption("--browser", action="append", default='chrome', choices=['chrome', 'firefox'],
                      help='Your choice of browser to run tests.')
 
 
@@ -209,12 +209,12 @@ def browser(request):
     return request.config.getoption("--browser")
 
 
-# def pytest_generate_tests(metafunc):
-#     """To generate the parametrized tests"""
-#     browsers = metafunc.config.getoption("--browser")
-#     print(browsers)
-#     if "browser" in metafunc.fixturenames:
-#         metafunc.parametrize("browser", browsers)
+def pytest_generate_tests(metafunc):
+    """To generate the parametrized tests"""
+    browsers = metafunc.config.getoption("--browser")
+    print(browsers)
+    if browser in metafunc.fixturenames:
+        metafunc.parametrize(browser, browsers)
 
 
 @pytest.hookimpl(hookwrapper=True)
