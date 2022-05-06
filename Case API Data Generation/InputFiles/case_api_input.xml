@@ -1,0 +1,33 @@
+<?xml version='1.0' ?>
+<data uiVersion="1" version="13" name="Registration Form" xmlns:jrm="http://dev.commcarehq.org/jr/xforms" xmlns="http://openrosa.org/formdesigner/D41AC2F9-C73B-420F-8C37-897789207A5E">
+<name>Ben2</name>
+<base>{base}</base>
+<volume1>{vol1}</volume1>
+<volume2>{vol2}</volume2>
+<volume3>{vol3}</volume3>
+<volume4>{vol4}</volume4>
+<n0:case case_id="{case_id}" date_modified="2022-05-04T16:49:42.549-04" user_id="de65d0624ee34f749ac0249716a0720d" xmlns:n0="http://commcarehq.org/case/transaction/v2">
+<n0:create>
+<n0:case_name>Ben2</n0:case_name>
+<n0:owner_id>de65d0624ee34f749ac0249716a0720d</n0:owner_id>
+<n0:case_type>case_api</n0:case_type>
+</n0:create>
+<n0:update>
+<n0:base>{base}</n0:base>
+<n0:volume1>{vol1}</n0:volume1>
+<n0:volume2>{vol2}</n0:volume2>
+<n0:volume3>{vol3}</n0:volume3>
+<n0:volume4>{vol4}</n0:volume4>
+</n0:update>
+</n0:case>
+<n1:meta xmlns:n1="http://openrosa.org/jr/xforms">
+<n1:deviceID>Formplayer</n1:deviceID>
+<n1:timeStart>2022-05-04T16:49:33.579-04</n1:timeStart>
+<n1:timeEnd>2022-05-04T16:49:42.549-04</n1:timeEnd>
+<n1:username>test</n1:username>
+<n1:userID>de65d0624ee34f749ac0249716a0720d</n1:userID>
+<n1:instanceID>{instanceID}</n1:instanceID>
+<n2:appVersion xmlns:n2="http://commcarehq.org/xforms">Formplayer Version: 2.53</n2:appVersion>
+<n1:drift>0</n1:drift>
+</n1:meta>
+</data>
