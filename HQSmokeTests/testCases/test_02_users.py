@@ -94,10 +94,12 @@ def test_cleanup_items_in_users_menu(driver):
     print("Deleted the group")
 
 
-def test_case_13_new_webuser_invitation(driver):
-
+def test_case_13_new_webuser_invitation(driver, settings):
+    username = settings["login_username"]
+    password = settings["login_password"]
     webuser = WebUsersPage(driver)
     webuser.invite_new_web_user('admin')
+    webuser.go_to_gmail()
     webuser.assert_invite()
     webuser.delete_invite()
 

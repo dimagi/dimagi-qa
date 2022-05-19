@@ -48,7 +48,7 @@ def settings(environment_settings):
     if os.environ.get("CI") == "true":
         settings = environment_settings
         settings["CI"] = "true"
-        if any(x not in settings for x in ["url", "login_username", "login_password",
+        if any(x not in settings for x in ["url", "login_username", "login_password","password_mail_yahoo","yahoo_url"
                                            "mail_username", "mail_password", "bs_user", "bs_key", "staging_auth_key",
                                            "prod_auth_key"]):
             lines = environment_settings.__doc__.splitlines()

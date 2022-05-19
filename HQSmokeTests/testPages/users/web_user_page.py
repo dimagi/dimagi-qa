@@ -1,5 +1,7 @@
 import time
-
+import re
+from datetime import date
+from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
@@ -26,6 +28,14 @@ class WebUsersPage(BasePage):
                             "//td[.//text()[contains(.,'" + UserData.web_user_mail + "')]]/following-sibling::td[.//text()[contains(.,'Delivered')]]")
         self.remove_user_invite = (By.XPATH,
                                    "//td[.//text()[contains(.,'" + UserData.web_user_mail + "')]]/following-sibling::td//i[@class='fa fa-trash']")
+        self.login_username = (By.ID, "login-username")
+        self.next_button = (By.ID, "login-signin")
+        self.login_password = (By.NAME,"password")
+        self.signin_button = (By.ID, "login-signin")
+        self.mail_icon = (By.XPATH, "//div[@class= 'icon mail']")
+        self.latest_mail = (By.XPATH, '//*[contains(text(),"Invitation from Nitin Saxena to join CommCareHQ")][1]')
+        self.locator = (By.XPATH, '//div[@data-test-id="message-date"]')
+
 
     def invite_new_web_user(self, role):
         self.wait_to_click(self.users_menu_id)
@@ -36,10 +46,33 @@ class WebUsersPage(BasePage):
         select_role.select_by_value(role)
         self.wait_to_click(self.send_invite)
 
+    def go_to_gmail(self, password_mail_yahoo):
+        self.driver.get("https://login.yahoo.com/")
+        self.wait_to_clear_and_send_keys(self.login_username, UserData.yahoo_email_username)
+        self.wait_to_click(self.next_button)
+        self.wait_to_clear_and_send_keys(self.login_password, password_mail_yahoo)
+        self.wait_to_click(self.signin_button)
+        self.wait_to_click(self.mail_icon)
+        self.wait_to_click(self.latest_mail)
+        text_fetched_by_selenium = self.get_text(self.locator)
+        stripped_strings = re.findall(r'\w+', text_fetched_by_selenium)
+        unwanted = [0, 2]
+        for ele in unwanted:
+            del stripped_strings[ele]
+        stripped_strings.insert(2, str(date.today().year))
+        datetime_object = datetime.strptime(" ".join(stripped_strings), '%d %b %Y %I %M %p')
+        print(datetime_object)
+        current_time = datetime.now()
+        print(current_time)
+        time_difference = print(round((current_time - datetime_object).total_seconds()))
+        assert time_difference not in range(0, 180), "Mail not Received"
+
+
     def assert_invite(self):
         time.sleep(5)
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
+        self.go_to_gmail()
         assert self.is_displayed(self.verify_user), "Unable to find invite."
         print("Web user invitation sent successfully")
 
@@ -47,3 +80,4 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.remove_user_invite)
         self.wait_to_click(self.delete_confirm_button)
         print("Invitation deleted")
+
