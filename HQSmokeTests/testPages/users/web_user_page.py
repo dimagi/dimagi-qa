@@ -30,12 +30,11 @@ class WebUsersPage(BasePage):
                                    "//td[.//text()[contains(.,'" + UserData.web_user_mail + "')]]/following-sibling::td//i[@class='fa fa-trash']")
         self.login_username = (By.ID, "login-username")
         self.next_button = (By.ID, "login-signin")
-        self.login_password = (By.NAME,"password")
+        self.login_password = (By.NAME, "password")
         self.signin_button = (By.ID, "login-signin")
         self.mail_icon = (By.XPATH, "//div[@class= 'icon mail']")
         self.latest_mail = (By.XPATH, '//*[contains(text(),"Invitation from Nitin Saxena to join CommCareHQ")][1]')
         self.locator = (By.XPATH, '//div[@data-test-id="message-date"]')
-
 
     def invite_new_web_user(self, role):
         self.wait_to_click(self.users_menu_id)
@@ -67,7 +66,6 @@ class WebUsersPage(BasePage):
         time_difference = print(round((current_time - datetime_object).total_seconds()))
         assert time_difference not in range(0, 180), "Mail not Received"
 
-
     def assert_invite(self):
         time.sleep(5)
         self.wait_to_click(self.users_menu_id)
@@ -80,4 +78,3 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.remove_user_invite)
         self.wait_to_click(self.delete_confirm_button)
         print("Invitation deleted")
-
