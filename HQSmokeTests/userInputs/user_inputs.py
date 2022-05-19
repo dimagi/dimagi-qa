@@ -1,4 +1,5 @@
 import os
+import names
 from pathlib import Path
 
 """"Contains test data that are used as user inputs across various areasn in CCHQ"""
@@ -61,4 +62,8 @@ class UserData:
     case_id = 'caseid'
     text_value = 'name'
     random_value = 'enter_a_random_value'
+
+    #Accept Invite
+    web_user_name = names.get_full_name()
+    web_user_password = "AutomationUser@1234"
 

@@ -35,6 +35,12 @@ class WebUsersPage(BasePage):
         self.mail_icon = (By.XPATH, "//div[@class= 'icon mail']")
         self.latest_mail = (By.XPATH, '//*[contains(text(),"Invitation from Nitin Saxena to join CommCareHQ")][1]')
         self.locator = (By.XPATH, '//div[@data-test-id="message-date"]')
+        self.accept_invitation = (By.XPATH, "//*[contains(text(), 'Accept Invitation')]")
+        self.full_name = (By.NAME, "full_name")
+        self.create_password = (By.NAME, "password")
+        self.check_checkbox = (By.ID, "id_eula_confirmed")
+        self.create_button = (By.CLASS_NAME, "btn btn-lg btn-primary")
+        self.accept_cookies = (By.ID, "hs-eu-confirmation-button")
 
     def invite_new_web_user(self, role):
         self.wait_to_click(self.users_menu_id)
@@ -73,6 +79,21 @@ class WebUsersPage(BasePage):
         self.go_to_gmail()
         assert self.is_displayed(self.verify_user), "Unable to find invite."
         print("Web user invitation sent successfully")
+
+    def accept_invite(self, password_mail_yahoo):
+        self.driver.get("https://login.yahoo.com/")
+        self.wait_to_clear_and_send_keys(self.login_username, UserData.yahoo_email_username)
+        self.wait_to_click(self.next_button)
+        self.wait_to_clear_and_send_keys(self.login_password, password_mail_yahoo)
+        self.wait_to_click(self.signin_button)
+        self.wait_to_click(self.mail_icon)
+        self.wait_to_click(self.latest_mail)
+        self.wait_to_click(self.accept_invitation)
+        self.wait_to_click(self.accept_cookies)
+        self.wait_to_clear_and_send_keys(self.full_name, UserData.web_user_name)
+        self.wait_to_clear_and_send_keys(self.create_password, UserData.web_user_password)
+        self.wait_to_click(self.check_checkbox)
+        self.wait_to_click(self.create_button)
 
     def delete_invite(self, ):
         self.wait_to_click(self.remove_user_invite)
