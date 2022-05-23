@@ -1,5 +1,5 @@
 from selenium.webdriver.common.keys import Keys
-from selcdenium.webdriver.common.by import By
+from selenium.webdriver.common.by import By
 from HQSmokeTests.testPages.base.base_page import BasePage
 from HQSmokeTests.userInputs.user_inputs import UserData
 

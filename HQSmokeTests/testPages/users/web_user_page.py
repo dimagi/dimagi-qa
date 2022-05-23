@@ -51,7 +51,7 @@ class WebUsersPage(BasePage):
         select_role.select_by_value(role)
         self.wait_to_click(self.send_invite)
 
-    def go_to_gmail(self, password_mail_yahoo):
+    def verify_invitation_sent(self, password_mail_yahoo):
         self.driver.get("https://login.yahoo.com/")
         self.wait_to_clear_and_send_keys(self.login_username, UserData.yahoo_email_username)
         self.wait_to_click(self.next_button)
@@ -80,7 +80,7 @@ class WebUsersPage(BasePage):
         assert self.is_displayed(self.verify_user), "Unable to find invite."
         print("Web user invitation sent successfully")
 
-    def accept_invite(self, password_mail_yahoo):
+    def verify_invite_acceptance(self, password_mail_yahoo):
         self.driver.get("https://login.yahoo.com/")
         self.wait_to_clear_and_send_keys(self.login_username, UserData.yahoo_email_username)
         self.wait_to_click(self.next_button)

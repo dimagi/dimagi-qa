@@ -28,7 +28,7 @@ class UserData:
     app_login = "AppiumTest"
     app_password = "pass123"
     two_fa_user = "2fa.commcare.user@gmail.com"
-    yahoo_email_username = "nsaxenadimagi@yahoo.com"
+    yahoo_email_username = "automation_user_commcare"
 
     # Phone Number
     area_code = "91"
