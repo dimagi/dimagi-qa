@@ -2,6 +2,8 @@ import time
 import re
 from datetime import date
 from datetime import datetime
+
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
@@ -23,79 +25,98 @@ class WebUsersPage(BasePage):
         self.email_input = (By.XPATH, "//input[@class='emailinput form-control']")
         self.select_project_role_id = "id_role"
         self.send_invite = (By.XPATH, "//button[contains(text(),'Send Invite')]")
-        self.delete_confirm_button = (By.XPATH, "//button[@data-bind='click: $root.removeInvitation']")
+        self.delete_confirm_invitation = (By.XPATH, "//button[@data-bind = 'click: $root.removeInvitation']")
+        self.delete_confirm_webuser = (By.XPATH, "(//td[.//text()[contains(.,'" + UserData.yahoo_user_name + "')]]/following-sibling::td//i[@class='fa fa-trash'])[last()]")
+        self.delete_success = (By.XPATH, "//div[@class='alert alert-margin-top fade in html alert-success']")
         self.verify_user = (By.XPATH,
-                            "//td[.//text()[contains(.,'" + UserData.web_user_mail + "')]]/following-sibling::td[.//text()[contains(.,'Delivered')]]")
+                            "//td[.//text()[contains(.,'" + UserData.yahoo_user_name + "')]]/following-sibling::td[.//text()[contains(.,'Delivered')]]")
         self.remove_user_invite = (By.XPATH,
-                                   "//td[.//text()[contains(.,'" + UserData.web_user_mail + "')]]/following-sibling::td//i[@class='fa fa-trash']")
+                                   "//td[.//text()[contains(.,'" + UserData.yahoo_user_name + "')]]/following-sibling::td//i[@class='fa fa-trash']")
         self.login_username = (By.ID, "login-username")
         self.next_button = (By.ID, "login-signin")
         self.login_password = (By.NAME, "password")
         self.signin_button = (By.ID, "login-signin")
         self.mail_icon = (By.XPATH, "//div[@class= 'icon mail']")
-        self.latest_mail = (By.XPATH, '//*[contains(text(),"Invitation from Nitin Saxena to join CommCareHQ")][1]')
-        self.locator = (By.XPATH, '//div[@data-test-id="message-date"]')
+        self.latest_mail = (By.XPATH, "(//span[contains(@title,'Invitation from')])[1]")
+        self.invitation_received_date = (By.XPATH, '//div[@data-test-id="message-date"]')
         self.accept_invitation = (By.XPATH, "//*[contains(text(), 'Accept Invitation')]")
+        self.accept_invitation_hq = (By.XPATH, "//button[contains(text(), 'Accept Invitation')]")
         self.full_name = (By.NAME, "full_name")
         self.create_password = (By.NAME, "password")
         self.check_checkbox = (By.ID, "id_eula_confirmed")
-        self.create_button = (By.CLASS_NAME, "btn btn-lg btn-primary")
-        self.accept_cookies = (By.ID, "hs-eu-confirmation-button")
+        self.create_button = (By.XPATH, "//button[@type='submit']")
+        self.settings = (By.XPATH, "//a[@data-action='Click Gear Icon']")
+        self.sign_out = (By.XPATH, "//a[contains(@data-label,'Sign Out')]")
+        self.creation_success = (By.XPATH, "//div[@class='alert alert-margin-top fade in alert-success']")
+        self.password_textbox = (By.ID, 'id_auth-password')
+        self.submit_button_xpath = (By.XPATH, '(//button[@type="submit"])[last()]')
 
     def invite_new_web_user(self, role):
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
         self.wait_to_click(self.invite_web_user_button)
-        self.wait_to_clear_and_send_keys(self.email_input, UserData.web_user_mail)
+        self.wait_to_clear_and_send_keys(self.email_input, UserData.yahoo_user_name)
         select_role = Select(self.driver.find_element_by_id(self.select_project_role_id))
         select_role.select_by_value(role)
         self.wait_to_click(self.send_invite)
 
-    def verify_invitation_sent(self, password_mail_yahoo):
-        self.driver.get("https://login.yahoo.com/")
-        self.wait_to_clear_and_send_keys(self.login_username, UserData.yahoo_email_username)
+    def assert_invitation_sent(self):
+        time.sleep(5)
+        self.wait_to_click(self.users_menu_id)
+        self.wait_to_click(self.web_users_menu)
+        assert self.is_visible_and_displayed(self.verify_user), "Unable to find invite."
+        print("Web user invitation sent successfully")
+        self.wait_to_click(self.settings)
+        self.wait_to_click(self.sign_out)
+        print("Signed out successfully")
+
+    def assert_invitation_received(self, mail_url, mail_username, mail_password):
+        self.driver.get(mail_url)
+        self.wait_to_clear_and_send_keys(self.login_username, mail_username)
         self.wait_to_click(self.next_button)
-        self.wait_to_clear_and_send_keys(self.login_password, password_mail_yahoo)
+        self.wait_to_clear_and_send_keys(self.login_password, mail_password)
         self.wait_to_click(self.signin_button)
         self.wait_to_click(self.mail_icon)
-        self.wait_to_click(self.latest_mail)
-        text_fetched_by_selenium = self.get_text(self.locator)
-        stripped_strings = re.findall(r'\w+', text_fetched_by_selenium)
+        self.click(self.latest_mail)
+        self.verify_invitation_received()
+
+    def verify_invitation_received(self):
+        received_date_on_yahoo = self.get_text(self.invitation_received_date)
+        stripped_strings = re.findall(r'\w+', received_date_on_yahoo)
         unwanted = [0, 2]
         for ele in unwanted:
             del stripped_strings[ele]
         stripped_strings.insert(2, str(date.today().year))
-        datetime_object = datetime.strptime(" ".join(stripped_strings), '%d %b %Y %I %M %p')
-        print(datetime_object)
+        invitation_received_datetime = datetime.strptime(" ".join(stripped_strings), '%d %b %Y %I %M %p')
         current_time = datetime.now()
-        print(current_time)
-        time_difference = print(round((current_time - datetime_object).total_seconds()))
-        assert time_difference not in range(0, 180), "Mail not Received"
+        time_difference = round((current_time - invitation_received_datetime).total_seconds())
+        print(time_difference)
+        assert time_difference in range(0, 200), "Unable to find invite"
 
-    def assert_invite(self):
-        time.sleep(5)
+    def accept_webuser_invite(self, mail_usename, mail_password):
+        self.wait_to_click(self.accept_invitation)
+        self.switch_to_next_tab()
+        try:
+            self.wait_to_clear_and_send_keys(self.full_name, mail_usename)
+            self.wait_to_clear_and_send_keys(self.create_password, mail_password)
+            self.wait_to_click(self.check_checkbox)
+            self.wait_to_click(self.create_button)
+        except TimeoutException:
+            self.send_keys(self.password_textbox, mail_password)
+            self.wait_to_click(self.submit_button_xpath)
+        self.wait_to_click(self.accept_invitation_hq)
+        assert "CommCare HQ" in self.driver.title, "Invitation Acceptance Failed"
+        self.wait_to_click(self.settings)
+        self.wait_to_click(self.sign_out)
+        print("Signed out successfully")
+
+    def delete_invite(self):
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
-        self.go_to_gmail()
-        assert self.is_displayed(self.verify_user), "Unable to find invite."
-        print("Web user invitation sent successfully")
-
-    def verify_invite_acceptance(self, password_mail_yahoo):
-        self.driver.get("https://login.yahoo.com/")
-        self.wait_to_clear_and_send_keys(self.login_username, UserData.yahoo_email_username)
-        self.wait_to_click(self.next_button)
-        self.wait_to_clear_and_send_keys(self.login_password, password_mail_yahoo)
-        self.wait_to_click(self.signin_button)
-        self.wait_to_click(self.mail_icon)
-        self.wait_to_click(self.latest_mail)
-        self.wait_to_click(self.accept_invitation)
-        self.wait_to_click(self.accept_cookies)
-        self.wait_to_clear_and_send_keys(self.full_name, UserData.web_user_name)
-        self.wait_to_clear_and_send_keys(self.create_password, UserData.web_user_password)
-        self.wait_to_click(self.check_checkbox)
-        self.wait_to_click(self.create_button)
-
-    def delete_invite(self, ):
         self.wait_to_click(self.remove_user_invite)
-        self.wait_to_click(self.delete_confirm_button)
+        try:
+            self.wait_to_click(self.delete_confirm_webuser)
+        except TimeoutException:
+            self.wait_to_click(self.delete_confirm_invitation)
+        assert self.is_displayed(self.delete_success)
         print("Invitation deleted")

@@ -1,5 +1,4 @@
 import os
-import names
 from pathlib import Path
 
 """"Contains test data that are used as user inputs across various areasn in CCHQ"""
@@ -28,12 +27,9 @@ class UserData:
     app_login = "AppiumTest"
     app_password = "pass123"
     two_fa_user = "2fa.commcare.user@gmail.com"
-    yahoo_email_username = "automation_user_commcare"
 
     # Phone Number
     area_code = "91"
-    # invite_web_user user email
-    web_user_mail = 'automation.user.commcarehq+test@gmail.com'
 
     #  web app
     app_type = "Applications"
@@ -63,7 +59,8 @@ class UserData:
     text_value = 'name'
     random_value = 'enter_a_random_value'
 
-    #Accept Invite
-    web_user_name = names.get_full_name()
-    web_user_password = "AutomationUser@1234"
+    """New web user invitation"""
+    yahoo_url = "https://login.yahoo.com/"
+    yahoo_user_name = 'automation_user_commcare@yahoo.com'
+
 

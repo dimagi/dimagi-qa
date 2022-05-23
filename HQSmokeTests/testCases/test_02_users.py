@@ -1,8 +1,10 @@
+from HQSmokeTests.testPages.base.login_page import LoginPage
 from HQSmokeTests.userInputs.generate_random_string import fetch_random_string
 from HQSmokeTests.testPages.home.home_page import HomePage
 from HQSmokeTests.testPages.users.mobile_workers_page import MobileWorkerPage
 from HQSmokeTests.testPages.users.group_page import GroupPage
 from HQSmokeTests.testPages.users.web_user_page import WebUsersPage
+from HQSmokeTests.userInputs.user_inputs import UserData
 
 """"Contains test cases related to the User's Mobile Worker module"""
 
@@ -93,16 +95,6 @@ def test_cleanup_items_in_users_menu(driver):
     clean2.cleanup_group()
     print("Deleted the group")
 
-
-def test_case_13_new_webuser_invitation(driver, settings):
-    webuser = WebUsersPage(driver)
-    webuser.invite_new_web_user('admin')
-    webuser.verify_invitation_sent()
-    webuser.assert_invite()
-    webuser.verify_invitation_sent()
-    webuser.delete_invite()
-
-
 def test_case_54_add_custom_user_data_profile_to_mobile_worker(driver):
 
     create = MobileWorkerPage(driver)
@@ -127,3 +119,15 @@ def test_case_54_add_custom_user_data_profile_to_mobile_worker(driver):
     create.click_fields()
     create.remove_user_field()
     create.save_field()
+
+
+def test_case_13_new_webuser_invitation(driver, settings):
+    webuser = WebUsersPage(driver)
+    yahoo_password = settings['invited_webuser_password']
+    webuser.invite_new_web_user('admin')
+    webuser.assert_invitation_sent()
+    webuser.assert_invitation_received(UserData.yahoo_url, UserData.yahoo_user_name, yahoo_password)
+    webuser.accept_webuser_invite(UserData.yahoo_user_name, yahoo_password)
+    login = LoginPage(driver, settings["url"])
+    login.login(settings["login_username"], settings["login_password"])
+    webuser.delete_invite()
