@@ -39,19 +39,20 @@ def environment_settings():
     if "url" not in settings:
         env = os.environ.get("DIMAGIQA_ENV") or "staging"
         subdomain = "www" if env == "production" else env
-        ## updates the url with the project domain while testing in CI
+        # updates the url with the project domain while testing in CI
         project = "a/qa-automation-prod" if env == "production" else "a/qa-automation"
         settings["url"] = f"https://{subdomain}.commcarehq.org/{project}"
     return settings
+
 
 @pytest.fixture(scope="session", autouse=True)
 def settings(environment_settings):
     if os.environ.get("CI") == "true":
         settings = environment_settings
         settings["CI"] = "true"
-        if any(x not in settings for x in ["url", "login_username", "login_password","password_mail_yahoo"
-                                           "mail_username", "mail_password", "bs_user", "bs_key", "staging_auth_key",
-                                           "prod_auth_key", "invited_webuser_password"]):
+        if any(x not in settings for x in ["url", "login_username", "login_password",
+                                           "mail_username", "mail_password", "bs_user", "bs_key",
+                                           "staging_auth_key", "prod_auth_key", "invited_webuser_password"]):
             lines = environment_settings.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
@@ -69,7 +70,7 @@ def settings(environment_settings):
         )
     settings = ConfigParser()
     settings.read(path)
-    ## updates the url with the project domain while testing in local
+    # updates the url with the project domain while testing in local
     if settings["default"]["url"] == "https://www.commcarehq.org/":
         settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation-prod"
     else:
