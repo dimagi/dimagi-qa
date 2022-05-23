@@ -61,10 +61,10 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.send_invite)
 
     def assert_invitation_sent(self):
-        time.sleep(5)
+        time.sleep(10)
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
-        assert self.is_visible_and_displayed(self.verify_user), "Unable to find invite."
+        assert self.is_visible_and_displayed(self.verify_user), "Unable to find delivered invite."
         print("Web user invitation sent successfully")
         self.wait_to_click(self.settings)
         self.wait_to_click(self.sign_out)

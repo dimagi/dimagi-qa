@@ -95,6 +95,7 @@ def test_cleanup_items_in_users_menu(driver):
     clean2.cleanup_group()
     print("Deleted the group")
 
+
 def test_case_54_add_custom_user_data_profile_to_mobile_worker(driver):
 
     create = MobileWorkerPage(driver)
