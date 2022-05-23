@@ -39,9 +39,10 @@ def environment_settings():
     if "url" not in settings:
         env = os.environ.get("DIMAGIQA_ENV") or "staging"
         subdomain = "www" if env == "production" else env
-        settings["url"] = f"https://{subdomain}.commcarehq.org/"
+        ## updates the url with the project domain while testing in CI
+        project = "a/qa-automation-prod" if env == "production" else "a/qa-automation"
+        settings["url"] = f"https://{subdomain}.commcarehq.org/{project}"
     return settings
-
 
 @pytest.fixture(scope="session", autouse=True)
 def settings(environment_settings):
@@ -68,6 +69,11 @@ def settings(environment_settings):
         )
     settings = ConfigParser()
     settings.read(path)
+    ## updates the url with the project domain while testing in local
+    if settings["default"]["url"] == "https://www.commcarehq.org/":
+        settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation-prod"
+    else:
+        settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation"
     return settings["default"]
 
 

@@ -233,7 +233,7 @@ class ExportDataPage(BasePage):
         self.wait_and_sleep_to_click(self.export_form_data_link)
         try:
             self.click(self.edit_form_case_export)
-        except NoSuchElementException:
+        except (NoSuchElementException, StaleElementReferenceException):
             self.add_form_exports()
             self.wait_and_sleep_to_click(self.edit_form_case_export)
         self.wait_to_clear_and_send_keys(self.export_name, UserData.form_export_name_dse)

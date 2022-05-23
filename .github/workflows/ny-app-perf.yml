@@ -1,0 +1,93 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: NY Sprint Performance
+
+on:
+  push:
+    branches: [ kt/ny_sprint_perf ]
+  workflow_dispatch:
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r NYperformance/requires.txt
+
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: NY Performance Tests
+      env:
+        DIMAGIQA_URL: ${{ secrets.DIMAGIQA_URL }}
+        DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
+        DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
+        DIMAGIQA_STAGING_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
+        DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
+      run: |
+        echo "client_payload: ${{ toJson(github.event.client_payload) }}"
+        echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
+        echo ${{env.NOW}}
+        pytest -v --rootdir= NYperformance/CaptureReadings
+
+    - name: Send Failure Email
+      uses: dawidd6/action-send-mail@v3
+      if: ${{ failure() && github.event_name != 'repository_dispatch' }}
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
+        password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
+        subject: FAIL - NY Perf Tests [#${{github.run_number}}] on branch "${{ github.head_ref }}", ${{env.NOW}}
+        to: ktripathy@dimagi.com
+        from: <ktripathy@dimagi.com>
+        html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/NYperformance/UserInputs/email_fail.html
+        attachments: /home/runner/work/dimagi-qa/dimagi-qa/NY_final_reading.xlsx, /home/runner/work/dimagi-qa/dimagi-qa/report.html
+        priority: normal
+
+    - name: Send Pass Email
+      uses: dawidd6/action-send-mail@v3
+      if: ${{ success() && github.event_name != 'repository_dispatch' }}
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
+        password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
+        subject: PASS - NY Perf Tests [#${{github.run_number}}] on branch "${{ github.head_ref }}", ${{env.NOW}}
+        to: ktripathy@dimagi.com
+        from: <ktripathy@dimagi.com>
+        html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/NYperformance/UserInputs/email_pass.html
+        attachments: /home/runner/work/dimagi-qa/dimagi-qa/NY_final_reading.xlsx, /home/runner/work/dimagi-qa/dimagi-qa/report.html
+        priority: normal
+
+    - name: Archive report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: report_and_reading
+        path: /home/runner/work/dimagi-qa/dimagi-qa/report.html
+        retention-days: 2
+
+    - name: Archive readings
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: report_and_reading
+        path: /home/runner/work/dimagi-qa/dimagi-qa/NY_final_reading.xlsx
+        retention-days: 2

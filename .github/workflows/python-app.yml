@@ -10,6 +10,8 @@ on:
     branches: [ master ]
   repository_dispatch:
     types: [ deploy_success ]
+  workflow_dispatch:
+
 
 jobs:
   build:
@@ -45,7 +47,7 @@ jobs:
         DIMAGIQA_BS_USER: ${{ secrets.DIMAGIQA_BS_USER }}
         DIMAGIQA_BS_KEY: ${{ secrets.DIMAGIQA_BS_KEY }}
         DIMAGIQA_STAGING_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
-        DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
+        DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_PROD_AUTH_KEY }}
       run: |
         echo "client_payload: ${{ toJson(github.event.client_payload) }}"
         echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
