@@ -3,7 +3,7 @@ import re
 from datetime import date
 from datetime import datetime
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
@@ -50,6 +50,7 @@ class WebUsersPage(BasePage):
         self.creation_success = (By.XPATH, "//div[@class='alert alert-margin-top fade in alert-success']")
         self.password_textbox = (By.ID, 'id_auth-password')
         self.submit_button_xpath = (By.XPATH, '(//button[@type="submit"])[last()]')
+        self.existing_error = (By.ID, 'error_1_id_email')
 
     def invite_new_web_user(self, role):
         self.wait_to_click(self.users_menu_id)
@@ -59,6 +60,13 @@ class WebUsersPage(BasePage):
         select_role = Select(self.driver.find_element_by_id(self.select_project_role_id))
         select_role.select_by_value(role)
         self.wait_to_click(self.send_invite)
+        if self.is_visible_and_displayed(self.existing_error):
+            self.delete_invite()
+            self.wait_to_click(self.invite_web_user_button)
+            self.wait_to_clear_and_send_keys(self.email_input, UserData.yahoo_user_name)
+            select_role = Select(self.driver.find_element_by_id(self.select_project_role_id))
+            select_role.select_by_value(role)
+            self.wait_to_click(self.send_invite)
 
     def assert_invitation_sent(self):
         time.sleep(10)
@@ -115,8 +123,10 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.web_users_menu)
         self.wait_to_click(self.remove_user_invite)
         try:
-            self.wait_to_click(self.delete_confirm_webuser)
+            time.sleep(2)
+            self.js_click(self.delete_confirm_invitation)
+            assert self.is_displayed(self.delete_success)
         except TimeoutException:
-            self.wait_to_click(self.delete_confirm_invitation)
-        assert self.is_displayed(self.delete_success)
+            time.sleep(2)
+            self.js_click(self.delete_confirm_webuser)
         print("Invitation deleted")

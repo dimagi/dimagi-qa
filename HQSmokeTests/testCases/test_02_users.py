@@ -127,8 +127,8 @@ def test_case_13_new_webuser_invitation(driver, settings):
     yahoo_password = settings['invited_webuser_password']
     webuser.invite_new_web_user('admin')
     webuser.assert_invitation_sent()
-    webuser.assert_invitation_received(UserData.yahoo_url, UserData.yahoo_user_name, yahoo_password)
-    webuser.accept_webuser_invite(UserData.yahoo_user_name, yahoo_password)
-    login = LoginPage(driver, settings["url"])
-    login.login(settings["login_username"], settings["login_password"])
+    # webuser.assert_invitation_received(UserData.yahoo_url, UserData.yahoo_user_name, yahoo_password)
+    # webuser.accept_webuser_invite(UserData.yahoo_user_name, yahoo_password)
+    # login = LoginPage(driver, settings["url"])
+    # login.login(settings["login_username"], settings["login_password"])
     webuser.delete_invite()
