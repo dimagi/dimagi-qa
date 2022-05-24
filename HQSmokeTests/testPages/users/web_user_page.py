@@ -73,9 +73,9 @@ class WebUsersPage(BasePage):
     def assert_invitation_received(self, mail_url, mail_username, mail_password):
         self.driver.get(mail_url)
         self.wait_to_clear_and_send_keys(self.login_username, mail_username)
-        self.wait_to_click(self.next_button)
+        self.wait_and_sleep_to_click(self.next_button)
         self.wait_to_clear_and_send_keys(self.login_password, mail_password)
-        self.wait_to_click(self.signin_button)
+        self.wait_and_sleep_to_click(self.signin_button)
         self.wait_to_click(self.mail_icon)
         self.click(self.latest_mail)
         self.verify_invitation_received()
