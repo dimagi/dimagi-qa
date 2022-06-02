@@ -63,8 +63,8 @@ jobs:
       uses: papeloto/action-zip@v1
       if: always()
       with:
-          files: AllureReports/
-          dest: AllureReports.zip
+          files: RequestAPI/AllureReports/
+          dest: RequestAPI/AllureReports.zip
 
 
     - name: Send Failure Email
