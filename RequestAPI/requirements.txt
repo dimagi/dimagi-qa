@@ -5,3 +5,5 @@ pytest
 pytest-html
 pytest-rerunfailures
 pytest-xdist
+allure-pytest
+allure-python-commons
