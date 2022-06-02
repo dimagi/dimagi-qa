@@ -55,9 +55,9 @@ jobs:
         echo "client_payload: ${{ toJson(github.event.client_payload) }}"
         echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
         echo ${{env.NOW}}
-        pytest -v --tb=short -n auto --dist=loadfile --reruns 1 --rootdir= RequestAPI/testCases --alluredir=Results
+        pytest -v --tb=short -n auto --dist=loadfile --reruns 1 --rootdir= RequestAPI/testCases --alluredir=RequestAPI/Results
         npm install -g allure-commandline --save-dev
-        allure generate .\Results -o .\AllureReports
+        allure generate RequestAPI/Results -o RequestAPI/AllureReports
 
     - name: Zip Reports folder
       uses: papeloto/action-zip@v1
@@ -79,7 +79,7 @@ jobs:
         to: kbordoloi@dimagi.com
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/RequestAPI/email_fail.html
-        attachments: /home/runner/work/dimagi-qa/dimagi-qa/AllureReports.zip
+        attachments: /home/runner/work/dimagi-qa/dimagi-qa/RequestAPI/AllureReports.zip
         priority: normal
 
     - name: Send Pass Email
@@ -94,7 +94,7 @@ jobs:
         to: kbordoloi@dimagi.com
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/RequestAPI/email_pass.html
-        attachments: /home/runner/work/dimagi-qa/dimagi-qa/AllureReports.zip
+        attachments: /home/runner/work/dimagi-qa/dimagi-qa/RequestAPI/AllureReports.zip
         priority: normal
 
     - name: Archive test results
@@ -102,5 +102,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: test-result-reports
-        path: /home/runner/work/dimagi-qa/dimagi-qa/AllureReports.zip
+        path: /home/runner/work/dimagi-qa/dimagi-qa/RequestAPI/AllureReports.zip
         retention-days: 2
