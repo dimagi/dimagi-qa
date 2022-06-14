@@ -192,12 +192,12 @@ Select Created Case
     [Arguments]    ${case_or_contact_created}
     Wait Until Element Is Enabled    ${case_or_contact_created}
     Sleep    2s 
-    JS Click    ${case_or_contact_created}
+    Wait Until Keyword Succeeds  3x  500ms  JS Click    ${case_or_contact_created}
     Sleep    2s
     Wait Until Element Is Enabled    ${continue}
     Sleep    2s 
     Scroll Element Into View    ${continue}
-    Click Element    ${continue} 
+    Wait Until Keyword Succeeds  3x  500ms  Click Element    ${continue}
 
 Select Cluster
     [Arguments]    ${case_or_contact_created}
