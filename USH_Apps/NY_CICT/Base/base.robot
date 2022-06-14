@@ -183,8 +183,8 @@ Answer Input Text
    
 Search in the case list   
     [Arguments]    ${case_or_contact_created}
+    Sleep    30s
     Input Text    ${search_case}    ${case_or_contact_created}
-    Sleep    2s
     Click Element    ${search_button}
     
 
