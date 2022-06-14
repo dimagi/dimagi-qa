@@ -191,8 +191,7 @@ Search in the case list
 Select Created Case
     [Arguments]    ${case_or_contact_created}
     Wait Until Element Is Enabled    ${case_or_contact_created}
-    Sleep    2s 
-    Wait Until Keyword Succeeds  3x  500ms  JS Click    ${case_or_contact_created}
+    Wait Until Keyword Succeeds  3x  30 sec  JS Click    ${case_or_contact_created}
     Sleep    2s
     Wait Until Element Is Enabled    ${continue}
     Sleep    2s 
