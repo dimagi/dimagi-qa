@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation     Workflow to test Contact Good Path
-Suite Setup    HQ Login
+#Suite Setup    HQ Login
 Library  SeleniumLibrary
 Resource    ../Contact Tracing (CT)/Menu/menu.robot
 Resource    ../Contact Tracing (CT)/Forms/register a new contact form.robot  

@@ -10,7 +10,8 @@ Resource    ../../Base/base.robot
 
 Generate Random Contact Name
     ${hex} =    Generate Random String	6	[NUMBERS]abcdef
-    ${contact_name_random} =     Catenate	SEPARATOR=-	Contact	${hex}
+    ${date}     Get Current Date    result_format=%m/%d/%Y
+    ${contact_name_random} =     Catenate	SEPARATOR=-	Contact	${hex}  ${date}
     Set Suite Variable  ${contact_name_random}
     [Return]    ${contact_name_random}
 
