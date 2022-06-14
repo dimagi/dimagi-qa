@@ -56,7 +56,7 @@ Convert_Contact_to_PUI_2
     Open All Contacts Unassigned & Open menu
     Search in the case list    ${contact_name}
     Element Should Not Be Visible    ${contact_created}    Contact appearing in menu
-#
+
 Convert_Contact_to_PUI_4
     [Documentation]    Convert PUI back to contact - do not close record
     Log    Sleeping ES to update..

@@ -8,8 +8,8 @@ Resource    change to pui status form.robot
 
 Convert contact to PUI form
     Open All Contacts Unassigned & Open menu
-    ${contact_name}    Get Case Name
-    ${contact_created}   Set Case Name
+    ${contact_name}    Get Contact Name
+    ${contact_created}   Set Contact Name
     Search in the case list    ${contact_name}
     Select Created Case    ${contact_created}    
     Wait Until Element Is Enabled    ${covert_to_pui_form}
