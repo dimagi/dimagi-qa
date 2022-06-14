@@ -39,7 +39,7 @@ Register New Case
         Input Text       ${mpi_id_input}      ${mpi_id}
     END
     Submit Form and Check Success
-  [Return]  {mpi_id}
+  [Return]  ${mpi_id}   ${name}
 
 Get Case Name
     ${name_random}    Get Variable Value    ${name_random}

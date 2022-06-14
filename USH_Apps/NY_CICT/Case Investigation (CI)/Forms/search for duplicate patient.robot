@@ -34,11 +34,11 @@ Open Search for Duplicate Patients
 Search Duplicate Patient
     [Arguments]     ${contact_name}
     Open Search for Duplicate Patients
-    Wait Until Element Is Enabled    ${search-first_name}
+#    Wait Until Element Is Enabled    ${search-first_name}
 #    Input Text    ${search-first_name}    ${contact_name}
 #    Input Text    ${search-last_name}    ${contact_name}
 #    Clear Element Text    ${search-phone}
-    JS Click    ${search-submit}
+     Wait Until Keyword Succeeds  3x  500ms     JS Click    ${search-submit}
     Wait Until Element Is Visible    //tr[.//td[text()='${contact_name}']]
     JS Click    //tr[.//td[text()='${contact_name}']]
     Wait Until Element Is Enabled    ${continue}

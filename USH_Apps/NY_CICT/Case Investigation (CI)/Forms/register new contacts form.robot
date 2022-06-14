@@ -29,7 +29,7 @@ Register New Contacts to Case
        ${preferred_language_loop}=   Catenate    SEPARATOR=     ${preferred_language}   [    ${j}    ]
        ${last_contact_date_loop}=   Catenate    SEPARATOR=     ${last_contact_date}   [    ${j}    ]
 
-       Scroll Element Into View    ${contact_first_name_${j}}
+       Scroll Element Into View    ${contact_first_name_loop}
        Input Text       ${contact_first_name_loop}     ${name}_${j}
        Input Text       ${contact_last_name_loop}    ${name}_${j}
        Input Text       ${contact_phone_num_loop}    ${phone}

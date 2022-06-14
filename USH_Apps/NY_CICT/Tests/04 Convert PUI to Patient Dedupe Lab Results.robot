@@ -41,10 +41,11 @@ Convert_PUI_to_Patient_2
     [Documentation]    Convert Contact to PUI using Convert Contact to Suspected Case (PUI) form
     Open App Home Screen
     Log in as ci_user
-    Register New Case   ${created_name}
+
+    ${mphid}     ${case_name}   Register New Case   ${created_name}
     Add Phone Number in Case Investigation form     ${phone}
-    ${case_name}    Get Case Name
-    ${case_created}   Set Case Name
+    ${case_created}   Set Variable    //tr[.//td[text()='${case_name}']]
+    Set Global Variable    ${case_created}
     Open All Cases
     Search in the case list     ${case_name}
     Element Should Be Visible    ${case_created}
@@ -75,7 +76,6 @@ Convert_PUI_to_Patient_4
     Log in as ci_user
     Open All Cases
     ${contact_name}    Get Contact Name
-    ${contact_created}    Set Contact Name
     Case Search     ${contact_name}
     Select Created Case with lab result    ${contact_name}
     Search Duplicate Patient    ${contact_name}
@@ -84,8 +84,3 @@ Convert_PUI_to_Patient_4
     Search in the case list     ${contact_name} ${contact_name}
     Verify Lab result for open case     ${contact_name}
     Verify Registered Contacts for open case     ${contact_name}
-
-
-
-
-
