@@ -21,10 +21,11 @@ Contact_Good_1
     ${contact_created}   Set Contact Name
     Open All Contacts Unassigned & Open menu
     Search in the case list     ${contact_name}  
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
+
     Open All Contacts: Incomplete Contact Information
     Search in the case list     ${contact_name}  
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 Contact_Good_2
     [Documentation]    All Contacts: Unable to Reach
@@ -41,15 +42,15 @@ Contact_Good_2
 
     Open All Contacts: Incomplete Contact Information
     Search in the case list     ${contact_name}
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
 
     Open All Contacts Unassigned & Open menu
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
     Open All Contacts: Unable to Reach
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 
 Contact_Good_3
@@ -65,15 +66,15 @@ Contact_Good_3
 
     Open All Contacts: Unable to Reach
     Search in the case list     ${contact_name}
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
 
     Open All Contacts Unassigned & Open menu
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
     Open All Open Contacts menu
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 Contact_Good_4
     [Documentation]    All Contacts: Assigned & Open
@@ -87,15 +88,15 @@ Contact_Good_4
 
     ## Lands on Unassigned and open
     Search in the case list     ${contact_name}
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
 
     Open My Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
     Open All Contacts: Assigned & Open
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
     Open All Open Contacts menu
     Search in the case list     ${contact_name}
@@ -114,11 +115,11 @@ Contact_Good_5
 
     Open All Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
     Open All Contacts
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 
 Contact_Good_6
@@ -134,11 +135,11 @@ Contact_Good_6
 
     Open All Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
 
     Open All Contacts
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 
 
@@ -156,11 +157,11 @@ Contact_Good_7
     ## PAUSE UNTIL THE NEXT DAY!! [Check if required and if so how?]
     Open All Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
     Open My Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 Contact_Good_8
     [Documentation]    My Contacts: Require Follow-Up
@@ -174,11 +175,11 @@ Contact_Good_8
 
     Open My Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
 
     Open All Contacts: Require Follow-Up
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}
 
 Contact_Good_9
     [Documentation]   All Closed Contacts
@@ -193,8 +194,8 @@ Contact_Good_9
 
     Open All Open Contacts menu
     Search in the case list     ${contact_name}
-    Element Should Not Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${contact_created}
 
     Open All Closed Contacts menu
     Search in the case list     ${contact_name}
-    Element Should Be Visible    ${contact_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${contact_created}

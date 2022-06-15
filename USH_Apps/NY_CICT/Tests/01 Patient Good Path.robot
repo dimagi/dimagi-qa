@@ -34,19 +34,19 @@ Patient_Good_2
     ${case_created}   Set Case Name
     Case Search    ${case_name}
     Search in the case list      ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Select Created Case    ${case_created}
     Fill up and Submit Case Investigation Form
     ## Landed on Incomplete Demographic page
     Search in the case list     ${case_name}
-    Element Should Not Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${case_created}
     Capture Page Screenshot
     Open All Open Cases
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Open All Cases: Unassigned & Open
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
 
 
 Patient_Good_3
@@ -55,18 +55,18 @@ Patient_Good_3
     ${case_name}    Get Case Name
     ${case_created}   Set Case Name
     Search in the case list      ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Select Created Case    ${case_created}
     Permanently Assign to Self
     ## Lands on Unassigned and open
     Search in the case list     ${case_name}
-    Element Should Not Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${case_created}
     Open All Cases: Assigned & Open
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Open All Open Cases
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
 
 
 Patient_Good_4
@@ -75,18 +75,18 @@ Patient_Good_4
     ${case_name}    Get Case Name
     ${case_created}   Set Case Name
     Search in the case list      ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Select Created Case    ${case_created}
     Unassign from Self
     ## Lands on Assigned and open
     Search in the case list     ${case_name}
-    Element Should Not Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${case_created}
     Open All Cases: Unassigned & Open
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec  Element Should Be Visible    ${case_created}
     Open All Open Cases
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
 
 Patient_Good_5
     [Documentation]    My Cases
@@ -94,18 +94,18 @@ Patient_Good_5
     ${case_name}    Get Case Name
     ${case_created}   Set Case Name
     Search in the case list      ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Select Created Case    ${case_created}
     Permanently Assign to Self
     ## Lands on Unassigned and open
     Search in the case list     ${case_name}
-    Element Should Not Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${case_created}
     Open My Cases
     Search in the case list     ${case_name}
     Element Should Be Visible    ${case_created}
     Open All Open Cases
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
 
 
 Patient_Good_6
@@ -114,16 +114,16 @@ Patient_Good_6
     ${case_name}    Get Case Name
     ${case_created}   Set Case Name
     Search in the case list      ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Select Created Case    ${case_created}
     Open Case Investigation Form
     Unable to reach
     All Cases: Unable to Reach
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Open All Open Cases
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
 
 Patient_Good_7
     [Documentation]    All Closed Cases
@@ -131,13 +131,13 @@ Patient_Good_7
     ${case_name}    Get Case Name
     ${case_created}   Set Case Name
     Search in the case list      ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Select Created Case    ${case_created}
     Open Case Investigation Form
     Activity for case complete
     Open All Closed Cases
     Search in the case list     ${case_name}
-    Element Should Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Be Visible    ${case_created}
     Open All Open Cases
     Search in the case list     ${case_name}
-    Element Should Not Be Visible    ${case_created}
+    Wait Until Keyword Succeeds  2 min  5 sec   Element Should Not Be Visible    ${case_created}
