@@ -34,6 +34,7 @@ Permanently Assign to Self (CM)
     Answer Dropdown    ${Q:Permanently reassign to}    ${A:Permanently reassign to}
     ELSE
     Answer Dropdown    ${Q:Permanently reassign to}    ${A:Permanently reassign to poc}
+    END
     Submit Form and Check Success 
 
 Unassign from Self (CM)
