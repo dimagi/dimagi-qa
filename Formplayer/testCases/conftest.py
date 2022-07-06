@@ -123,7 +123,7 @@ def driver(settings, browser):
     login = LoginPage(web_driver, settings["url"])
     login.login(settings["login_username"], settings["login_password"])
     yield web_driver
-    web_driver.quit()
+    # web_driver.quit()
 
 
 def pytest_addoption(parser):

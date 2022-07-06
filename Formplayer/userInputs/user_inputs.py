@@ -18,3 +18,14 @@ class UserData:
 
     # Pre-setup application and case names
     basic_tests_app = "Basic Tests"
+
+    #Mobile Worker name
+    mw_username = "appiumtest@qa-automation.commcarehq.org"
+    mw_password = "Pass@123"
+
+    language = 'es'
+
+    #Submit History
+    test_application = "Test Appliation - Formplayer Automation"
+    case_list_name = "Case List"
+    form_name = "Registartion Form"
