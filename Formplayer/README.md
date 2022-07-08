@@ -1,7 +1,7 @@
 ## Commcare HQ Smoke Test Script
 
-Smoke tests ensure that the important features are working and there are no showstoppers in the build deployed to environments.\
-The automated tests comprises of [these smoke tests.](https://docs.google.com/spreadsheets/d/1mfnqPQoi4l5_kXL26bQRhiWxZnxVfG4roEXjX82GNqc/edit#gid=1948263112)
+Formplayer tests ensure that the important features are working and there are no showstoppers in the build deployed to environments.\
+The automated tests comprises of [these smoke tests.](https://docs.google.com/spreadsheets/d/12Q6akwq2XqVMuJfeOd33lvmt4GkB4Ehi48BGw8ZnSwc/edit#gid=1118475050)
 
 ## Executing Scripts
 
@@ -46,7 +46,7 @@ pytest -v --rootdir= HQSmokeTests/testCases
 <img align="right" width="400" src="https://user-images.githubusercontent.com/67914792/168757107-3ce9bb6a-57b5-4c15-b20d-e7883bf9ed65.PNG" alt="clone this repository" />
 
 To manually trigger the script,
-  - Go to [HQ Smoke Tests action](https://github.com/dimagi/dimagi-qa/actions/workflows/python-app.yml)
+  - Go to [Formplayer Tests action](https://github.com/dimagi/dimagi-qa/actions/workflows/python-app.yml)
   - Run workflow
   - Use workflow from ```master```
   - Run!

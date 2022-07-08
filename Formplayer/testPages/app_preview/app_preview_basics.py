@@ -1,16 +1,11 @@
 import time
-from random import randint
-from datetime import datetime
 
-from selenium.webdriver.common.by import By
-from Formplayer.userInputs.generate_random_string import fetch_random_string
+from Formplayer.userInputs.generate_random_string import fetch_random_string, fetch_phone_number
 from Formplayer.testPages.base.base_page import BasePage
 from Formplayer.userInputs.user_inputs import UserData
 
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
+
 
 """"Contains test page elements and functions related to the WebApps Access/Basics of Commcare"""
 
@@ -29,9 +24,9 @@ class AppPreviewBasics(BasePage):
         self.add_question = (By.LINK_TEXT, "Add Question")
         self.text_question_type = (By.XPATH, "//a[@data-qtype = 'Text']")
         self.text_question_display_text = (By.XPATH, "//div[@name = 'itext-en-label']")
-        self.save_question_button = (By.LINK_TEXT, "Save")
+        self.save_question_button = (By.XPATH, "//span[contains(text(), 'Save')]")
         self.add_new_menu = (By.LINK_TEXT, "Add...")
-        self.add_case_list = (By.LINK_TEXT, "Case List")
+        self.add_case_list = (By.XPATH, "//button[@class='popover-additem-option new-module'][./i[@class='fa fa-bars']]")
 
         self.view_app_preview = (By.XPATH, "//i[@class ='fa fa-chevron-left js-preview-action-show']")
         self.app_preview_window = (By.XPATH, "//i[@class ='preview-phone-container']")
@@ -54,20 +49,24 @@ class AppPreviewBasics(BasePage):
         self.new_test_question = (By.XPATH, "//label[.//span[text()='Test']]")
         self.formplayer_test_question = (By.XPATH, "//a[@id='c8e668b2e915261cf463d0571d6ba3a3_anchor']")
         self.delete_button = (By.XPATH, "//button[@class='btn btn-danger fd-button-remove']")
-        self.use_one_question_toggle_button = (By.XPATH, "//div[@class = 'bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-mini bootstrap-switch-animate bootstrap-switch-off']")
+        self.turn_on_one_question_toggle_button = (By.XPATH, "//div[@class = 'bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-mini bootstrap-switch-animate bootstrap-switch-off']")
+        self.turn_off_one_question_toggle_button = (By.XPATH, "//div[@class= 'bootstrap-switch bootstrap-switch-wrapper bootstrap-switch-mini bootstrap-switch-animate bootstrap-switch-on']")
         self.done_button = (By.XPATH, "//button[@class = 'btn btn-primary js-done']")
-        self.clear_user_data_button = (By.XPATH, "//button[text()[contains(.,'Clear')]]")
-        self.clear_data_message = (By.XPATH, "//div[text()[contains(.,'User data successfully cleared.')]]")
+        self.clear_user_data_button = (By.XPATH, "//button[text()='Clear']")
+        self.clear_data_message = (By.XPATH, "//div[text()='User data successfully cleared.']")
         self.language_option = (By.XPATH, "//select[@class='form-control js-lang']")
         self.select_language = (By.XPATH, "//th[contains(text(),'application language')]/following-sibling::td/select")
-        self.empty_form_error_message = (By.XPATH, "//strong[text()[contains(., 'Add a question')]]")
+        self.empty_form_error_message = (By.XPATH, "//strong[text()= 'Add a question']")
         self.next_question = (By.XPATH, "//button[@data-bind='click: nextQuestion, visible: enableNextButton() && !atLastIndex()']")
         self.complete_form = (By.XPATH, "//button[@data-bind='visible: atLastIndex(), click: submitForm']")
-        self.success_message = (By.XPATH, "//p[text()[contains(., 'Form successfully saved!')]]")
+        self.success_message = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.view_form_link = (By.LINK_TEXT, "this form")
         self.export_form_link = (By.LINK_TEXT, "form")
         self.delete_case_list_module = (By.XPATH, "(//a[./span[contains(text(),'Case List')]]/preceding-sibling::a[@class='appnav-delete']/i)[last()]")
+        # self.delete_confirm_button =  "//button[./i[@class='fa fa-trash']]"
+        self.question_display_text = (By.XPATH, "//span[text()='Name (es)']")
         self.iframe = (By.CLASS_NAME, "preview-phone-window")
+        self.home_button = (By.XPATH, "//li[./i[@class='fa fa-home']]")
 
     def icons_are_present(self):
         self.wait_to_click(self.application_menu_id)
@@ -86,20 +85,33 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
+        time.sleep(5)
         assert not self.is_present_and_displayed(self.start_option)
+        time.sleep(5)
+        self.switch_to_default_content()
         self.wait_to_click(self.back_button)
+        self.switch_to_frame(self.iframe)
         assert self.is_present_and_displayed(self.start_option)
+        print("Back button works!!")
 
     def refresh_button_functionality_01(self):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.case_list_menu)
+        self.switch_to_default_content()
+        time.sleep(5)
         self.wait_to_click(self.refresh_button)
-        assert not self.is_present_and_displayed(self.registration_form)
+        time.sleep(3)
+        self.switch_to_frame(self.iframe)
+        # time.sleep(3)
+        # assert not self.is_present_and_displayed(self.registration_form)
         assert self.is_present_and_displayed(self.start_option)
+        print("Refresh Button works!!")
 
     def refresh_button_functionality_02(self):
         self.wait_to_click(self.application_menu_id)
@@ -110,24 +122,32 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.text_question_type)
         self.wait_to_clear_and_send_keys(self.text_question_display_text, "Test")
         self.wait_to_click(self.save_question_button)
+        # time.sleep(5)
         self.wait_to_click(self.refresh_button)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.case_list_menu)
         self.wait_to_click(self.registration_form)
         assert self.is_present_and_displayed(self.new_test_question)
+        self.switch_to_default_content()
+        time.sleep(3)
         self.wait_to_click(self.formplayer_test_question)
         self.wait_to_click(self.delete_button)
         self.wait_to_click(self.save_question_button)
+        time.sleep(3)
         self.wait_to_click(self.refresh_button)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.case_list_menu)
         self.wait_to_click(self.registration_form)
         assert not self.is_present_and_displayed(self.new_test_question)
+        print("Refresh button works!!")
 
     def web_user_submission(self):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.case_list_menu)
         self.wait_to_click(self.registration_form)
@@ -135,7 +155,7 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.dob_question)
         self.wait_to_click(self.click_today_date)
         self.wait_to_click(self.close_date_picker)
-        self.wait_to_clear_and_send_keys(self.mobileno_question,"9261437577")
+        self.wait_to_clear_and_send_keys(self.mobileno_question, fetch_phone_number())
         self.click(self.submit_form_button)
         assert self.is_present_and_displayed(self.success_message)
         assert self.is_present_and_displayed(self.view_form_link)
@@ -148,6 +168,7 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.case_list_menu)
         self.wait_to_click(self.registration_form)
@@ -159,8 +180,9 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.settings_option)
-        self.wait_to_click(self.use_one_question_toggle_button)
+        self.wait_to_click(self.turn_off_one_question_toggle_button)
         self.wait_to_click(self.done_button)
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.case_list_menu)
@@ -171,14 +193,19 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.click_today_date)
         self.wait_to_click(self.close_date_picker)
         self.wait_to_click(self.next_question)
-        self.wait_to_clear_and_send_keys(self.mobileno_question, "9261437577")
+        self.wait_to_clear_and_send_keys(self.mobileno_question, fetch_phone_number())
         self.wait_to_click(self.next_question)
         self.wait_to_click(self.complete_form)
+        self.wait_to_click(self.home_button)
+        self.wait_to_click(self.settings_option)
+        self.wait_to_click(self.turn_off_one_question_toggle_button)
+        self.wait_to_click(self.done_button)
 
     def clear_user_data(self):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.settings_option)
         self.wait_to_click(self.clear_user_data_button)
         assert self.is_present_and_displayed(self.clear_data_message)
@@ -187,18 +214,23 @@ class AppPreviewBasics(BasePage):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.view_app_preview)
-        # self.wait_to_click(self.start_option)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.settings_option, 5)
         self.select_by_text(self.select_language, UserData.language)
         self.wait_to_click(self.done_button)
+        self.wait_to_click(self.start_option)
+        self.wait_to_click(self.case_list_menu)
+        self.wait_to_click(self.registration_form)
+        assert self.is_present_and_displayed(self.question_display_text)
 
     def add_empty_form(self):
         self.wait_to_click(self.application_menu_id)
         self.wait_to_click(self.select_test_application)
         self.wait_to_click(self.add_new_menu)
-        self.wait_to_click(self.add_case_list)
+        self.click(self.add_case_list)
         time.sleep(3)
         self.wait_to_click(self.view_app_preview)
+        self.switch_to_frame(self.iframe)
         self.wait_to_click(self.start_option)
         assert self.is_present_and_displayed(self.empty_form_error_message)
         self.wait_to_click(self.delete_case_list_module)

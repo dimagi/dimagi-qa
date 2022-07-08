@@ -2,8 +2,7 @@ import time
 from random import randint
 from datetime import datetime
 
-from selenium.webdriver.common.by import By
-from HQSmokeTests.userInputs.generate_random_string import fetch_random_string
+from Formplayer.userInputs.generate_random_string import fetch_random_string, fetch_random_digit
 from Formplayer.testPages.base.base_page import BasePage
 from Formplayer.userInputs.user_inputs import UserData
 
@@ -41,21 +40,21 @@ class WebAppsBasics(BasePage):
         self.close_date_picker = (By.XPATH, "//a[@data-action='close']")
         self.mobileno_question = (By.XPATH, "//label[.//span[text()='Mobile No.']]/following-sibling::div//input")
         self.submit_form_button = (By.XPATH, "//button[@type= 'submit']")
-        self.success_message = (By.XPATH, "//p[text()[contains(.,'Form successfully saved!')]]")
+        self.success_message = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.search_case_filter = (By.XPATH, "//input[@id ='searchText']")
-        self.case_name = (By.XPATH, "// td[text()[contains(.,'" + "username" + fetch_random_string() +"')]]")
-        self.continue_button = (By.XPATH, "//button[text()[contains(.,'Continue')]]")
-        self.parent_question = (By.XPATH, "//textarea[@id= 'str257']")
-        self.no_of_kids = (By.XPATH, "//input[@id= 'int258']")
-        self.settings = (By.XPATH, "//h3[text()[contains(.,'Settings')]]")
-        self.break_button = (By.XPATH, "//button[text()[contains(.,'Break')]]")
-        self.break_message = (By.XPATH, "//div[text()[contains(.,'No locks for the current user')]]")
-        self.clear_user_data_button = (By.XPATH, "//button[text()[contains(.,'Clear')]]")
-        self.clear_data_message = (By.XPATH, "//div[text()[contains(.,'User data successfully cleared.')]]")
-        self.done_button = (By.XPATH, "//button[text()[contains(.,'Done')]]")
+        self.case_name = (By.XPATH, "//tr[td[text()='" + self.name_input +"']]")
+        self.continue_button = (By.XPATH, "//button[text()='Continue']")
+        self.parent_question = (By.XPATH, "//label[.//span[text()='Parent/Gaurdian Name']]/following-sibling::div//textarea")
+        self.no_of_kids = (By.XPATH, "//label[.//span[text()='No of Kids']]/following-sibling::div//input")
+        self.settings = (By.XPATH, "//h3[text()='Settings']")
+        self.break_button = (By.XPATH, "//button[text()='Break']")
+        self.break_message = (By.XPATH, "//div[text()='No locks for the current user']")
+        self.clear_user_data_button = (By.XPATH, "//button[text()='Clear']")
+        self.clear_data_message = (By.XPATH, "//div[text()='User data successfully cleared.']")
+        self.done_button = (By.XPATH, "//button[text()='Done']")
         self.settings_dropdown = (By.XPATH, "//a[@class ='dropdown-toggle dropdown-toggle-with-icon track-usage-link']")
         self.sign_out = (By.XPATH, "//a[@data-label ='Sign Out']")
-        self.question_display_text = (By.XPATH, "//span[text()[contains(.,'Name (es)')]]")
+        self.question_display_text = (By.XPATH, "//span[text()='Name (es)']")
 
         #login xpaths
         self.username_textbox_id = (By.ID, "id_auth-username")
@@ -69,14 +68,14 @@ class WebAppsBasics(BasePage):
 
         # Submit History
         self.users_box = (By.XPATH, "//span[@class='select2-selection select2-selection--multiple']")
-        self.select_user = (By.XPATH, "//li[contains(text(),'[Web Users]')]")
+        self.select_user = (By.XPATH, "//li[contains(text(),'[All Data]')]")
         self.application_select = (By.XPATH, "//select[@id='report_filter_form_app_id']")
         self.module_select = (By.XPATH, "//select[@id='report_filter_form_module']")
         self.form_select = (By.XPATH, "//select[@id='report_filter_form_xmlns']")
         self.case_type_select = (By.XPATH, "//select[@id='report_filter_case_type']")
         self.date_input = (By.XPATH, "//input[@id='filter_range']")
         self.view_form_link = (By.XPATH, "//tbody/tr[1]/td[1]/a[.='View Form']")
-        self.case_name = (By.XPATH, "//td[div[contains(text(),'abc')]]")
+        # self.case_name = (By.XPATH, "//td[div[contains(text(),'abc')]]")
         self.submit_history_table = (By.XPATH, "//table[@id='report_table_submit_history']/tbody/tr")
 
         # Case List
@@ -84,7 +83,7 @@ class WebAppsBasics(BasePage):
         self.case_list_table = (By.XPATH, "//table[@id='report_table_case_list']/tbody/tr")
         self.case_id_block = (By.XPATH, "//th[@title='_id']/following-sibling::td")
 
-
+        self.click_outside = (By.XPATH, "//label[.//span[text()='Mobile No.']]")
 
     def application_is_present(self):
         self.wait_to_click(self.webapps_menu_id)
@@ -108,17 +107,17 @@ class WebAppsBasics(BasePage):
         self.wait_to_click(self.dob_question)
         self.wait_to_click(self.click_today_date)
         self.wait_to_click(self.close_date_picker)
-        self.wait_to_clear_and_send_keys(self.mobileno_question,"9261437577")
-        self.wait_to_click(self.submit_form_button)
+        self.wait_to_clear_and_send_keys(self.mobileno_question, UserData.mobile_number + Keys.TAB)
+        self.js_click(self.submit_form_button)
         assert self.is_present_and_displayed(self.success_message), ("Form is not submitted!")
         self.wait_to_click(self.case_list_menu)
         self.wait_to_click(self.followup_form)
         self.wait_to_clear_and_send_keys(self.search_case_filter, self.name_input)
         self.wait_to_click(self.search_button)
-        self.wait_to_click(self.case_name)
+        self.js_click(self.case_name)
         self.wait_to_click(self.continue_button)
         self.wait_to_clear_and_send_keys(self.parent_question, self.parent_name_input)
-        self.wait_to_clear_and_send_keys(self.no_of_kids, randint())
+        self.wait_to_clear_and_send_keys(self.no_of_kids, fetch_random_digit(1,5))
         self.wait_to_click(self.submit_form_button)
         assert self.is_present_and_displayed(self.success_message)
 
@@ -145,6 +144,7 @@ class WebAppsBasics(BasePage):
             return False
 
     def verify_form_data_submit_history(self):
+        self.driver.find_element_by_link_text("Show Full Menu").click()
         self.wait_to_click(self.reports_menu_id)
         self.wait_to_click(self.submit_history_rep)
         self.select_by_text(self.application_select, UserData.test_application)
@@ -154,19 +154,16 @@ class WebAppsBasics(BasePage):
         self.clear(self.date_input)
         self.send_keys(self.date_input, date_range+Keys.TAB)
         self.wait_to_click(self.apply_id)
-        time.sleep(15)
+        time.sleep(10)
         self.scroll_to_bottom()
         self.verify_table_not_empty(self.submit_history_table)
         self.is_present_and_displayed(self.view_form_link)
         form_link = self.get_attribute(self.view_form_link, "href")
         print("View Form Link: ", form_link)
-        # self.switch_to_new_tab()
         self.driver.get(form_link)
         time.sleep(3)
-        self.page_source_contains(case_name)
+        self.page_source_contains(self.name_input)
         assert True, "Case name is present in Submit history"
-        # self.driver.close()
-        # self.switch_back_to_prev_tab()
         self.driver.back()
 
     def verify_form_data_case_list(self, case_name):
@@ -174,16 +171,17 @@ class WebAppsBasics(BasePage):
         self.wait_to_click(self.case_list_rep)
         self.wait_to_click(self.users_box)
         self.wait_to_click(self.select_user)
-        self.send_keys(self.search_input, case_name)
+        self.send_keys(self.search_input, self.name_input)
         self.wait_to_click(self.apply_id)
         time.sleep(15)
         self.scroll_to_bottom()
         self.verify_table_not_empty(self.case_list_table)
-        self.page_source_contains(case_name)
-        self.wait_and_sleep_to_click((By.LINK_TEXT, str(case_name)))
+        case_search = self.name_input
+        self.page_source_contains(case_search)
+        self.wait_and_sleep_to_click((By.LINK_TEXT, str(case_search)))
         # self.switch_to_next_tab()
         time.sleep(3)
-        self.page_source_contains(case_name)
+        self.page_source_contains(case_search)
         assert True, "Case name is present in Case List"
         # self.driver.close()
         # self.switch_back_to_prev_tab()

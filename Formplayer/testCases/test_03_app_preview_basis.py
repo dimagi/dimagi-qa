@@ -1,4 +1,4 @@
-from Formplayer.testPages.webapps.app_preview_basics import AppPreviewBasics
+from Formplayer.testPages.app_preview.app_preview_basics import AppPreviewBasics
 
 
 def test_case_06_icons_in_app_preview(driver):
@@ -29,7 +29,7 @@ def test_case_09_web_user_submission(driver):
 def test_case_10_one_question_per_screen(driver):
 
     question = AppPreviewBasics(driver)
-    question.one_question_per_screen_negative()
+    # question.one_question_per_screen_negative()
     question.one_question_per_screen_positive()
 
 

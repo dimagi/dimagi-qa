@@ -279,7 +279,7 @@ class BasePage:
         self.driver.execute_script("arguments[0].click();", element)
 
     def switch_to_frame(self, locator):
-        frame = self.driver.find_element(locator)
+        frame = self.driver.find_element(*locator)
         self.driver.switch_to.frame(frame)
 
     def switch_to_default_content(self):

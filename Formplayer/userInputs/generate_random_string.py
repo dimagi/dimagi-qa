@@ -19,5 +19,5 @@ def fetch_phone_number():
     return str(random.randint(min_value, max_value))
 
 
-def fetch_random_digit():
-    return str(random_number)
+def fetch_random_digit(start, end):
+    return str(random.randint(start, end))

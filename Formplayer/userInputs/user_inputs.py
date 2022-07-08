@@ -22,10 +22,10 @@ class UserData:
     #Mobile Worker name
     mw_username = "appiumtest@qa-automation.commcarehq.org"
     mw_password = "Pass@123"
-
+    mobile_number = "9261437577"
     language = 'es'
 
     #Submit History
-    test_application = "Test Appliation - Formplayer Automation"
+    test_application = "Test Application - Formplayer Automation"
     case_list_name = "Case List"
-    form_name = "Registartion Form"
+    form_name = "Registration Form"

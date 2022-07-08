@@ -1,8 +1,8 @@
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementNotInteractableException
 from selenium.webdriver.common.by import By
 
-from HQSmokeTests.testPages.base.base_page import BasePage
-from HQSmokeTests.testPages.base.generate_2FA import generate_auth_token
+from Formplayer.testPages.base.base_page import BasePage
+from Formplayer.testPages.base.generate_2FA import generate_auth_token
 
 """"Contains test page elements and functions to login into the application"""
 
