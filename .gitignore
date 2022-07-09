@@ -185,6 +185,10 @@ USH_Apps/NY_CICT/Tests/output.xml
 /.pabotsuitenames
 /pabot_results/*
 
+#Ignorig Formplayer Fils
+Formplayer/testCases/report.html
+Formplayer/settings.cfg
+
 
 #Ignoring compliled files of NY Performance
 PerformanceTests/NY_CICT_App_Sprint/CaptureReadings/report.html
