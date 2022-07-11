@@ -15,14 +15,13 @@ class UserData:
         DOWNLOAD_PATH = Path('~/Downloads').expanduser()
 
     """User Test Data"""
-
+    app_preview_mobile_worker = "appiumtest"
     # Pre-setup application and case names
     basic_tests_app = "Basic Tests"
 
     #Mobile Worker name
     mw_username = "appiumtest@qa-automation.commcarehq.org"
     mw_password = "Pass@123"
-    mobile_number = "9261437577"
     language = 'es'
 
     #Submit History
