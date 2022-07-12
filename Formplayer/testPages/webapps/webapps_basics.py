@@ -20,8 +20,6 @@ class WebAppsBasics(BasePage):
         super().__init__(driver)
 
         self.name_input = "name" + fetch_random_string()
-        # self.dob_input =
-        # self.mobileno_input =
         self.parent_name_input = "parent" + fetch_random_string()
 
         self.webapps_menu_id = (By.LINK_TEXT, "Web Apps")
@@ -75,7 +73,6 @@ class WebAppsBasics(BasePage):
         self.case_type_select = (By.XPATH, "//select[@id='report_filter_case_type']")
         self.date_input = (By.XPATH, "//input[@id='filter_range']")
         self.view_form_link = (By.XPATH, "//tbody/tr[1]/td[1]/a[.='View Form']")
-        # self.case_name = (By.XPATH, "//td[div[contains(text(),'abc')]]")
         self.submit_history_table = (By.XPATH, "//table[@id='report_table_submit_history']/tbody/tr")
 
         # Case List
@@ -92,7 +89,7 @@ class WebAppsBasics(BasePage):
 
     def login_as_a_user(self):
         self.wait_to_click(self.login_as_button)
-        self.wait_to_clear_and_send_keys(self.filter_workers, "appiumtest")
+        self.wait_to_clear_and_send_keys(self.filter_workers, UserData.app_preview_mobile_worker)
         self.wait_to_click(self.search_button)
         self.wait_to_click(self.login_user)
         self.wait_to_click(self.confirm_login_button)
@@ -179,12 +176,9 @@ class WebAppsBasics(BasePage):
         case_search = self.name_input
         self.page_source_contains(case_search)
         self.wait_and_sleep_to_click((By.LINK_TEXT, str(case_search)))
-        # self.switch_to_next_tab()
         time.sleep(3)
         self.page_source_contains(case_search)
         assert True, "Case name is present in Case List"
-        # self.driver.close()
-        # self.switch_back_to_prev_tab()
         self.driver.back()
 
     def verify_web_apps_settings(self):

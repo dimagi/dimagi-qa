@@ -29,7 +29,7 @@ def test_case_09_web_user_submission(driver):
 def test_case_10_one_question_per_screen(driver):
 
     question = AppPreviewBasics(driver)
-    # question.one_question_per_screen_negative()
+    question.one_question_per_screen_negative()
     question.one_question_per_screen_positive()
 
 
