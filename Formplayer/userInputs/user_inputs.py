@@ -18,6 +18,8 @@ class UserData:
     app_preview_mobile_worker = "appiumtest"
     # Pre-setup application and case names
     basic_tests_app = "Basic Tests"
+    app_preview_mobile_worker = "appiumtest"
+
 
     #Mobile Worker name
     mw_username = "appiumtest@qa-automation.commcarehq.org"
@@ -28,3 +30,5 @@ class UserData:
     test_application = "Test Application - Formplayer Automation"
     case_list_name = "Case List"
     form_name = "Registration Form"
+
+    test_app = 'Test App'
