@@ -15,9 +15,11 @@ class UserData:
         DOWNLOAD_PATH = Path('~/Downloads').expanduser()
 
     """User Test Data"""
-    app_preview_mobile_worker = "appiumtest"
+
     # Pre-setup application and case names
-    basic_tests_app = "Basic Tests"
+    basic_tests_app = "Formplayer Tests"
+    basic_tests_case_list = "Basic Form Tests"
+    basic_tests_form_name= "Basic Form"
     app_preview_mobile_worker = "appiumtest"
 
 
@@ -27,7 +29,7 @@ class UserData:
     language = 'es'
 
     #Submit History
-    test_application = "Test Application - Formplayer Automation"
+    test_application = "Test Application -Formplayer Automation"
     case_list_name = "Case List"
     form_name = "Registration Form"
 

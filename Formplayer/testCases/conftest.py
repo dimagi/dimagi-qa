@@ -24,15 +24,14 @@ def environment_settings():
                 DIMAGIQA_URL
                 DIMAGIQA_LOGIN_USERNAME
                 DIMAGIQA_LOGIN_PASSWORD
-                DIMAGIQA_MAIL_USERNAME
-                DIMAGIQA_MAIL_PASSWORD
+                DIMAGIQA_STAGING_AUTH_KEY
+                DIMAGIQA_PROD_AUTH_KEY
 
             See https://docs.github.com/en/actions/reference/encrypted-secrets
             for instructions on how to set them.
             """
     settings = {}
-    for name in ["url", "login_username", "login_password", "mail_username",
-        "mail_password", "bs_user", "bs_key", "staging_auth_key", "prod_auth_key", "invited_webuser_password"]:
+    for name in ["url", "login_username", "login_password", "staging_auth_key", "prod_auth_key"]:
 
         var = f"DIMAGIQA_{name.upper()}"
         if var in os.environ:
@@ -50,9 +49,8 @@ def settings(environment_settings):
     if os.environ.get("CI") == "true":
         settings = environment_settings
         settings["CI"] = "true"
-        if any(x not in settings for x in ["url", "login_username", "login_password",
-                                           "mail_username", "mail_password", "bs_user", "bs_key", "staging_auth_key",
-                                           "prod_auth_key", "invited_webuser_password"]):
+        if any(x not in settings for x in ["url", "login_username",
+                                           "login_password", "staging_auth_key", "prod_auth_key"]):
             lines = environment_settings.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
