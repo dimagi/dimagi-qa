@@ -52,24 +52,14 @@ jobs:
       uses: dawidd6/action-send-mail@v3
       if: ${{ success() && github.event_name == 'repository_dispatch' }}
       with:
-        # Required mail server address:
         server_address: smtp.gmail.com
-        # Required mail server port:
         server_port: 465
-        # Optional (recommended): mail server username:
         username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
-        # Optional (recommended) mail server password:
         password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
-        # Required mail subject:
         subject: ${{ github.event.client_payload.environment }}  PASS - Smoke Tests[#${{github.run_number}}], ${{env.NOW}}
-        # Required recipients' addresses:
         to: qa@dimagi.com, sameena.shaik@fissionlabs.com
-        # Required sender full name (address can be skipped):
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
-        # Optional HTML body read from file:
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_pass.html
-        # Optional priority: 'high', 'normal' (default) or 'low'
-        priority: normal
 
     - name: Send Failure Email on Deploy Event
       uses: dawidd6/action-send-mail@v3
