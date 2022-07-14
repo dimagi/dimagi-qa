@@ -53,7 +53,9 @@ jobs:
     - name: View context attributes
       uses: actions/github-script@v6
       with:
-        script: console.log(context)
+        script: |
+          console.log(context)
+          console.log(process.env)
 
     - name: Send Pass Email On Deploy Event
       uses: dawidd6/action-send-mail@v3
