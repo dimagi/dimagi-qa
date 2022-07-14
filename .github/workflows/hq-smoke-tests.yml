@@ -56,9 +56,8 @@ jobs:
         script: console.log(context)
 
     - name: Send Pass Email On Deploy Event
-      if: false
       uses: dawidd6/action-send-mail@v3
-      if: ${{ success() && github.event_name == 'repository_dispatch' }}
+      if: false # ${{ success() && github.event_name == 'repository_dispatch' }}
       with:
         server_address: smtp.gmail.com
         server_port: 465
@@ -70,9 +69,8 @@ jobs:
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_pass.html
     
     - name: Send Failure Email on Deploy Event
-      if: false
       uses: dawidd6/action-send-mail@v3
-      if: ${{ failure() && github.event_name == 'repository_dispatch' }}
+      if: false # ${{ failure() && github.event_name == 'repository_dispatch' }}
       with:
         server_address: smtp.gmail.com
         server_port: 465
@@ -86,9 +84,8 @@ jobs:
         priority: normal
 
     - name: Send Failure Email on Push or Pull
-      if: false
       uses: dawidd6/action-send-mail@v3
-      if: ${{ failure() && github.event_name != 'repository_dispatch' }}
+      if: false # ${{ failure() && github.event_name != 'repository_dispatch' }}
       with:
         server_address: smtp.gmail.com
         server_port: 465
@@ -102,9 +99,8 @@ jobs:
         priority: normal
 
     - name: Send Pass Email on Push or Pull
-      if: false
       uses: dawidd6/action-send-mail@v3
-      if: ${{ success() && github.event_name != 'repository_dispatch' }}
+      if: false # ${{ success() && github.event_name != 'repository_dispatch' }}
       with:
         server_address: smtp.gmail.com
         server_port: 465
@@ -118,7 +114,7 @@ jobs:
 
     - name: Archive test results
       if: false
-      if: always()
+      # if: always()
       uses: actions/upload-artifact@v2
       with:
         name: test-result-reports
