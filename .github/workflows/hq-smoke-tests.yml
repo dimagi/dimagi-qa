@@ -26,6 +26,7 @@ jobs:
         python-version: 3.9
 
     - name: Install dependencies
+      id: install
       if: false
       run: |
         python -m pip install --upgrade pip
@@ -53,7 +54,7 @@ jobs:
     - name: View context attributes
       uses: actions/github-script@v6
       env:
-          SUCCESS: ${{ success() }}
+          SUCCESS: ${{ job.status }}
       with:
         script: |
           console.log(context)
