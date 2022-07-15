@@ -73,15 +73,17 @@ jobs:
             subject = `${prefix} on branch "${ process.env.GITHUB_HEAD_REF }" ${suffix}`
           }
 
-          let body = 'file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_pass.html'
+          let body = `${ process.env.GITHUB_WORKSPACE }/HQSmokeTests/email_pass.html`
           if (status !== 'success') {
-            body = 'file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_fail.html'
+            body = `${ process.env.GITHUB_WORKSPACE }/HQSmokeTests/email_fail.html`
           }
 
           console.log(subject)
           console.log(body)
 
+          let actionRunLink = context.repository.url + `/actions/runs/${ context.runId }`
           let body_content = await fs.readFile('./HQSmokeTests/email_pass.html', 'utf8')
+          body_content = body_content.replace(/{{actionRunLink}}/g, actionRunLink)
           console.log(body_content)
 
           return {
