@@ -59,12 +59,12 @@ jobs:
           CC_ENV: staging # TODO
           NOW: now # TODO
       with:
-        result-encoding: string
         script: |
           const { promises: fs } = require('fs')
 
           // console.log(context)
           // console.log(process.env)
+
           const status = process.env.JOB_STATUS
           const prefix = `[${ process.env.CC_ENV }] Smoke Tests - ${ status.toUpperCase() } - Run #${ context.runNumber }`
           const suffix = `at ${ process.env.NOW }`
@@ -74,23 +74,23 @@ jobs:
             subject = `${prefix} on branch "${ process.env.GITHUB_HEAD_REF }" ${suffix}`
           }
 
-          let body = `${ process.env.GITHUB_WORKSPACE }/HQSmokeTests/email_pass.html`
+          let bodyFile = './HQSmokeTests/email_pass.html'
           if (status !== 'success') {
-            body = `${ process.env.GITHUB_WORKSPACE }/HQSmokeTests/email_fail.html`
-          }
-
-          console.log(subject)
-          console.log(body)
+            bodyFile = './HQSmokeTests/email_fail.html'
+          }       
 
           let actionRunLink = context.payload.repository.html_url + `/actions/runs/${ context.runId }`
-          let body_content = await fs.readFile('./HQSmokeTests/email_pass.html', 'utf8')
-          body_content = body_content.replace(/{{actionRunLink}}/g, actionRunLink)
+          let bodyContent = await fs.readFile(bodyFile, 'utf8')
+          bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
               .replace(/{{runNumber}}/g, context.runNumber)
-          console.log(body_content)
+
+          console.log(subject)
+          console.log(bodyContent)
+
+          await fs.writeFile(`${ process.env.GITHUB_WORKSPACE }/email_body.html`, bodyContent)
 
           return {
-            "subject": subject,
-            "bodyFile": body,
+            "subject": subject
           }
 
     - name: Send Result Email
@@ -104,7 +104,7 @@ jobs:
         subject: ${{ steps.configure_email.outputs.result.subject }}
         to: qa@dimagi.com, sameena.shaik@fissionlabs.com
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
-        html_body: ${{ steps.configure_email.outputs.result.bodyFile }}
+        html_body: ${{ github.workspace }}/email_body.html
 
     - name: Archive test results
       if: false
