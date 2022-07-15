@@ -81,7 +81,7 @@ jobs:
           console.log(subject)
           console.log(body)
 
-          let body_content = await fs.readFile(body, 'utf8')
+          let body_content = await fs.readFile('./HQSmokeTests/email_pass.html', 'utf8')
           console.log(body_content)
 
           return {
