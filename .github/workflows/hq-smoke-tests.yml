@@ -51,7 +51,8 @@ jobs:
         echo ${{env.NOW}}
         pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1
     
-    - id: configure_email
+    - name: Set email vars
+      id: configure_email
       uses: actions/github-script@v6
       env:
           JOB_STATUS: ${{ job.status }}
@@ -81,7 +82,7 @@ jobs:
           console.log(subject)
           console.log(body)
 
-          let actionRunLink = context.payload.repository.url + `/actions/runs/${ context.runId }`
+          let actionRunLink = context.payload.repository.html_url + `/actions/runs/${ context.runId }`
           let body_content = await fs.readFile('./HQSmokeTests/email_pass.html', 'utf8')
           body_content = body_content.replace(/{{actionRunLink}}/g, actionRunLink)
           console.log(body_content)
