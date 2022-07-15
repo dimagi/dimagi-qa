@@ -12,105 +12,119 @@ on:
     types: [ deploy_success ]
   workflow_dispatch:
 
-
 jobs:
-  build:
-    name: Smoke on '${{ github.event.client_payload.environment || 'staging' }}'
+  set_matrix:
     runs-on: ubuntu-latest
-
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix || steps.set-matrix-default.outputs.matrix }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
+      - id: set-matrix
+        if: ${{ github.event.client_payload.environment != null }}
+        run: |
+          echo "::set-output name=matrix::{\"environment\": [\"${{ github.event.client_payload.environment }}\"]}"
+      - id: set-matrix-default
+        if: ${{ github.event.client_payload.environment == null }}
+        run: |
+          echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\"]}"
+  build:
+    needs: set_matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
+    name: Smoke on '${{ matrix.environment }}'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
 
-    - name: Install dependencies
-      id: install
-      if: false
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r HQSmokeTests/requires.txt
+      - name: Install dependencies
+        if: false # TODO remove
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r HQSmokeTests/requires.txt
 
-    - name: CCHQ Smoke Test with pytest
-      if: false
-      env:
-        DIMAGIQA_ENV: ${{ github.event.client_payload.environment }}  #${{ secrets.DIMAGIQA_URL }}
-        DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
-        DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
-        DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
-        DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
-        DIMAGIQA_BS_USER: ${{ secrets.DIMAGIQA_BS_USER }}
-        DIMAGIQA_BS_KEY: ${{ secrets.DIMAGIQA_BS_KEY }}
-        DIMAGIQA_STAGING_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
-        DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_PROD_AUTH_KEY }}
-        DIMAGIQA_INVITED_WEBUSER_PASSWORD: ${{ secrets.DIMAGIQA_INVITED_WEBUSER_PASSWORD }}
-      run: |
-        echo "client_payload: ${{ toJson(github.event.client_payload) }}"
-        echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
-        echo ${{env.NOW}}
-        pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1
-    
-    - name: Set email vars
-      id: configure_email
-      uses: actions/github-script@v6
-      env:
-          JOB_STATUS: ${{ job.status }}
-          CC_ENV: staging # TODO
-          NOW: now # TODO
-      with:
-        script: |
-          const { promises: fs } = require('fs')
+      - name: CCHQ Smoke Test with pytest
+        env:
+          DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
+          DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
+          DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
+          DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+          DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+          DIMAGIQA_BS_USER: ${{ secrets.DIMAGIQA_BS_USER }}
+          DIMAGIQA_BS_KEY: ${{ secrets.DIMAGIQA_BS_KEY }}
+          DIMAGIQA_STAGING_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
+          DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_PROD_AUTH_KEY }}
+          DIMAGIQA_INVITED_WEBUSER_PASSWORD: ${{ secrets.DIMAGIQA_INVITED_WEBUSER_PASSWORD }}
+        run: |
+          echo "client_payload: ${{ toJson(github.event.client_payload) }}"
+          echo "matrix environment: ${{ matrix.environment }}"
+          echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
+          echo ${{env.NOW}}
+          # TODO: remove comment
+          # pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html
 
-          // console.log(context)
-          // console.log(process.env)
+      - name: Set email vars
+        id: configure_email
+        uses: actions/github-script@v6
+        env:
+            JOB_STATUS: ${{ job.status }}
+            CC_ENV: ${{ matrix.environment }}
+            NOW: NOW
+        with:
+          script: |
+            const { promises: fs } = require('fs')
 
-          const {JOB_STATUS, NOW, CC_ENV, GITHUB_HEAD_REF} = process.env
-          const prefix = `[${CC_ENV}] Smoke Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
-          const suffix = `at ${NOW}`
+            console.log(context)
+            console.log(process.env)
 
-          let subject = `${prefix} on "deploy_sucess" ${suffix}`
-          if (context.eventName !== "repository_dispatch") {
-            subject = `${prefix} on branch "${GITHUB_HEAD_REF}" ${suffix}`
-          }
+            const {JOB_STATUS, NOW, CC_ENV, GITHUB_HEAD_REF} = process.env
+            const prefix = `[${CC_ENV}] Smoke Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
+            const suffix = `at ${NOW}`
+  
+            let subject = `${prefix} on "deploy_sucess" ${suffix}`
+            if (context.eventName !== "repository_dispatch") {
+              subject = `${prefix} on branch "${GITHUB_HEAD_REF}" ${suffix}`
+            }
+  
+            let bodyFile = './HQSmokeTests/email_pass.md'
+            if (JOB_STATUS !== 'success') {
+              bodyFile = './HQSmokeTests/email_fail.md'
+            }       
+  
+            let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
+            let bodyContent = await fs.readFile(bodyFile, 'utf8')
+            bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
+                .replace(/{{runNumber}}/g, context.runNumber)
+  
+            console.log(subject)
+            console.log(bodyContent)
+  
+            return {
+              "subject": subject,
+              "body": bodyContent
+            }
 
-          let bodyFile = './HQSmokeTests/email_pass.md'
-          if (JOB_STATUS !== 'success') {
-            bodyFile = './HQSmokeTests/email_fail.md'
-          }       
+      - name: Send Result Email
+        uses: dawidd6/action-send-mail@v3
+        if: false # TODO remove ${{ success() && github.event_name == 'repository_dispatch' }}
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
+          password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
+          subject: ${{ steps.configure_email.outputs.result.subject }}
+          to: qa@dimagi.com, sameena.shaik@fissionlabs.com
+          from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
+          html_body: ${{ steps.configure_email.outputs.result.body }}
+          convert_markdown: true
 
-          let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
-          let bodyContent = await fs.readFile(bodyFile, 'utf8')
-          bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
-              .replace(/{{runNumber}}/g, context.runNumber)
-
-          console.log(subject)
-          console.log(bodyContent)
-
-          return {
-            "subject": subject,
-            "body": bodyContent
-          }
-
-    - name: Send Result Email
-      uses: dawidd6/action-send-mail@v3
-      if: false # ${{ success() && github.event_name == 'repository_dispatch' }}
-      with:
-        server_address: smtp.gmail.com
-        server_port: 465
-        username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
-        password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
-        subject: ${{ steps.configure_email.outputs.result.subject }}
-        to: qa@dimagi.com, sameena.shaik@fissionlabs.com
-        from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
-        html_body: ${{ steps.configure_email.outputs.result.body }}
-        convert_markdown: true
-
-    - name: Archive test results
-      if: false
-      # if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: test-result-reports
-        path: /home/runner/work/dimagi-qa/dimagi-qa/report.html
-        retention-days: 2
+      - name: Archive test results
+        if: false # TODO remove always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-result-reports-${{ matrix.environment }}
+          path: ${{ github.workspace }}/report_${{ matrix.environment }}.html
+          retention-days: 2
