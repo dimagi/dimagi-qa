@@ -65,16 +65,17 @@ jobs:
           const status = process.env.JOB_STATUS
           const prefix = `[${ process.env.CC_ENV }] Smoke Tests ${ status.toUpperCase() } - Run [#${ context.runNumber }]`
           const suffix = ` at ${ process.env.NOW }`
-          if (context.eventName === "repository_dispatch") {
-            let subject = `${prefix} on "deploy_sucess" ${suffix}`
-          } else {
-            let subject = `${prefix} on branch "${ process.env.GITHUB_HEAD_REF }" ${suffix}`
+
+          let subject = `${prefix} on "deploy_sucess" ${suffix}`
+          if (context.eventName !== "repository_dispatch") {
+            subject = `${prefix} on branch "${ process.env.GITHUB_HEAD_REF }" ${suffix}`
           }
-          if (status === 'success') {
-            let body = 'file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_pass.html'
-          } else {
-            let body = 'file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_fail.html'
+
+          let body = 'file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_pass.html'
+          if (status !== 'success') {
+            body = 'file:////home/runner/work/dimagi-qa/dimagi-qa/HQSmokeTests/email_fail.html'
           }
+
           console.log(subject)
           console.log(body)
           return {
