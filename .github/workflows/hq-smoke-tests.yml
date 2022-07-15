@@ -85,6 +85,7 @@ jobs:
           let actionRunLink = context.payload.repository.html_url + `/actions/runs/${ context.runId }`
           let body_content = await fs.readFile('./HQSmokeTests/email_pass.html', 'utf8')
           body_content = body_content.replace(/{{actionRunLink}}/g, actionRunLink)
+              .replace(/{{runNumber}}/g, context.runNumber)
           console.log(body_content)
 
           return {
