@@ -60,11 +60,13 @@ jobs:
       with:
         result-encoding: string
         script: |
-          console.log(context)
-          console.log(process.env)
+          const { promises: fs } = require('fs')
+
+          // console.log(context)
+          // console.log(process.env)
           const status = process.env.JOB_STATUS
-          const prefix = `[${ process.env.CC_ENV }] Smoke Tests ${ status.toUpperCase() } - Run [#${ context.runNumber }]`
-          const suffix = ` at ${ process.env.NOW }`
+          const prefix = `[${ process.env.CC_ENV }] Smoke Tests - ${ status.toUpperCase() } - Run #${ context.runNumber }`
+          const suffix = `at ${ process.env.NOW }`
 
           let subject = `${prefix} on "deploy_sucess" ${suffix}`
           if (context.eventName !== "repository_dispatch") {
@@ -78,6 +80,10 @@ jobs:
 
           console.log(subject)
           console.log(body)
+
+          let body_content = await fs.readFile(body, 'utf8')
+          console.log(body_content)
+
           return {
             "subject": subject,
             "bodyFile": body,
