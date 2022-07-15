@@ -74,9 +74,9 @@ jobs:
             subject = `${prefix} on branch "${ process.env.GITHUB_HEAD_REF }" ${suffix}`
           }
 
-          let bodyFile = './HQSmokeTests/email_pass.html'
+          let bodyFile = './HQSmokeTests/email_pass.md'
           if (status !== 'success') {
-            bodyFile = './HQSmokeTests/email_fail.html'
+            bodyFile = './HQSmokeTests/email_fail.md'
           }       
 
           let actionRunLink = context.payload.repository.html_url + `/actions/runs/${ context.runId }`
@@ -104,6 +104,7 @@ jobs:
         to: qa@dimagi.com, sameena.shaik@fissionlabs.com
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
         html_body: ${{ steps.configure_email.outputs.result.body }}
+        convert_markdown: true
 
     - name: Archive test results
       if: false
