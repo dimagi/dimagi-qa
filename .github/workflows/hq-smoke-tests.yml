@@ -72,7 +72,6 @@ jobs:
         env:
             JOB_STATUS: ${{ job.status }}
             CC_ENV: ${{ matrix.environment }}
-            NOW: NOW
         with:
           script: |
             const { promises: fs } = require('fs')
