@@ -87,10 +87,9 @@ jobs:
           console.log(subject)
           console.log(bodyContent)
 
-          await fs.writeFile(`${ process.env.GITHUB_WORKSPACE }/email_body.html`, bodyContent)
-
           return {
-            "subject": subject
+            "subject": subject,
+            "body": bodyContent
           }
 
     - name: Send Result Email
@@ -104,7 +103,7 @@ jobs:
         subject: ${{ steps.configure_email.outputs.result.subject }}
         to: qa@dimagi.com, sameena.shaik@fissionlabs.com
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
-        html_body: file:///${{ github.workspace }}/email_body.html
+        html_body: ${{ steps.configure_email.outputs.result.body }}
 
     - name: Archive test results
       if: false
