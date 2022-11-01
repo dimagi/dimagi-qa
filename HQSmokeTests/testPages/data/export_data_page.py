@@ -157,8 +157,8 @@ class ExportDataPage(BasePage):
                 self.wait_and_sleep_to_click(self.prepare_export_button)
                 self.wait_till_progress_completes("exports")
                 self.wait_and_sleep_to_click(self.download_button)
-                time.sleep(5)
-                print("Download form button clicked")
+        time.sleep(5)
+        print("Download form button clicked")
 
     def find_data_by_id_and_verify(self, row, value, export_name, name_on_hq):
         newest_file = latest_download_file()
@@ -474,7 +474,7 @@ class ExportDataPage(BasePage):
                 self.wait_till_progress_completes("exports")
                 self.wait_and_sleep_to_click(self.download_button)
                 time.sleep(5)
-                print("Download form button clicked")
+        print("Download form button clicked")
 
     def verify_export_has_updated_case_data(self, case_id, case_name, value):
         print(case_id, case_name, value)

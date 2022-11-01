@@ -66,6 +66,7 @@ class AutoCaseUpdatePage(BasePage):
     def delete_test_rules(self):
         self.open_auto_case_update_page()
         list_rule = self.find_elements(self.all_test_rules)
+        i = len(list_rule)
         if len(list_rule) > 0:
             while len(list_rule) != 0:
                 self.wait_to_click((By.XPATH,self.all_test_rules_delete.format(list_rule[i].text)))
@@ -73,5 +74,6 @@ class AutoCaseUpdatePage(BasePage):
                 time.sleep(2)
                 self.driver.refresh()
                 list_rule = self.find_elements(self.all_test_rules)
+                i = len(list_rule)
         else:
             print("No test rule present")
