@@ -1,8 +1,9 @@
 import time
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
-from Formplayer.testPages.base.base_page import BasePage
+from common_utilities.selenium.base_page import BasePage
 from Formplayer.userInputs.user_inputs import UserData
 
 """"Contains test page elements and functions related to the Homepage of Commcare"""
@@ -13,7 +14,7 @@ class LoginAsPage(BasePage):
     def __init__(self, driver):
         super().__init__(driver)
 
-        self.basic_tests_app = (By.ID,"//ol//li[contains(.,"+UserData.basic_tests_app+")]")
+        self.basic_tests_app = (By.XPATH,"//div[@aria-label='"+UserData.basic_tests_app+"']/descendant::h3[text()='"+UserData.basic_tests_app+"']")
         self.web_apps_menu = (By.ID, "CloudcareTab")
         self.show_full_menu = (By.ID, "commcare-menu-toggle")
         self.login_as = (By.XPATH,"//h3[text()='Login as']")
@@ -27,12 +28,22 @@ class LoginAsPage(BasePage):
         self.basic_tests_menu = (By.XPATH,"(//div[@aria-label='Basic Tests']/div)[1]")
         self.basic_tests_form = (By.XPATH, "//tr[contains(@aria-label,'Basic Form')]")
         self.basic_tests_answer_input = (By.XPATH,  "//*[text()='Enter']/following::div[1]/div[@class='widget']/descendant::input")
+        self.username = UserData.app_preview_mobile_worker
+        self.username_in_list = (By.XPATH, "//b[text() ='"+self.username+"']")
+        self.search_users_button = (By.XPATH, "//button[@type='submit'][./i[@class = 'fa fa-search']]")
+        self.webapp_login_confirmation = (By.ID, 'js-confirmation-confirm')
+        self.webapp_working_as = (By.XPATH, "//div[@class='restore-as-banner module-banner']/b")
+        self.basic_tests_menu = (By.XPATH,"//h3[text()='Basic Form Tests']")
+        self.basic_tests_form = (By.XPATH, "//h3[text()= 'HIN: Basic Form Update']")
+        self.basic_tests_answer_input = (By.XPATH,  "//label[.//span[contains(text(),'Enter a Name')]]//following-sibling::div//textarea")
         self.submit = (By.XPATH, "(//button[@class='submit btn btn-primary'])[1]")
         self.submit_success = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.login_as_webuser= (By.XPATH, "//a[@class='js-clear-user']")
 
     def open_basic_tests_app(self):
         self.wait_to_click(self.basic_tests_app)
+        print("Open App")
+        self.js_click(self.basic_tests_app)
 
     def login_as_presence(self):
         self.wait_to_click(self.web_apps_menu)
@@ -53,9 +64,26 @@ class LoginAsPage(BasePage):
         self.wait_to_click(self.basic_tests_menu)
         self.wait_to_click(self.basic_tests_form)
         self.wait_to_clear_and_send_keys("test", self.basic_tests_answer_input)
+        self.wait_to_clear_and_send_keys(self.search_user_input_area, self.username)
+        time.sleep(2)
+        self.js_click(self.search_users_button)
+        time.sleep(2)
+        self.wait_to_click(self.username_in_list)
+        time.sleep(2)
+        self.wait_to_click(self.webapp_login_confirmation)
+        time.sleep(5)
+        logged_in_username = self.get_text(self.webapp_working_as)
+        print(logged_in_username)
+        assert logged_in_username == self.username, "Logged in"
+
+    def login_as_form_submssion(self):
+        self.open_basic_tests_app()
+        time.sleep(2)
+        self.js_click(self.basic_tests_menu)
+        time.sleep(2)
+        self.js_click(self.basic_tests_form)
+        time.sleep(2)
+        self.wait_to_clear_and_send_keys(self.basic_tests_answer_input, "test")
         self.wait_to_click(self.submit)
         assert self.is_visible_and_displayed(self.submit_success)
-
-
-
 

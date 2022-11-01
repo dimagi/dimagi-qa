@@ -8,7 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 
 from Formplayer.userInputs.user_inputs import UserData
-from Formplayer.testPages.base.login_page import LoginPage
+from common_utilities.hq_login.login_page import LoginPage
 
 """"This file provides fixture functions for driver initialization"""
 
