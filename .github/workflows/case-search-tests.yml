@@ -18,7 +18,7 @@ on:
           - production
 
 concurrency:
-  group: tests-on-hq-${{ github.ref }}
+  group: case-search-tests-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
