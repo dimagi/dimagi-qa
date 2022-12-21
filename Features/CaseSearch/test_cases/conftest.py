@@ -11,7 +11,7 @@ global driver
 
 @pytest.fixture(scope="session")
 def environment_settings_casesearch():
-    """Load settings from os.environ
+    """Load settings from os.environment
 
             Names of environment variables:
                 DIMAGIQA_URL
