@@ -211,7 +211,8 @@ class BasePage:
         try:
             visible = ec.visibility_of_element_located(locator)
             element = WebDriverWait(self.driver, timeout, poll_frequency=10).until(visible,
-                                                                message="Element" + str(locator) + "not displayed")
+                                                                                   message="Element" + str(
+                                                                                       locator) + "not displayed")
             is_displayed = element.is_displayed()
         except TimeoutException:
             is_displayed = False
@@ -221,7 +222,8 @@ class BasePage:
         try:
             visible = ec.presence_of_element_located(locator)
             element = WebDriverWait(self.driver, timeout, poll_frequency=10).until(visible,
-                                                                message="Element" + str(locator) + "not displayed")
+                                                                                   message="Element" + str(
+                                                                                       locator) + "not displayed")
             is_displayed = element.is_displayed()
         except TimeoutException:
             is_displayed = False
@@ -283,12 +285,15 @@ class BasePage:
     def scroll_to_bottom(self):
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
+    def scroll_to_element(self, locator):
+        self.driver.execute_script("arguments[0].scrollIntoView();", self.driver.find_element(*locator))
+
     def hover_and_click(self, locator1, locator2):
         action = ActionChains(self.driver)
-        element_1 = self.driver.find_element(locator1)
+        element_1 = self.driver.find_element(*locator1)
         action.move_to_element(element_1).perform()
         # identify sub menu element
-        element_2 = self.driver.find_element(locator2)
+        element_2 = self.driver.find_element(*locator2)
         # hover over element and click
         action.move_to_element(element_2).click().perform()
 
@@ -310,19 +315,24 @@ class BasePage:
         self.driver.execute_script("arguments[0].click();", element)
         time.sleep(3)
 
+    def js_click_direct(self, locator):
+        self.driver.execute_script("arguments[0].click();", self.driver.find_element(*locator))
+
     def scroll_to_element(self, locator):
         element = self.driver.find_element(*locator)
         self.driver.execute_script("arguments[0].scrollIntoView();", element)
 
     def wait_and_find_elements(self, locator, cols, timeout=500):
-        elements = WebDriverWait(self.driver, timeout, poll_frequency=10).until(lambda driver: len(driver.find_elements(*locator)) >= int(cols))
+        elements = WebDriverWait(self.driver, timeout, poll_frequency=10).until(
+            lambda driver: len(driver.find_elements(*locator)) >= int(cols))
         return elements
 
     def wait_till_progress_completes(self, type="export"):
         if type == "export":
             if self.is_present((By.XPATH, "//div[contains(@class,'progress-bar')]")):
                 WebDriverWait(self.driver, 600, poll_frequency=10).until(
-                        ec.visibility_of_element_located((By.XPATH, "//div[contains(@class,'progress-bar')][.//span[@data-bind='text: progress'][.='100']]")))
+                    ec.visibility_of_element_located((By.XPATH,
+                                                      "//div[contains(@class,'progress-bar')][.//span[@data-bind='text: progress'][.='100']]")))
         elif type == "integration":
             WebDriverWait(self.driver, 600, poll_frequency=10).until(
                 ec.invisibility_of_element_located((By.XPATH, "//div[contains(@class,'progress-bar')]")))
@@ -331,13 +341,34 @@ class BasePage:
         try:
             clickable = ec.element_to_be_clickable(locator)
             element = WebDriverWait(self.driver, timeout, poll_frequency=10).until(clickable,
-                                                                message="Element" + str(locator) + "not displayed")
+                                                                                   message="Element" + str(
+                                                                                       locator) + "not displayed")
             is_clickable = element.is_enabled()
         except TimeoutException:
             is_clickable = False
         return bool(is_clickable)
 
+    def switch_to_frame(self, locator):
+        current_frame = self.driver.execute_script("return self.name")
+        print("Current frame", current_frame)
+        print("Requested frame", locator)
+        if current_frame != locator:
+            frame = self.driver.find_element(*locator)
+            self.driver.switch_to.frame(frame)
+        else:
+            print("Frame already switched")
+
+    def switch_to_default_content(self):
+        self.driver.switch_to.default_content()
+
+    def dismiss_popup_alert(self):
+        alert = self.driver.switch_to.alert()
+        alert.dismiss()
+
+    def accept_popup_alert(self):
+        alert = self.driver.switch_to.alert()
+        alert.accept()
+
     def get_element(self, xpath_format, insert_value):
         element = (By.XPATH, xpath_format.format(insert_value))
         return element
-
