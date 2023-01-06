@@ -21,8 +21,11 @@ class UserData:
                    "form_name": "Basic Form"}
 
     app_preview_mobile_worker = "appiumtest"
+<<<<<<< HEAD
     automation_user = "automation_user"
     automation_user_group = "automation_user [group]"
+=======
+>>>>>>> 6d20c860 (Formplayer Appearance attributes & formatting tab automation)
 
     # Mobile Worker name
     mw_username = "appiumtest@qa-automation.commcarehq.org"
@@ -36,7 +39,10 @@ class UserData:
         "case_list": "Case List",
         "form_name": "Registration Form"}
     case_type = 'case'
+<<<<<<< HEAD
     case_type_formplayer = 'sub_case_one'
+=======
+>>>>>>> 6d20c860 (Formplayer Appearance attributes & formatting tab automation)
     test_app = 'Test Application - One question per screen'
     test_application2 = {
         "tests_app": "Test Application - One question per screen",
@@ -46,7 +52,12 @@ class UserData:
     basic_tests_app = {
         "tests_app": "Basic Tests",
         "case_list": "Basic Form Tests",
+<<<<<<< HEAD
         "form_name": "Basic Form"}
+=======
+        "form_name": "Basic Form",
+    }
+>>>>>>> 6d20c860 (Formplayer Appearance attributes & formatting tab automation)
 
     basic_test_app_forms = {
         "basic": "Basic Form",
@@ -68,6 +79,7 @@ class UserData:
         "create_multi_subcase": "Create Multiple Sub Case",
         "caselist": "Case list",
         "subcaseone": "Sub Case One",
+<<<<<<< HEAD
         "close_subcase": "Close Case",
         "logic_test1": "Logic Tests 1",
         "constraints": "Constraints",
@@ -77,6 +89,9 @@ class UserData:
         "view_case_subcase": "View Case\'s Sub Case",
         "fst_repeat": "[Formplayer] Repeats",
         "fst_cross_iter_repeat": "[Formplayer] Cross Iteration Repeats"
+=======
+        "close_subcase": "Close Case"
+>>>>>>> 6d20c860 (Formplayer Appearance attributes & formatting tab automation)
     }
 
     form_specific_tests_app = {
@@ -84,6 +99,7 @@ class UserData:
         "case_list": "Formplayer Specific Tests",
         "form_name": "[Formplayer] Appearance Attributes and Formatting"}
 
+<<<<<<< HEAD
     expressions = ['true()', 'false()', 'boolean-from-string(1)',
                    'boolean-from-string(0)', 'boolean(1)', 'boolean(0)']
     unicode = "☕️☕️☕️"
@@ -96,3 +112,14 @@ class UserData:
     sms_survey_list = ["SMS Tests > Case List > Registration Form",
                        "SMS Tests > Case List > Followup Form",
                        "SMS Tests > Case List > Close"]
+=======
+    multimedia_app = {
+        "tests_app": "Multimedia"}
+
+    map_input = "New Delhi"
+
+    expressions = ['true()', 'false()', 'boolean-from-string(1)',
+                   'boolean-from-string(0)', 'boolean(1)', 'boolean(0)']
+    unicode = "☕️☕️☕️"
+    unicode_new = "☕️☕️☕️☕️☕️☕️"
+>>>>>>> 6d20c860 (Formplayer Appearance attributes & formatting tab automation)
