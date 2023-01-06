@@ -40,7 +40,7 @@ class LoginAsPage(BasePage):
         self.basic_tests_form = (By.XPATH, "//h3[text()= 'HIN: Basic Form Update']")
         self.basic_tests_answer_input = (By.XPATH,  "//label[.//span[text()= 'Enter a Name']]//following-sibling::div//textarea")
         self.submit = (By.XPATH, "(//button[@class='submit btn btn-primary'])[1]")
-        self.submit_success = (By.XPATH, "//p[contains(text(),'successfully saved')]")
+        self.submit_success = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.login_as_webuser= (By.XPATH, "//a[@class='js-clear-user']")
 
     def open_basic_tests_app(self, application=UserData.basic_tests["tests_app"]):

@@ -42,7 +42,7 @@ class WebAppsBasics(BasePage):
         self.home_icon = (By.XPATH, "//i[@class='fa fa-home']")
         self.mobileno_question = (By.XPATH, "//label[.//span[text()='Mobile No.']]/following-sibling::div//input")
         self.submit_form_button = (By.XPATH, "//button[@type= 'submit']")
-        self.success_message = (By.XPATH, "//p[contains(text(),'successfully saved')]")
+        self.success_message = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.sync_success_message = (By.XPATH, "(//div[text()='User Data successfully synced.'])[1]")
         self.search_case_filter = (By.XPATH, "//input[@id ='searchText']")
         self.case_name = (By.XPATH, "//tr[td[text()='" + self.name_input +"']]")

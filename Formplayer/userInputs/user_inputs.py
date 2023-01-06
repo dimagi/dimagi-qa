@@ -43,7 +43,8 @@ class UserData:
     basic_tests_app = {
         "tests_app": "Basic Tests",
         "case_list": "Basic Form Tests",
-        "form_name": "Basic Form"}
+        "form_name": "Basic Form",
+    }
 
     basic_test_app_forms = {
         "basic": "Basic Form",
@@ -72,6 +73,11 @@ class UserData:
         "tests_app": "Basic Tests",
         "case_list": "Formplayer Specific Tests",
         "form_name": "[Formplayer] Appearance Attributes and Formatting"}
+
+    multimedia_app = {
+        "tests_app": "Multimedia"}
+
+    map_input = "New Delhi"
 
     expressions = ['true()', 'false()', 'boolean-from-string(1)',
                    'boolean-from-string(0)', 'boolean(1)', 'boolean(0)']

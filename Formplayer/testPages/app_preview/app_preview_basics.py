@@ -67,7 +67,7 @@ class AppPreviewBasics(BasePage):
         self.empty_form_error_message = (By.XPATH, "//div[@class='alert alert-warning alert-build']//strong[contains(.,'Add a question')]")
         self.next_question = (By.XPATH, "//button[contains(@data-bind,'nextQuestion')]")
         self.complete_form = (By.XPATH, "//button[@data-bind='visible: atLastIndex(), click: submitForm']")
-        self.success_message = (By.XPATH, "//p[contains(text(),'successfully saved')]")
+        self.success_message = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.view_form_link = (By.LINK_TEXT, "this form")
         self.export_form_link = (By.LINK_TEXT, "form")
         self.last_form = (By.XPATH, "(//ul[contains(@class,'appnav-menu-nested')]//div[contains(@class,'appnav-item')])[last()]")

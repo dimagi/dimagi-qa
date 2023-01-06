@@ -3,11 +3,9 @@ import time
 
 from selenium.webdriver.common.keys import Keys
 
-from Formplayer.testPages.app_preview.login_as_app_preview_page import LoginAsAppPreviewPage
 from Formplayer.testPages.webapps.login_as_page import LoginAsPage
 from Formplayer.testPages.webapps.webapps_basics import WebAppsBasics
-from common_utilities.generate_random_string import fetch_random_string, fetch_phone_number, fetch_random_digit, \
-    fetch_random_digit_with_range
+from common_utilities.generate_random_string import fetch_random_string, fetch_phone_number, fetch_random_digit, fetch_random_digit_with_range
 from common_utilities.selenium.base_page import BasePage
 from Formplayer.userInputs.user_inputs import UserData
 
@@ -46,7 +44,7 @@ class BasicTestWebApps(BasePage):
         self.form_list = (By.XPATH, "//tbody[@class='menus-container']")
         self.refresh_button = (By.XPATH, "//button[contains(@class,'btn-preview-refresh js-preview-refresh')]")
         self.toggle_button = (By.XPATH, "//button[contains(@class ,'js-preview-toggle-tablet-view')]")
-        self.sync_button = (By.XPATH,"//div[@class='js-sync-item appicon appicon-sync']")
+        self.sync_button = (By.XPATH, "//div[@class='js-sync-item appicon appicon-sync']")
         self.start_option = (By.XPATH, "//div[@class= 'js-start-app appicon appicon-start']")
         self.settings_option = (By.XPATH, "//div[@class = 'js-settings appicon appicon-settings']/i")
         self.login_as_option = (By.XPATH, "//div[@class='js-restore-as-item appicon appicon-restore-as']")
@@ -59,21 +57,22 @@ class BasicTestWebApps(BasePage):
                               "//label[.//span[.='Enter a Name']]/following-sibling::div//textarea[contains(@class,'textfield form-control')]")
         self.incomplete_form_list = (By.XPATH, "//tr[@class='formplayer-request']")
         self.delete_incomplete_form = "(//tr[@class='formplayer-request']/descendant::div[@aria-label='Delete form'])[{}]"
-        self.edit_incomplete_form = (By.XPATH,"(//tr[@class='formplayer-request']/descendant::div//i[contains(@class,'fa fa-pencil')])[1]")
+        self.edit_incomplete_form = (
+            By.XPATH, "(//tr[@class='formplayer-request']/descendant::div//i[contains(@class,'fa fa-pencil')])[1]")
         self.click_today_date = (By.XPATH, "//a[@data-action='today']")
         self.close_date_picker = (By.XPATH, "//a[@data-action='close']")
         self.mobileno_question = (By.XPATH, "//label[.//span[text()='Mobile No.']]/following-sibling::div//input")
         self.submit_form_button = (By.XPATH, "//button[contains(@data-bind,'SubmitButton')]")
 
         self.complete_form = (By.XPATH, "//button[@data-bind='visible: atLastIndex(), click: submitForm']")
-        self.success_message = (By.XPATH, "//p[contains(text(),'successfully saved')]")
+        self.success_message = (By.XPATH, "//p[text()='Form successfully saved!']")
         self.view_form_link = (By.LINK_TEXT, "this form")
         self.export_form_link = (By.LINK_TEXT, "form")
         self.last_form = (
-        By.XPATH, "(//ul[contains(@class,'appnav-menu-nested')]//div[contains(@class,'appnav-item')])[last()]")
+            By.XPATH, "(//ul[contains(@class,'appnav-menu-nested')]//div[contains(@class,'appnav-item')])[last()]")
         self.delete_form = (By.XPATH, "(//div[contains(@class,'appnav-item')]/a[@class='appnav-delete']/i)[last()]")
         self.delete_confirm_button = (
-        By.XPATH, "(//div[contains(@id,'form_confirm_delete')]//button/i[@class='fa fa-trash'])[last()]")
+            By.XPATH, "(//div[contains(@id,'form_confirm_delete')]//button/i[@class='fa fa-trash'])[last()]")
         self.question_display_text = (By.XPATH, "//span[text()='Name (es)']")
         self.iframe = (By.CLASS_NAME, "preview-phone-window")
         self.home_button = (By.XPATH, "//li[./i[@class='fa fa-home']]")
@@ -131,6 +130,53 @@ class BasicTestWebApps(BasePage):
         self.output = (By.XPATH, "//span[@class='caption webapp-markdown-output']")
         self.empty_list = (By.XPATH, "//div[@class='alert alert-info'][.='List is empty.']")
 
+        # maps
+        self.location_input = (By.XPATH, "//input[@class='query form-control']")
+        self.location_search_button = (By.XPATH, "//button[@class ='btn btn-default search']")
+        self.submit_form_button_2 = (By.XPATH, "//button[contains(@data-bind,'enable: enableSubmitButton')]")
+        self.clear_map = (By.XPATH, "//button[contains(@data-bind,'click: onClear')]")
+
+        # Sub Menu
+        self.parent_menu = (By.XPATH, "//h3[contains(text(),'Parent Menu')]")
+        self.parent_survey = (By.XPATH, "//h3[contains(text(),'Survey under parent menu')]")
+        self.child_menu = (By.XPATH, "//h3[contains(text(),'Child Menu')]")
+        self.visible_child_survey = (By.XPATH, "//h3[contains(text(),'Visible survey under child')]")
+        self.submit_survey_button = (By.XPATH, "//button[@class= 'submit btn btn-primary']")
+        self.child_survey_under_child_menu = (By.XPATH, "//h3[contains(text(),'Survey under child menu')]")
+
+        # Multimedia App Logo & Menu and Forms
+        self.multimedia_app_logo = (By.XPATH, "//div/i[@class='fcc appicon-custom appicon-icon']/following::div/h3["
+                                              "text()='Multimedia']")
+        self.multimedia_app = (By.XPATH, "//h3[text()='Multimedia']")
+        self.formplayer_tests_menu_icon = (By.XPATH, "//td[./h3[.='Formplayer Tests']]/preceding-sibling::td/div["
+                                                     "contains(@style,'module3')]")
+        self.formplayer_tests_audio_icon = (By.XPATH, "//h3[text()='Formplayer Tests']/following-sibling::div/div/i["
+                                                      "@class='fa fa-volume-up module-audio-icon "
+                                                      "js-module-audio-icon']")
+        self.formplayer_tests_menu = (By.XPATH, "//h3[text()='Formplayer Tests']")
+        self.formplayer_multimedia_audio_icon = (By.XPATH, "//h3[text()='Formplayer "
+                                                           "Multimedia']/following-sibling::div/div/i[@class='fa "
+                                                           "fa-volume-up module-audio-icon js-module-audio-icon']")
+        self.formplayer_multimedia_menu_icon = (By.XPATH, "//td[./h3[.='Formplayer "
+                                                          "Multimedia']]/preceding-sibling::td/div[contains(@style,"
+                                                          "'module3')]")
+        self.formplayer_multimedia_form = (By.XPATH, "//h3[text()='Formplayer Multimedia']")
+        self.multimedia_gif = (By.XPATH, "//span[text()='This should play a hillarious "
+                                         "gif']/following-sibling::div/img[contains(@src,'.gif')]")
+        self.multimedia_image = (By.XPATH, "//div[./span[text()='This question should have image multimedia. Enter "
+                                           "yes if so.']]/following::div/img[contains(@src, 'jpg')]" )
+        self.image_input_box = (By.XPATH, "//div[./img[contains(@src, 'jpg')]]/preceding-sibling::div[1]/textarea")
+        self.multimedia_video = (By.XPATH, "//div/legend[./span[text()='Video Tests']]/following::div/video[contains("
+                                           "@src, 'mp4')]")
+        self.video_input_box = (By.XPATH, "//div[./video[contains(@src, 'mp4')]]/preceding-sibling::div[1]/textarea")
+        self.multimedia_audio = (By.XPATH, "//div/legend[./span[text()='Audio Tests']]/following::div/audio[contains("
+                                           "@src, 'mp3')]")
+        self.audio_input_box = (By.XPATH, "//div[./audio[contains(@src, 'mp3')]]/preceding-sibling::div[1]/textarea")
+
+        # Custom Badge
+        self.formplayer_badge = (By.XPATH, "//h3[text()='Formplayer Specific Tests']/preceding::span[@class='badge']")
+        self.case_tests_badge = (By.XPATH, "//h3[text()='Case Tests']/preceding::span[@class='badge'][2]")
+
     def open_form(self, case_list, form_name):
         self.scroll_to_element((By.XPATH, self.case_list_menu.format(case_list)))
         self.js_click((By.XPATH, self.case_list_menu.format(case_list)))
@@ -186,7 +232,7 @@ class BasicTestWebApps(BasePage):
         print(len(list))
         if len(list) != 0:
             self.js_click(self.edit_incomplete_form)
-            text = self.get_attribute(self.name_question,"value")
+            text = self.get_attribute(self.name_question, "value")
             assert text == value
             self.wait_to_click(self.submit_form_button)
             print("Form submitted with unchanged value")
@@ -204,7 +250,7 @@ class BasicTestWebApps(BasePage):
         print(len(list))
         if len(list) != 0:
             self.js_click(self.edit_incomplete_form)
-            text = self.get_attribute(self.name_question,"value")
+            text = self.get_attribute(self.name_question, "value")
             assert text == value
             self.wait_to_clear_and_send_keys(self.name_question, self.changed_name_input)
             self.wait_to_click(self.submit_form_button)
@@ -683,3 +729,61 @@ class BasicTestWebApps(BasePage):
         self.wait_for_element(self.home_button)
         self.wait_to_click(self.home_button)
         time.sleep(2)
+
+    def maps_record_location(self):
+        self.wait_to_clear_and_send_keys(self.location_input, UserData.map_input)
+        self.wait_to_click(self.location_search_button)
+        time.sleep(5)
+        self.wait_to_click(self.clear_map)
+        print("Coordinates cleared")
+        assert self.is_present(self.blank_latitude), "Coordinates not cleared"
+        time.sleep(3)
+        self.wait_to_click(self.submit_form_button)
+
+    def sub_menus(self):
+        self.js_click(self.parent_menu)
+        self.is_present_and_displayed(self.parent_survey)
+        self.is_present_and_displayed(self.child_menu)
+        self.is_present_and_displayed(self.visible_child_survey)
+        self.wait_to_click(self.parent_survey)
+        self.wait_to_click(self.submit_survey_button)
+        self.js_click(self.parent_menu)
+        self.wait_to_click(self.child_menu)
+        self.is_present_and_displayed(self.child_survey_under_child_menu)
+        self.wait_to_click(self.child_survey_under_child_menu)
+        self.wait_to_click(self.submit_survey_button)
+        self.js_click(self.parent_menu)
+        self.is_present_and_displayed(self.visible_child_survey)
+        self.wait_to_click(self.visible_child_survey)
+        self.wait_to_click(self.submit_survey_button)
+
+    def multimedia_logo(self):
+        self.is_displayed(self.multimedia_app_logo)
+        print("Logo is present")
+
+    def multimedia_forms_menus(self):
+        self.js_click(self.multimedia_app)
+        self.is_displayed(self.formplayer_tests_audio_icon)
+        self.is_displayed(self.formplayer_tests_menu_icon)
+        self.js_click(self.formplayer_tests_menu)
+        self.is_displayed(self.formplayer_multimedia_audio_icon)
+        self.is_displayed(self.formplayer_multimedia_menu_icon)
+
+    def multimedia_form_navigation(self):
+        self.js_click(self.formplayer_tests_menu)
+        self.js_click(self.formplayer_multimedia_form)
+        self.is_displayed(self.multimedia_gif)
+        image_present = self.is_displayed(self.multimedia_image)
+        assert image_present == True
+        self.wait_to_clear_and_send_keys(self.image_input_box, 'Yes')
+        video_present = self.is_displayed(self.multimedia_video)
+        assert video_present == True
+        self.wait_to_clear_and_send_keys(self.video_input_box,'yes')
+        audio_present = self.is_displayed(self.multimedia_audio)
+        assert audio_present == True
+        self.wait_to_clear_and_send_keys(self.audio_input_box, 'yes')
+        self.wait_to_click(self.submit_form_button)
+
+    def custom_badge(self):
+        self.is_present_and_displayed(self.formplayer_badge)
+        self.is_present_and_displayed(self.case_tests_badge)
