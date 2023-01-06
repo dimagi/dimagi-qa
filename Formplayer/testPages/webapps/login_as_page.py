@@ -13,7 +13,7 @@ from Formplayer.userInputs.user_inputs import UserData
 
 class LoginAsPage(BasePage):
 
-    def __init__(self, driver):
+    def __init__(self, driver, settings):
         super().__init__(driver)
 
 
@@ -21,6 +21,7 @@ class LoginAsPage(BasePage):
         self.form_input_no_login = "web app test without login" + fetch_random_string()
         self.username_in_list = "//h3[./b[text() ='{}']]"
 
+        self.dashboard_link = settings['url'] + "/dashboard/project/"
         self.submitted_by_on_behalf = (By.XPATH,
                                        "//div[@class='pull-right'][contains(.,'Submitted by Web User')]/a[.='" + UserData.web_user + "']//following-sibling::text()[contains(.,'on behalf of Mobile Worker')]//following-sibling::a[.='" + UserData.app_preview_mobile_worker + "']")
         self.submitted_by = (By.XPATH, "//div[@class='pull-right'][contains(.,'Submitted by ')]/a[.='" + UserData.web_user + "']")
@@ -47,6 +48,8 @@ class LoginAsPage(BasePage):
         self.js_click((By.XPATH, self.basic_tests_app.format(application, application)))
 
     def open_webapps_menu(self):
+        self.switch_to_default_content()
+        self.driver.get(self.dashboard_link)
         print("Opening Web Apps Menu")
         self.wait_to_click(self.web_apps_menu)
 

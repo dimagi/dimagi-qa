@@ -4,12 +4,11 @@ from Formplayer.testPages.basic_test_app.basic_test_web_apps import BasicTestWeb
 from Formplayer.testPages.webapps.login_as_page import LoginAsPage
 from Formplayer.userInputs.user_inputs import UserData
 
-def test_case_16_incomplete_form_app_preview(driver):
-    app_preview = LoginAsAppPreviewPage(driver)
+def test_case_16_incomplete_form_app_preview(driver, settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
     basic = BasicTestAppPreview(driver)
-    login = LoginAsAppPreviewPage(driver)
     app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
-    login.login_as_user(UserData.app_preview_mobile_worker)
+    app_preview.login_as_user(UserData.app_preview_mobile_worker)
     basic.delete_all_incomplete_forms()
     basic.open_form(UserData.basic_tests_app['case_list'], UserData.basic_tests_app['form_name'])
     basic.save_incomplete_form(basic.name_input1)
@@ -25,8 +24,8 @@ def test_case_16_incomplete_form_app_preview(driver):
     basic.verify_saved_form_and_submit_changed(basic.name_input1)
     basic.verify_submit_history(basic.changed_name_input, UserData.app_preview_mobile_worker)
 
-def test_case_17_incomplete_form_web_apps(driver):
-    login = LoginAsPage(driver)
+def test_case_17_incomplete_form_web_apps(driver, settings):
+    login = LoginAsPage(driver, settings)
     login.open_webapps_menu()
     login.login_as_user(UserData.app_preview_mobile_worker)
     basic = BasicTestWebApps(driver)
@@ -48,17 +47,16 @@ def test_case_17_incomplete_form_web_apps(driver):
     basic.verify_saved_form_and_submit_changed(basic.name_input1)
     basic.verify_submit_history(basic.changed_name_input, UserData.app_preview_mobile_worker)
 
-def test_case_18_data_preview_app_preview(driver):
-    app_preview = LoginAsAppPreviewPage(driver)
+def test_case_18_data_preview_app_preview(driver, settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
     basic = BasicTestAppPreview(driver)
-    login = LoginAsAppPreviewPage(driver)
     app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
-    login.login_as_user(UserData.app_preview_mobile_worker)
+    app_preview.login_as_user(UserData.app_preview_mobile_worker)
     expression = basic.random_expression()
     basic.verify_data_preview(expression)
 
-def test_case_18_data_preview_web_apps(driver):
-    login = LoginAsPage(driver)
+def test_case_18_data_preview_web_apps(driver, settings):
+    login = LoginAsPage(driver, settings)
     login.open_webapps_menu()
     login.login_as_user(UserData.app_preview_mobile_worker)
     basic = BasicTestWebApps(driver)
@@ -67,17 +65,16 @@ def test_case_18_data_preview_web_apps(driver):
     expression = app_preview.random_expression()
     basic.verify_data_preview(expression)
 
-def test_case_19_group_app_preview(driver):
-    app_preview = LoginAsAppPreviewPage(driver)
+def test_case_19_group_app_preview(driver, settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
     basic = BasicTestAppPreview(driver)
-    login = LoginAsAppPreviewPage(driver)
     app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
-    login.login_as_user(UserData.app_preview_mobile_worker)
+    app_preview.login_as_user(UserData.app_preview_mobile_worker)
     basic.open_form(UserData.basic_tests_app['case_list'], UserData.basic_test_app_forms['group'])
     basic.group()
 
-def test_case_19_group_web_apps(driver):
-    login = LoginAsPage(driver)
+def test_case_19_group_web_apps(driver, settings):
+    login = LoginAsPage(driver, settings)
     login.open_webapps_menu()
     login.login_as_user(UserData.app_preview_mobile_worker)
     basic = BasicTestWebApps(driver)
@@ -87,30 +84,28 @@ def test_case_19_group_web_apps(driver):
     basic.group()
 
 
-def test_case_20_end_of_navigation_app_preview(driver):
-    app_preview = LoginAsAppPreviewPage(driver)
+def test_case_20_end_of_navigation_app_preview(driver, settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
     basic = BasicTestAppPreview(driver)
-    login = LoginAsAppPreviewPage(driver)
     app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
-    login.login_as_user(UserData.app_preview_mobile_worker)
+    app_preview.login_as_user(UserData.app_preview_mobile_worker)
     basic.open_form(UserData.basic_test_app_forms['eofn'], UserData.basic_test_app_forms['home'])
     basic.end_of_navigation_module(UserData.basic_test_app_forms['eofn'])
 
-def test_case_20_end_of_navigation_web_apps(driver):
-    login = LoginAsPage(driver)
+def test_case_20_end_of_navigation_web_apps(driver, settings):
+    login = LoginAsPage(driver, settings)
     login.open_webapps_menu()
     login.login_as_user(UserData.app_preview_mobile_worker)
     basic = BasicTestWebApps(driver)
     login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
     basic.open_form(UserData.basic_test_app_forms['eofn'], UserData.basic_test_app_forms['home'])
-    basic.end_of_navigation_module(UserData.basic_test_app_forms['eofn'])
+    basic.end_of_navigation_module(UserData.basic_test_app_forms['eofn'], settings)
 
-def test_case_21_case_register_app_preview(driver):
-    app_preview = LoginAsAppPreviewPage(driver)
+def test_case_21_case_register_app_preview(driver, settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
     basic = BasicTestAppPreview(driver)
-    login = LoginAsAppPreviewPage(driver)
     app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
-    login.login_as_user(UserData.app_preview_mobile_worker)
+    app_preview.login_as_user(UserData.app_preview_mobile_worker)
     basic.submit_basic_test_form()
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['create_case'])
     basic.register_negative_case()
@@ -128,8 +123,8 @@ def test_case_21_case_register_app_preview(driver):
     basic.close_case()
 
 
-def test_case_21_case_register_web_app(driver):
-    login = LoginAsPage(driver)
+def test_case_21_case_register_web_app(driver, settings):
+    login = LoginAsPage(driver, settings)
     login.open_webapps_menu()
     login.login_as_user(UserData.app_preview_mobile_worker)
     basic = BasicTestWebApps(driver)
@@ -152,25 +147,24 @@ def test_case_21_case_register_web_app(driver):
     basic.updated_case_detail_verification(new_data)
     login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['create_subcase'])
-    basic.create_and_verify_sub_case()
+    basic.create_and_verify_sub_case(settings)
     login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['close_case'])
-    basic.close_case()
+    basic.close_case(settings)
 
-def test_case_22_unicode_verification_app_preview(driver):
-    app_preview = LoginAsAppPreviewPage(driver)
+def test_case_22_unicode_verification_app_preview(driver, settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
     basic = BasicTestAppPreview(driver)
-    login = LoginAsAppPreviewPage(driver)
     app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
-    login.login_as_user(UserData.app_preview_mobile_worker)
+    app_preview.login_as_user(UserData.app_preview_mobile_worker)
     basic.submit_basic_test_form()
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['create_case'])
     basic.unicode_verification_case()
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['caselist'])
     basic.verify_updated_unicode()
 
-def test_case_22_unicode_verification_web_app(driver):
-    login = LoginAsPage(driver)
+def test_case_22_unicode_verification_web_app(driver, settings):
+    login = LoginAsPage(driver, settings)
     login.open_webapps_menu()
     login.login_as_user(UserData.app_preview_mobile_worker)
     basic = BasicTestWebApps(driver)
@@ -178,7 +172,7 @@ def test_case_22_unicode_verification_web_app(driver):
     basic.submit_basic_test_form()
     login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['create_case'])
-    basic.unicode_verification_case()
+    basic.unicode_verification_case(settings)
     login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
     basic.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['caselist'])
     basic.verify_updated_unicode()

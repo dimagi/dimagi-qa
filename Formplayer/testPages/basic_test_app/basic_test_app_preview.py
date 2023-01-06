@@ -170,8 +170,10 @@ class BasicTestAppPreview(BasePage):
         if len(list) != 0:
             for i in range(len(list)):
                 self.js_click_direct((By.XPATH, self.delete_incomplete_form.format(1)))
+                time.sleep(2)
                 self.wait_to_click(self.delete_confirm)
                 list = self.find_elements(self.incomplete_form_list)
+                print(len(list))
         self.switch_to_default_content()
         self.wait_to_click(self.back_button)
 

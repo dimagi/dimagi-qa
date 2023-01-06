@@ -148,15 +148,16 @@ class BasicTestWebApps(BasePage):
         time.sleep(2)
 
     def delete_all_incomplete_forms(self):
-
         self.wait_to_click(self.incomplete_form)
         list = self.find_elements(self.incomplete_form_list)
         print(len(list))
         if len(list) != 0:
             for i in range(len(list)):
                 self.js_click_direct((By.XPATH, self.delete_incomplete_form.format(1)))
+                time.sleep(1)
                 self.wait_to_click(self.delete_confirm)
                 list = self.find_elements(self.incomplete_form_list)
+                print(len(list))
         self.driver.back()
 
     def verify_number_of_forms(self, no_of_forms):
@@ -307,8 +308,8 @@ class BasicTestWebApps(BasePage):
         self.scroll_to_element((By.XPATH, self.pop_up_message.format(value)))
         assert self.is_present_and_displayed((By.XPATH, self.pop_up_message.format(value)))
 
-    def end_of_navigation_module(self, case):
-        login = LoginAsPage(self.driver)
+    def end_of_navigation_module(self, case, settings):
+        login = LoginAsPage(self.driver, settings)
         self.wait_to_clear_and_send_keys((By.XPATH, self.text_area_field.format("Submitting this will take you to the home screen.")), "home"+fetch_random_string())
         # self.wait_to_click(self.next_question)
         self.wait_to_click(self.submit_form_button)
@@ -525,7 +526,7 @@ class BasicTestWebApps(BasePage):
         self.wait_to_click(self.home_button)
         time.sleep(2)
 
-    def create_and_verify_sub_case(self):
+    def create_and_verify_sub_case(self, settings):
         self.wait_for_element(self.search_input)
         self.wait_to_clear_and_send_keys(self.search_input, self.case_reg_pos)
         self.wait_to_click(self.search_button)
@@ -557,7 +558,7 @@ class BasicTestWebApps(BasePage):
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
         time.sleep(2)
-        login = LoginAsPage(self.driver)
+        login = LoginAsPage(self.driver, settings)
         login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
         self.open_case_list(UserData.basic_test_app_forms['subcaseone'])
         self.wait_for_element(self.search_input)
@@ -582,7 +583,7 @@ class BasicTestWebApps(BasePage):
         self.wait_to_click(self.home_button)
 
 
-    def close_case(self):
+    def close_case(self, settings):
         self.wait_for_element(self.search_input)
         self.wait_to_clear_and_send_keys(self.search_input, self.case_reg_pos)
         self.wait_to_click(self.search_button)
@@ -598,7 +599,7 @@ class BasicTestWebApps(BasePage):
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
-        login = LoginAsPage(self.driver)
+        login = LoginAsPage(self.driver, settings)
         login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
         self.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['caselist'])
         self.wait_for_element(self.search_input)
@@ -608,7 +609,7 @@ class BasicTestWebApps(BasePage):
         assert self.is_present_and_displayed(self.empty_list)
         print("case search working properly")
 
-    def unicode_verification_case(self):
+    def unicode_verification_case(self, settings):
         self.wait_to_clear_and_send_keys((By.XPATH, self.text_area_field.format(
             "What is the case name? You should not be allowed to proceed if the question is empty.")),
                                          self.unicode_text)
@@ -619,7 +620,7 @@ class BasicTestWebApps(BasePage):
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
         time.sleep(2)
-        login = LoginAsPage(self.driver)
+        login = LoginAsPage(self.driver, settings)
         login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
         self.open_form(UserData.basic_test_app_forms['case_test'], UserData.basic_test_app_forms['update_case'])
         self.wait_for_element(self.search_input)

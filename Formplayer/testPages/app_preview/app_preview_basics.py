@@ -34,12 +34,12 @@ class AppPreviewBasics(BasePage):
         self.view_app_preview_show = (By.XPATH, "//i[@class ='fa fa-chevron-left js-preview-action-show hide']")
         self.app_preview_window = (By.XPATH, "//i[@class ='preview-phone-container']")
         self.app_preview_view = (By.XPATH, "//div[@id='js-appmanager-preview']")
-        self.tablet = (By.XPATH, "//div[@class='preview-phone-wrapper small-height open preview-tablet-mode']")
-        self.phone = (By.XPATH, "//div[@class='preview-phone-wrapper small-height open']")
+        self.tablet = (By.XPATH, "//div[contains(@class,'open preview-tablet-mode small-height')]")
+        self.phone = (By.XPATH, "//div[contains(@class,'open small-height')]")
         self.back_button = (By.XPATH, "//i[@class ='fa fa-chevron-left']")
         self.form_list = (By.XPATH, "//tbody[@class='menus-container']")
         self.refresh_button = (By.XPATH, "//button[contains(@class,'btn-preview-refresh js-preview-refresh')]")
-        self.toggle_button = (By.XPATH, "//button[contains(@class ,'js-preview-toggle-tablet-view')]")
+        self.toggle_button = "//button[contains(@class ,'js-preview-toggle-tablet-view')]/i[{}]"
         self.start_option = (By.XPATH, "//div[@class= 'js-start-app appicon appicon-start']")
         self.settings_option = (By.XPATH, "//div[@class = 'js-settings appicon appicon-settings']/i")
         self.login_as_option = (By.XPATH, "//div[@class='js-restore-as-item appicon appicon-restore-as']")
@@ -85,17 +85,23 @@ class AppPreviewBasics(BasePage):
         print(mode)
         if 'preview-tablet-mode' in mode:
             print("Preview is in Tablet View")
-            self.wait_to_click(self.toggle_button)
-            assert self.is_present(self.phone)
-            print("Preview mode changed to Phone View")
+            self.js_click((By.XPATH, self.toggle_button.format(2)))
+            time.sleep(2)
+            mode = self.get_attribute(self.app_preview_view, 'class')
+            print(mode)
+            assert 'preview-tablet-mode' not in mode, "Preview mode changed to Phone View"
         else:
             print("Preview is in Phone View")
-            self.wait_to_click(self.toggle_button)
-            assert self.is_present(self.tablet)
-            print("Preview mode changed to Tablet View")
-            self.wait_to_click(self.toggle_button)
-            assert self.is_present(self.phone)
-            print("Preview mode changed to Phone View")
+            self.js_click((By.XPATH, self.toggle_button.format(1)))
+            time.sleep(2)
+            mode = self.get_attribute(self.app_preview_view, 'class')
+            print(mode)
+            assert 'preview-tablet-mode' in mode, "Preview mode changed to Tablet View"
+            self.js_click((By.XPATH, self.toggle_button.format(2)))
+            time.sleep(2)
+            mode = self.get_attribute(self.app_preview_view, 'class')
+            print(mode)
+            assert 'preview-tablet-mode' not in mode, "Preview mode changed to Phone View"
 
 
     def icons_are_present(self):

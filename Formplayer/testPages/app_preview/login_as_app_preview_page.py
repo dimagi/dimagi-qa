@@ -13,9 +13,10 @@ from Formplayer.testPages.webapps.webapps_basics import WebAppsBasics
 
 class LoginAsAppPreviewPage(BasePage):
 
-    def __init__(self, driver):
+    def __init__(self, driver, settings):
         super().__init__(driver)
 
+        self.dashboard_link = settings['url'] + "/dashboard/project/"
         self.form_input_no_login = "app preview test without login" + fetch_random_string()
         self.form_input_login = "app preview test" + fetch_random_string()
         self.submitted_by_on_behalf = (By.XPATH, "//div[@class='pull-right'][contains(.,'Submitted by Web User')]/a[.='" + UserData.web_user + "']//following-sibling::text()[contains(.,'on behalf of Mobile Worker')]//following-sibling::a[.='" + UserData.app_preview_mobile_worker + "']")
@@ -53,6 +54,9 @@ class LoginAsAppPreviewPage(BasePage):
         self.full_menu = (By.LINK_TEXT, "Show Full Menu")
 
     def open_view_app_preview(self, test_app=UserData.basic_tests['tests_app']):
+        self.switch_to_default_content()
+        self.driver.get(self.dashboard_link)
+        self.wait_for_element(self.application_menu_id)
         if self.is_present(self.application_menu_id):
             self.wait_to_click(self.application_menu_id)
         else:
@@ -90,10 +94,10 @@ class LoginAsAppPreviewPage(BasePage):
         self.wait_to_click(self.start_option)
         self.wait_to_click(self.basic_tests_case)
         self.wait_to_click(self.basic_tests_form)
-        self.wait_to_clear_and_send_keys(self.basic_tests_answer_input, text)
-        self.wait_to_click(self.next_button)
+        self.wait_to_clear_and_send_keys(self.basic_tests_answer_input, text+Keys.TAB)
+        self.js_click(self.next_button)
         time.sleep(2)
-        self.wait_to_click(self.submit)
+        self.js_click(self.submit)
         time.sleep(2)
         assert self.is_visible_and_displayed(self.submit_success)
         self.switch_to_default_content()

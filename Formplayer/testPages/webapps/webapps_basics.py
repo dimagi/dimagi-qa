@@ -164,8 +164,11 @@ class WebAppsBasics(BasePage):
         self.open_web_apps_menu()
         self.login_as_a_user()
         self.wait_to_click(self.test_application)
+        time.sleep(2)
         self.wait_to_click(self.case_list_menu)
+        time.sleep(2)
         self.wait_to_click(self.registration_form)
+        time.sleep(2)
         self.wait_to_clear_and_send_keys(self.name_question, self.name_input)
         self.send_keys(self.dob_question,self.get_current_date_form_input()+Keys.TAB)
         # self.wait_to_click(self.click_today_date)
@@ -181,7 +184,7 @@ class WebAppsBasics(BasePage):
         self.wait_to_click(self.continue_button)
         self.wait_to_clear_and_send_keys(self.parent_question, self.parent_name_input)
         self.wait_to_clear_and_send_keys(self.no_of_kids, fetch_random_digit_with_range(1,5))
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         assert self.is_present_and_displayed(self.success_message)
 
 
