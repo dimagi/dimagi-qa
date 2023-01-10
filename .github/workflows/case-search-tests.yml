@@ -132,7 +132,7 @@ jobs:
 
 
       - name: Post to Slack channel on Failure
-        id: slack
+        id: slack2
         uses: slackapi/slack-github-action@v1.23.0
         if: failure()
         with:
@@ -159,7 +159,7 @@ jobs:
                             },
                             {
                                 "type": "mrkdwn",
-                                "text": "*Status: *\n ${{ job.status }}  :x:"
+                                "text": "*Status: *\n ${{ job.status }}  \n"
                             }
                         ]
                     },
@@ -167,7 +167,7 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Here's the corresponding worklow execution :arrow_right::arrow_right:"
+                            "text": "Here's the corresponding worklow execution"
                         },
                         "accessory": {
                             "type": "button",
@@ -180,6 +180,62 @@ jobs:
                             "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
                             "action_id": "button-action",
                             "style": "danger"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Post to Slack channel on Success
+        id: slack3
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": " Salut 👋 \n*${{ github.workflow }}* were just triggered!"
+                        }
+                    },
+                    {
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "*Environment: *\n ${{ matrix.environment }}  \n"
+                            },
+                          {
+                                "type": "mrkdwn",
+                                "text": " "
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": "*Status: *\n ${{ job.status }}  \n"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Here's the corresponding worklow execution"
+                        },
+                        "accessory": {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "View on Github",
+                                "emoji": true
+                            },
+                            "value": "click_me_123",
+                            "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                            "action_id": "button-action",
+                            "style": "primary"
                         }
                     }
                 ]
