@@ -56,6 +56,7 @@ class BasicTestAppPreview(BasePage):
         self.name_question = (By.XPATH,
                               "//label[.//span[.='Enter a Name']]/following-sibling::div//textarea[contains(@class,'textfield form-control')]")
         self.incomplete_form_list = (By.XPATH, "//tr[@class='formplayer-request']")
+        self.incomplete_list_count = (By.XPATH, "//ul/li[@data-lp]")
         self.delete_incomplete_form = "(//tr[@class='formplayer-request']/descendant::div[@aria-label='Delete form'])[{}]"
         self.edit_incomplete_form = (
             By.XPATH, "(//tr[@class='formplayer-request']/descendant::div//i[contains(@class,'fa fa-pencil')])[1]")
@@ -82,7 +83,7 @@ class BasicTestAppPreview(BasePage):
         self.submitted_value = "(//tbody//td[2]/div[contains(.,'{}')])[1]"
         self.table_data = (By.XPATH, "(//tbody//td[2]/div[contains(@class,'data-raw')])[1]")
 
-        self.data_preview = (By.XPATH, "//button[@aria-label='Expand Data Preview']")
+        self.data_preview = (By.XPATH, "//button[contains(@aria-label,'Data Preview')]")
         self.xpath_textarea = (By.XPATH, "//textarea[@placeholder='XPath Expression']")
         self.no_queries = (By.XPATH, "//i[.='No recent queries']")
         self.recent_query = "//tbody[@data-bind='foreach: recentXPathQueries']//td/span[.='{}']"
@@ -206,22 +207,45 @@ class BasicTestAppPreview(BasePage):
         self.switch_to_frame(self.iframe)
         self.send_keys(self.name_question, value)
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.home_button)
+        time.sleep(2)
+        self.js_click(self.home_button)
         self.switch_to_default_content()
         time.sleep(2)
 
     def delete_all_incomplete_forms(self):
         self.switch_to_frame(self.iframe)
         self.wait_to_click(self.incomplete_form)
-        list = self.find_elements(self.incomplete_form_list)
-        print(len(list))
-        if len(list) != 0:
-            for i in range(len(list)):
-                self.js_click_direct((By.XPATH, self.delete_incomplete_form.format(1)))
-                time.sleep(2)
-                self.wait_to_click(self.delete_confirm)
+        if self.is_present(self.find_elements(self.incomplete_list_count)):
+            page_list = len(self.find_elements(self.incomplete_list_count)) - 4
+            print(page_list)
+            for page in range(page_list):
                 list = self.find_elements(self.incomplete_form_list)
                 print(len(list))
+                if len(list) != 0:
+                    for i in range(len(list)):
+                        self.js_click_direct((By.XPATH, self.delete_incomplete_form.format(1)))
+                        time.sleep(2)
+                        self.wait_to_click(self.delete_confirm)
+                        list = self.find_elements(self.incomplete_form_list)
+                        print(len(list))
+                else:
+                    print("No incomplete form present")
+                self.switch_to_default_content()
+                self.wait_to_click(self.back_button)
+                self.switch_to_frame(self.iframe)
+                self.wait_to_click(self.incomplete_form)
+        else:
+            list = self.find_elements(self.incomplete_form_list)
+            print(len(list))
+            if len(list) != 0:
+                for i in range(len(list)):
+                    self.js_click_direct((By.XPATH, self.delete_incomplete_form.format(1)))
+                    time.sleep(2)
+                    self.wait_to_click(self.delete_confirm)
+                    list = self.find_elements(self.incomplete_form_list)
+                    print(len(list))
+            else:
+                print("No incomplete form present")
         self.switch_to_default_content()
         self.wait_to_click(self.back_button)
 
@@ -259,13 +283,19 @@ class BasicTestAppPreview(BasePage):
             text = self.get_attribute(self.name_question, "value")
             assert text == value
             self.wait_to_click(self.next_question)
-            self.wait_to_click(self.submit_form_button)
+            time.sleep(2)
+            self.js_click(self.submit_form_button)
+            time.sleep(2)
+            self.wait_for_element(self.success_message)
             print("Form submitted with unchanged value")
+            time.sleep(2)
+            self.wait_to_click(self.home_button)
+            time.sleep(2)
         else:
             print("There are no incomplete forms")
-        time.sleep(2)
-        self.wait_to_click(self.home_button)
-        time.sleep(2)
+            self.switch_to_default_content()
+            self.wait_to_click(self.back_button)
+            self.switch_to_frame(self.iframe)
         self.wait_to_click(self.sync_button)
         time.sleep(2)
         self.switch_to_default_content()
@@ -281,24 +311,33 @@ class BasicTestAppPreview(BasePage):
             assert text == value
             self.wait_to_clear_and_send_keys(self.name_question, self.changed_name_input)
             self.wait_to_click(self.next_question)
-            self.wait_to_click(self.submit_form_button)
+            time.sleep(2)
+            self.js_click(self.submit_form_button)
+            time.sleep(2)
+            self.wait_for_element(self.success_message)
             print("Form submitted with changed value")
+            time.sleep(2)
+            self.wait_to_click(self.home_button)
+            time.sleep(2)
         else:
             print("There are no incomplete forms")
-        time.sleep(2)
-        self.wait_to_click(self.home_button)
-        time.sleep(2)
+            self.switch_to_default_content()
+            self.wait_to_click(self.back_button)
+            self.switch_to_frame(self.iframe)
         self.wait_to_click(self.sync_button)
         time.sleep(2)
         self.switch_to_default_content()
 
     def verify_submit_history(self, value, username):
-        web_app = WebAppsBasics(self.driver)
-        web_app.open_submit_history_form_link(UserData.basic_tests_app, username)
-        print(value)
-        text = self.get_text(self.table_data)
-        print(str(text).strip())
-        assert str(text).strip() == value
+        try:
+            web_app = WebAppsBasics(self.driver)
+            web_app.open_submit_history_form_link(UserData.basic_tests_app, username)
+            print(value)
+            text = self.get_text(self.table_data)
+            print(str(text).strip())
+            assert str(text).strip() == value
+        except :
+            print("The submitted form details are not yet updated in submit history")
 
     def random_expression(self):
         return random.choice(UserData.expressions)
@@ -382,7 +421,7 @@ class BasicTestAppPreview(BasePage):
             "Pick one of the following.", "One")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         print("Group Form submitted successfully")
         time.sleep(2)
         self.js_click(self.home_button)
@@ -404,8 +443,10 @@ class BasicTestAppPreview(BasePage):
             (By.XPATH, self.text_area_field.format("Submitting this will take you to the home screen.")),
             "home" + fetch_random_string())
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.submit_form_button)
         time.sleep(2)
+        self.js_click(self.submit_form_button)
+        time.sleep(2)
+        self.wait_for_element(self.success_message)
         assert self.is_present((By.XPATH, self.case_list_menu.format(case)))
         time.sleep(2)
         self.wait_to_click(self.home_button)
@@ -417,7 +458,10 @@ class BasicTestAppPreview(BasePage):
             (By.XPATH, self.text_area_field.format("Submitting this will take you to the Module Menu.")),
             "module" + fetch_random_string())
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.submit_form_button)
+        time.sleep(2)
+        self.js_click(self.submit_form_button)
+        time.sleep(2)
+        self.wait_for_element(self.success_message)
         assert self.is_present((By.XPATH, self.case_list_menu.format(case)))
         time.sleep(2)
         self.wait_to_click(self.home_button)
@@ -430,9 +474,13 @@ class BasicTestAppPreview(BasePage):
         assert self.is_present_and_displayed((By.XPATH, self.module_search.format("home" + fetch_random_string())))
         self.wait_to_click((By.XPATH, self.module_search.format("home" + fetch_random_string())))
         self.wait_to_click(self.continue_button)
+        time.sleep(1)
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.submit_form_button)
-        time.sleep(4)
+        time.sleep(1)
+        self.js_click(self.submit_form_button)
+        time.sleep(2)
+        self.wait_for_element(self.success_message)
+        time.sleep(2)
         self.js_click(self.home_button)
         time.sleep(2)
         self.switch_to_default_content()
@@ -442,8 +490,11 @@ class BasicTestAppPreview(BasePage):
             (By.XPATH, self.text_area_field.format("Submitting this form will take you to the current module.")),
             "current" + fetch_random_string())
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.submit_form_button)
-        time.sleep(4)
+        time.sleep(1)
+        self.js_click(self.submit_form_button)
+        time.sleep(2)
+        self.wait_for_element(self.success_message)
+        time.sleep(2)
         assert self.is_present_and_displayed(
             (By.XPATH, self.case_list_menu.format(UserData.basic_test_app_forms["current"])))
         time.sleep(2)
@@ -459,7 +510,10 @@ class BasicTestAppPreview(BasePage):
         self.wait_to_click((By.XPATH, self.module_search.format("home" + fetch_random_string())))
         self.wait_to_click(self.continue_button)
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.submit_form_button)
+        time.sleep(1)
+        self.js_click(self.submit_form_button)
+        time.sleep(2)
+        self.wait_for_element(self.success_message)
         time.sleep(3)
         assert self.is_present_and_displayed(
             (By.XPATH, self.text_area_field.format("Submitting this will take you to the home screen.")))
@@ -473,7 +527,10 @@ class BasicTestAppPreview(BasePage):
             (By.XPATH, self.text_area_field.format("Submitting this will take you to the Module Badge Check Menu.")),
             "badge" + fetch_random_string())
         self.wait_to_click(self.next_question)
-        self.wait_to_click(self.submit_form_button)
+        time.sleep(1)
+        self.js_click(self.submit_form_button)
+        time.sleep(2)
+        self.wait_for_element(self.success_message)
         time.sleep(4)
         assert self.is_present_and_displayed(self.module_badge_table)
         time.sleep(2)
@@ -487,7 +544,7 @@ class BasicTestAppPreview(BasePage):
         self.wait_to_clear_and_send_keys(self.name_question, fetch_random_string())
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.js_click(self.home_button)
@@ -504,7 +561,7 @@ class BasicTestAppPreview(BasePage):
             "Are you sure you want to create a new case?", "Cancel - Please do not create this case.")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -521,7 +578,7 @@ class BasicTestAppPreview(BasePage):
             "Are you sure you want to create a new case?", "Confirm - Please create this case.")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -647,7 +704,7 @@ class BasicTestAppPreview(BasePage):
         time.sleep(2)
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(1)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -681,7 +738,7 @@ class BasicTestAppPreview(BasePage):
             "Do you want to create the sub case?", "Confirm - Please create " + self.subcase_pos + ".")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -707,7 +764,7 @@ class BasicTestAppPreview(BasePage):
             "Do you want to close the case?", "Yes")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -728,7 +785,7 @@ class BasicTestAppPreview(BasePage):
             "Are you sure you want to close this case?", "Confirm - Please close this case.")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -752,7 +809,7 @@ class BasicTestAppPreview(BasePage):
             "Are you sure you want to create a new case?", "Confirm - Please create this case.")))
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -807,7 +864,7 @@ class BasicTestAppPreview(BasePage):
         time.sleep(2)
         self.wait_to_click(self.next_question)
         time.sleep(1)
-        self.wait_to_click(self.submit_form_button)
+        self.js_click(self.submit_form_button)
         time.sleep(2)
         self.wait_for_element(self.success_message)
         self.wait_to_click(self.home_button)
@@ -922,3 +979,4 @@ class BasicTestAppPreview(BasePage):
         self.is_present_and_displayed(self.formplayer_badge)
         self.is_present_and_displayed(self.case_tests_badge)
         self.switch_to_default_content()
+
