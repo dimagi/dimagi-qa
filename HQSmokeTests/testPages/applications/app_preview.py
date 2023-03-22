@@ -17,7 +17,7 @@ class AppPreviewPage(BasePage):
         self.iframe_app_preview = (By.XPATH, "//iframe[@class='preview-phone-window']")
         self.app_preview_model = (By.XPATH, "//div[@class='preview-phone-container']")
         self.start = (By.ID, "single-app-start-heading")
-        self.case_list = (By.XPATH, "//div[@class='module-menu-container']")
+        self.case_list = (By.XPATH, "//div[@class='module-menu-container']//h3[.='Case List']")
         self.followup_form = (By.XPATH, "//h3[text()='Followup Form']")
         self.first_case_on_case_list = (By.XPATH, "(//td[@class='module-case-list-column'])[1]")
         self.continue_button = (By.ID, "select-case")
@@ -40,12 +40,9 @@ class AppPreviewPage(BasePage):
         self.wait_to_click(self.first_case_on_case_list)
         time.sleep(2)
         self.wait_to_click(self.continue_button)
-        try:
-            self.wait_to_click(self.submit)
-        except TimeoutException:
-            if self.is_displayed(self.next_button):
-                self.click(self.next_button)
-                self.wait_to_click(self.next_button)
-                self.js_click(self.complete_button)
+        time.sleep(2)
+        if self.is_displayed(self.next_button):
+            self.wait_to_click(self.next_button)
+            self.js_click(self.complete_button)
         self.is_visible_and_displayed(self.submit_success)
         self.driver.switch_to.default_content()

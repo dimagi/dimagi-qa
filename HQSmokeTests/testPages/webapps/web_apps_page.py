@@ -25,7 +25,8 @@ class WebAppsPage(BasePage):
         self.login_as_css = (By.CLASS_NAME, "js-restore-as-item")
         self.login_user = (By.XPATH, "//*[text()='" + UserData.login_as + "']")
         self.confirm_user_login = (By.XPATH, "//button[@id='js-confirmation-confirm']")
-
+        self.sync_button = (By.XPATH, "//h3[.='Sync']")
+        self.home_button = (By.XPATH, "//i[@class='fa fa-home']")
         self.apps_links = (By.XPATH, "//*[@class='fcc fcc-flower appicon-icon']")
         self.web_app_link = (By.XPATH, "//*[text()='" + UserData.reassign_cases_application + "']")
         self.case_list_link = (By.XPATH, "//*[text()='" + UserData.case_list_name + "']")
@@ -72,6 +73,10 @@ class WebAppsPage(BasePage):
         self.wait_for_element(self.success_message)
         assert self.is_displayed(self.success_message), "Form not submitted"
         print("Form successfully submitted")
+        self.js_click(self.home_button)
+        self.wait_for_element(self.sync_button)
+        self.js_click(self.sync_button)
+        time.sleep(5)
         self.driver.refresh()
         return self.case_name_created
 

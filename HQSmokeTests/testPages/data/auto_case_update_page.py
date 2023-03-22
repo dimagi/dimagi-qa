@@ -57,7 +57,7 @@ class AutoCaseUpdatePage(BasePage):
                 self.wait_to_click(self.delete_rule)
                 self.wait_to_click((By.XPATH, self.all_delete_confirm.format(self.rule_name)))
                 self.driver.refresh()
-            isPresent = self.is_visible_and_displayed(self.rule_created_path)
+            isPresent = self.is_visible_and_displayed(self.rule_created_path,10)
         except (TimeoutException, NoSuchElementException):
             isPresent = False
         assert not isPresent
@@ -67,13 +67,14 @@ class AutoCaseUpdatePage(BasePage):
         self.open_auto_case_update_page()
         list_rule = self.find_elements(self.all_test_rules)
         i = len(list_rule)
+        print(i)
         if len(list_rule) > 0:
-            while len(list_rule) != 0:
+            for i in range(len(list_rule))[::]:
+                print(list_rule[i].text)
                 self.wait_to_click((By.XPATH,self.all_test_rules_delete.format(list_rule[i].text)))
                 self.wait_to_click((By.XPATH, self.all_delete_confirm.format(list_rule[i].text)))
                 time.sleep(2)
                 self.driver.refresh()
                 list_rule = self.find_elements(self.all_test_rules)
-                i = len(list_rule)
         else:
             print("No test rule present")

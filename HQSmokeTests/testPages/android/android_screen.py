@@ -14,7 +14,7 @@ class AndroidScreen:
             "browserstack.key": settings["bs_key"],
 
             # Set URL of the application under test
-            "app": "bs://ba4bb239f7ad102317c486f682b1f8408203db71",
+            "app": "bs://05cbf4bab72569d22876e8fdc80c309b7d27d925",
 
             # Specify device and os_version for testing
             "device": "Google Pixel 4 XL",
@@ -44,6 +44,7 @@ class AndroidScreen:
         self.password = "org.commcare.dalvik:id/edit_password"
         self.login = "org.commcare.dalvik:id/login_button"
         self.start_button = "//android.widget.TextView[@text='Start']"
+        self.sync_button = "//android.widget.TextView[@text='Sync with Server']"
         self.case_list = "//android.widget.TextView[@text='"+UserData.case_list_name+"']"
         self.form = "//android.widget.TextView[@text='"+UserData.new_form_name+"']"
         self.text_field = "//android.widget.EditText"
@@ -87,6 +88,8 @@ class AndroidScreen:
         self.driver.find_element_by_xpath(self.submit_button).click()
         time.sleep(5)
         assert self.driver.find_element_by_xpath("//android.widget.TextView[@text='1 form sent to server!']").is_displayed()
+        self.driver.find_element_by_xpath(self.sync_button).click()
+        time.sleep(2)
 
     def close_android_driver(self):
         self.driver.quit()

@@ -9,6 +9,7 @@ from Features.CaseSearch.constants import *
 def test_case_01_check_search_input_on_caselist_casedetail_form(driver):
     webapps = WebApps(driver)
     casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.inline_search_menu)
     webapps.clear_selections_on_case_search_page()
@@ -18,12 +19,11 @@ def test_case_01_check_search_input_on_caselist_casedetail_form(driver):
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.seven,
                                         expected_value=CaseSearchUserInput.five)
-    case_name = webapps.omni_search(CaseSearchUserInput.song_case_bugs_user2)
-    webapps.select_case_and_continue(case_name)
+    case_name = webapps.select_first_case_on_list()
     casesearch.check_value_on_case_detail(tabname=CaseSearchUserInput.rating,
                                           search_property=CaseSearchUserInput.rating_input,
                                           expected_value=CaseSearchUserInput.five)
-    webapps.continue_to_forms()
+    webapps.select_case_and_continue(case_name)
     webapps.open_form(CaseSearchUserInput.update_song_form)
     casesearch.check_value_on_form(CaseSearchUserInput.five)
     webapps.submit_the_form()
@@ -41,12 +41,11 @@ def test_case_02_navigation_via_breadcrumbs(driver):
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.seven,
                                         expected_value=CaseSearchUserInput.five)
-    case_name = webapps.omni_search(CaseSearchUserInput.song_case_bugs_user2)
-    webapps.select_case_and_continue(case_name)
+    case_name = webapps.select_first_case_on_list()
     casesearch.check_value_on_case_detail(tabname=CaseSearchUserInput.rating,
                                           search_property=CaseSearchUserInput.rating_input,
                                           expected_value=CaseSearchUserInput.five)
-    webapps.continue_to_forms()
+    webapps.select_case_and_continue(case_name)
     webapps.open_form(CaseSearchUserInput.update_song_form)
     webapps.navigate_to_breadcrumb(CaseSearchUserInput.inline_search_menu)
 
@@ -72,8 +71,7 @@ def test_case_03_search_property_settings(driver):
                                         is_multi=YES)
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.seven,
                                         expected_value=CaseSearchUserInput.rating_four_and_five)
-    case_name = webapps.omni_search(CaseSearchUserInput.song_case_bugs_user2)
-    webapps.select_case_and_continue(case_name)
+    webapps.select_first_case_on_list()
     casesearch.check_value_on_case_detail(tabname=CaseSearchUserInput.rating,
                                           search_property=CaseSearchUserInput.rating_input,
                                           expected_value=CaseSearchUserInput.rating_four_and_five)
@@ -82,14 +80,15 @@ def test_case_03_search_property_settings(driver):
 def test_case_04_load_from_external_domain(driver):
     webapps = WebApps(driver)
     casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.inline_search_menu)
     webapps.clear_selections_on_case_search_page()
     casesearch.search_against_property(search_property=CaseSearchUserInput.song_name,
-                                       input_value=CaseSearchUserInput.song_case_bugs_on_casesearch_1,
+                                       input_value=CaseSearchUserInput.casesearch,
                                        property_type=TEXT_INPUT)
     webapps.search_button_on_case_search_page()
-    case_name = webapps.omni_search(CaseSearchUserInput.song_case_bugs_on_casesearch_1)
+    case_name = webapps.omni_search(CaseSearchUserInput.song_case_on_casesearch_1)
     webapps.select_case_and_continue(case_name)
     domain_url = driver.current_url
     assert "casesearch" in domain_url
@@ -99,7 +98,6 @@ def test_case_04_load_from_external_domain(driver):
                                     menu=CaseSearchUserInput.inline_search_menu)
     webapps.clear_selections_on_case_search_page()
     webapps.search_button_on_case_search_page()
-    case_name = webapps.omni_search(CaseSearchUserInput.song_case_make_you_mine)
-    webapps.select_case_and_continue(case_name)
+    webapps.select_first_case_on_list_and_continue()
     webapps.open_form(CaseSearchUserInput.add_show_form)
     webapps.submit_the_form()

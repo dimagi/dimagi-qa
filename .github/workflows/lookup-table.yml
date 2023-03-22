@@ -1,15 +1,9 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: HQ Smoke Tests
+name: Lookup table Tests
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  repository_dispatch:
-    types: [ deploy_success ]
   workflow_dispatch:
     inputs:
       environment:
@@ -22,7 +16,7 @@ on:
           - production
 
 concurrency:
-  group: tests-on-hq-${{ github.ref }}
+  group: lookup-table-tests-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -48,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
-    name: Smoke on '${{ matrix.environment }}'
+    name: Lookup tests on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -60,27 +54,22 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r HQSmokeTests/requires.txt
-
-      - name: CCHQ Smoke Test with pytest
+          pip install -r Features/Lookuptable/requires.txt
+      - name: Lookup table tests with pytest
         env:
-          DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
+          DIMAGIQA_ENV: ${{ matrix.environment }}
           DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
           DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
           DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
-          DIMAGIQA_BS_USER: ${{ secrets.DIMAGIQA_BS_USER }}
-          DIMAGIQA_BS_KEY: ${{ secrets.DIMAGIQA_BS_KEY }}
           DIMAGIQA_STAGING_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
           DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_PROD_AUTH_KEY }}
-          DIMAGIQA_INVITED_WEBUSER_PASSWORD: ${{ secrets.DIMAGIQA_INVITED_WEBUSER_PASSWORD }}
         run: |
           echo "client_payload: ${{ toJson(github.event.client_payload) }}"
           echo "matrix environment: ${{ matrix.environment }}"
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
-          pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html
-
+          pytest -v --rootdir= Features/Lookuptable/testCases -n 4 --dist=loadfile --html=lookup_report_${{ matrix.environment }}.html
       - name: Set email vars
         if: ${{ success() || failure() }}
         id: configure_email
@@ -91,11 +80,9 @@ jobs:
         with:
           script: |
             const { promises: fs } = require('fs')
-
             const {JOB_STATUS, NOW, CC_ENV, GITHUB_HEAD_REF} = process.env
-            const prefix = `[${CC_ENV}] Smoke Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
+            const prefix = `[${CC_ENV}] Lookuptable Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
             const suffix = `at ${NOW}`
-
             let subject = `${prefix} on "deploy_success" ${suffix}`
             if (context.eventName !== "repository_dispatch") {
               subject = `${prefix} on branch "${GITHUB_HEAD_REF}" ${suffix}`
@@ -105,27 +92,25 @@ jobs:
             if (JOB_STATUS !== 'success') {
               bodyFile = './common_utilities/mail_templates/email_fail.md'
             }
-
+            
             let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
-            let testSuite = 'CommCare HQ Smoke Test'
+            let testSuite = 'Lookup Table Regression'
             let bodyContent = await fs.readFile(bodyFile, 'utf8')
             bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
                 .replace(/{{runNumber}}/g, context.runNumber)
                 .replace(/{{environment}}/g, CC_ENV)
                 .replace(/{{testSuite}}/g, testSuite)
-
+            
             let receivers = 'qa-automation@dimagi.com'
             if (context.eventName !== "pull_request" || context.eventName !== "push") {
-              receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com'
+              receivers = 'kbordoloi@dimagi.com , sameena.shaik@fissionlabs.com'
             }
-
             return {
               "subject": subject,
               "body": bodyContent,
               "reference": Math.random().toString(36).substr(2),  // used to prevent threading of similar emails
               "receivers": receivers
             }
-
       - name: Send Result Email
         if: ${{ success() || failure() }}
         uses: dawidd6/action-send-mail@v3
@@ -139,70 +124,13 @@ jobs:
           from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
           html_body: ${{ fromJSON(steps.configure_email.outputs.result).body }}
           convert_markdown: true
-          attachments: ${{ github.workspace }}/report_${{ matrix.environment }}.html
+          attachments: ${{ github.workspace }}/lookup_report_${{ matrix.environment }}.html
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
-      - name: Post to Slack channel on Failure
-        id: slack
-        uses: slackapi/slack-github-action@v1.23.0
-        if: failure()
-        with:
-          payload: |
-            {
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": " Bonjour :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered!"
-                        }
-                    },
-                    {
-                        "type": "context",
-                        "elements": [
-                            {
-                                "type": "mrkdwn",
-                                "text": "*Environment: *\n ${{ matrix.environment }}  \n"
-                            },
-                          {
-                                "type": "mrkdwn",
-                                "text": " "
-                            },
-                            {
-                                "type": "mrkdwn",
-                                "text": "*Status: *\n ${{ job.status }}  :x:"
-                            }
-                        ]
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Here's the corresponding workflow execution :arrow_right::arrow_right:"
-                        },
-                        "accessory": {
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "View on Github",
-                                "emoji": true
-                            },
-                            "value": "click_me_123",
-                            "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                            "action_id": "button-action",
-                            "style": "danger"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Archive test results
         if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: test-result-reports-${{ matrix.environment }}
-          path: ${{ github.workspace }}/report_${{ matrix.environment }}.html
-          retention-days: 2
+          path: ${{ github.workspace }}/lookup_report_${{ matrix.environment }}.html

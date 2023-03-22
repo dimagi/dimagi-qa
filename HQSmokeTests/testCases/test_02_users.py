@@ -59,11 +59,14 @@ def test_case_05_create_group_and_assign_user(driver, settings):
 @pytest.mark.groups
 @pytest.mark.userImport
 @pytest.mark.userExport
-def test_case_10_download_and_upload_users(driver):
+def test_case_10_download_and_upload_users(driver, settings):
     user = MobileWorkerPage(driver)
+    home = HomePage(driver, settings)
+    home.users_menu()
     newest_file = user.download_mobile_worker()
     print("Group ID:", group_id["value"])
     user.check_for_group_in_downloaded_file(newest_file, group_id["value"])
+    home.users_menu()
     user.upload_mobile_worker()
 
 

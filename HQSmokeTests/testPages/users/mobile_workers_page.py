@@ -8,7 +8,7 @@ from common_utilities.path_settings import PathSettings
 from common_utilities.generate_random_string import fetch_random_string, fetch_phone_number
 from HQSmokeTests.userInputs.user_inputs import UserData
 from HQSmokeTests.testPages.users.org_structure_page import latest_download_file
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 
 """"Contains test page elements and functions related to the User's Mobile Workers module"""
@@ -20,14 +20,12 @@ class MobileWorkerPage(BasePage):
         super().__init__(driver)
 
         self.username = "username_" + fetch_random_string()
-        self.username2 = "user_" + fetch_random_string()
         self.login_as_username = (By.XPATH, "//h3/b[.='" + self.username + "']")
         self.profile_name_text = "test_profile_" + fetch_random_string()
         self.phone_number = UserData.area_code + fetch_phone_number()
 
         self.username_link = (By.LINK_TEXT, self.username)
-        self.username2_link = (By.LINK_TEXT, self.username2)
-        self.confirm_user_field_delete = (By.XPATH, "//button[@class='btn btn-danger']")
+        self.confirm_user_field_delete = (By.XPATH, "(//a[.='Cancel']//following-sibling::button[@class='btn btn-danger'])[last()]")
         self.delete_user_field = (By.XPATH,
                                   "(//input[@data-bind='value: slug'])[last()]//following::a[@class='btn btn-danger' and @data-toggle='modal'][1]")
         self.delete_success_mw = (By.XPATH, "//div[@class='alert alert-margin-top fade in alert-success']")
@@ -78,11 +76,11 @@ class MobileWorkerPage(BasePage):
         self.NEW = (By.XPATH, "//span[@class='text-success']")
         self.edit_user_field_xpath = (By.XPATH, "//*[@id='btn-edit_user_fields']")
         self.add_field_xpath = (By.XPATH, "//button[@data-bind='click: addField']")
-        self.user_property_xpath = (By.XPATH, "(//input[@data-bind='value: slug'])[last()]")
-        self.label_xpath = (By.XPATH, "(//input[@data-bind='value: label'])[last()]")
+        self.user_property_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: slug')])[last()]")
+        self.label_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: label')])[last()]")
         self.choices_button_xpath = (By.XPATH, "(//div[contains(text(), 'Choices')])[last()]")
-        self.add_choice_button_xpath = (By.XPATH, "(//button[@data-bind='click: addChoice'])[last()]")
-        self.choice_xpath = (By.XPATH, "(//input[@data-bind='value: value'])[last()]")
+        self.add_choice_button_xpath = (By.XPATH, "(//button[contains(@data-bind,'click: addChoice')])[last()]")
+        self.choice_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: value')])[last()]")
         self.save_field_id = (By.ID, "save-custom-fields")
         self.duplicate_field_error = (By.XPATH, "//div[contains(text(), 'was duplicated, key names must be unique')]")
         self.user_field_success_msg = (By.XPATH, "//div[@class='alert alert-margin-top fade in alert-success']")
@@ -116,7 +114,7 @@ class MobileWorkerPage(BasePage):
         self.field_tab = (By.XPATH, "//a[@href='#tabs-fields']")
         self.profile_tab = (By.XPATH, "//a[@href='#tabs-profiles']")
         self.add_new_profile = (By.XPATH, "//button[@data-bind='click: addProfile']")
-        self.profile_name = (By.XPATH, "//tr[last()]//input[@data-bind='value: name']")
+        self.profile_name = (By.XPATH, "//tr[last()]//input[contains(@data-bind,'value: name')]")
         self.profile_edit_button = (By.XPATH, "//tr[last()]//a[@class='btn btn-default enum-edit']")
         self.profile_delete_button = (
             By.XPATH, "//tbody[@data-bind='foreach: profiles']//tr[last()]//td[last()]//i[@class='fa fa-times']")
@@ -151,7 +149,7 @@ class MobileWorkerPage(BasePage):
         self.upload = (By.XPATH, "//button[@class='btn btn-primary disable-on-submit']")
         self.successfully_uploaded = (By.XPATH, "//p[contains(text(),'Successfully uploaded')]")
         self.import_complete = (By.XPATH, "//legend[text()='Bulk upload complete.']")
-        self.download_filter = (By.XPATH, "//button[@data-bind='html: buttonHTML']")
+        self.download_filter = (By.XPATH, "//button[contains(.,'Download')]")
         self.error_403 = (By.XPATH, "//h1[text()='403 Forbidden']")
 
     def search_user(self):
@@ -350,6 +348,7 @@ class MobileWorkerPage(BasePage):
         newest_file = latest_download_file()
         self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
         print("File download successful")
+
         return newest_file
 
     def upload_mobile_worker(self):
@@ -436,14 +435,14 @@ class MobileWorkerPage(BasePage):
     def create_new_mobile_worker(self):
         self.create_mobile_worker()
         self.mobile_worker_menu()
-        self.mobile_worker_enter_username("user_" + str(fetch_random_string()))
+        username_entered = self.mobile_worker_enter_username("user_" + str(fetch_random_string()))
         self.mobile_worker_enter_password(fetch_random_string())
         self.wait_to_click(self.create_button_xpath)
         time.sleep(4)
         self.is_present_and_displayed(self.NEW)
         new_user_created = self.get_text(self.new_user_created_xpath)
         print("Username is : " + new_user_created)
-        assert self.username2 == new_user_created, "Could find the new mobile worker created"
+        assert username_entered == new_user_created, "Could find the new mobile worker created"
         print("Mobile Worker Created")
 
     def create_new_user_fields(self, userfield):
@@ -462,7 +461,7 @@ class MobileWorkerPage(BasePage):
         time.sleep(2)
         self.wait_to_click(self.search_button_mw)
         time.sleep(3)
-        self.click(self.username2_link)
+        self.click((By.LINK_TEXT, user))
         self.select_by_text(self.additional_info_select2, "field_" + fetch_random_string())
         assert self.is_displayed(self.user_file_additional_info2), "Unable to assign user field to user."
 
@@ -474,11 +473,11 @@ class MobileWorkerPage(BasePage):
         time.sleep(2)
         self.wait_to_click(self.search_button_mw)
         time.sleep(3)
-        self.click(self.username2_link)
+        self.click((By.LINK_TEXT, user))
         try:
             self.wait_to_click(self.actions_tab_link_text)
             self.wait_to_click(self.delete_mobile_worker)
-            self.wait_to_clear_and_send_keys(self.enter_username, self.username2 + "@" + self.get_domain()
+            self.wait_to_clear_and_send_keys(self.enter_username, user + "@" + self.get_domain()
                                              + ".commcarehq.org")
             self.wait_to_click(self.confirm_delete_mw)
         except (TimeoutException, NoSuchElementException):

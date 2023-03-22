@@ -25,14 +25,14 @@ class HomePage(BasePage):
         self.messaging_menu_id = (By.ID, "MessagingTab")
         self.admin_menu_id = (By.ID, "AdminTab")
         self.alert_button_accept = (By.ID, "hs-eu-confirmation-button")
-        self.application_path = (By.LINK_TEXT, UserData.village_application)
+        self.application_path = (By.LINK_TEXT, UserData.reassign_cases_application)
         self.mobile_workers_menu_link_text = (By.LINK_TEXT, "Mobile Workers")
         self.show_full_menu_id = (By.ID, "commcare-menu-toggle")
 
         self.DASHBOARD_TITLE = "CommCare HQ"
         self.REPORTS_TITLE = "My Saved Reports : Project Reports :: - CommCare HQ"
         self.DATA_TITLE = "Export Form Data : Data :: - CommCare HQ"
-        self.APP_TITLE = "Releases - " + UserData.village_application + " - CommCare HQ"
+        self.APP_TITLE = "Releases - " + UserData.reassign_cases_application + " - CommCare HQ"
         self.USERS_TITLE = "Mobile Workers : Users :: - CommCare HQ"
         self.MESSAGING_TITLE = "Dashboard : Messaging :: - CommCare HQ"
         self.WEBAPPS_TITLE = "Web Apps - CommCare HQ"

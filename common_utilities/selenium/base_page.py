@@ -384,3 +384,8 @@ class BasePage:
 
     def open_new_tab(self):
         self.driver.execute_script("window.open('');")
+
+    def wait_for_ajax(self):
+        wait = WebDriverWait(self.driver, 500)
+        wait.until(lambda driver: self.driver.execute_script('return jQuery.active') == 0)
+        wait.until(lambda driver: self.driver.execute_script('return document.readyState') == 'complete')

@@ -57,13 +57,13 @@ class OrganisationStructurePage(BasePage):
         self.location_created_xpath = (By.XPATH, "//span[text()='" + self.new_location_name + "']")
         self.renamed_location = (By.XPATH, "//span[text()='updated_on:" + str(date.today()) + "']")
         self.edit_loc_field_btn_xpath = (By.XPATH, "//a[@data-action='Edit Location Fields']")
-        self.add_field_btn_xpath = (By.XPATH, "//button[@data-bind='click: addField']")
-        self.loc_property_xpath = (By.XPATH, "(//input[@data-bind='value: slug'])[last()]")
-        self.loc_label_xpath = (By.XPATH, "(//input[@data-bind='value: label'])[last()]")
+        self.add_field_btn_xpath = (By.XPATH, "//button[contains(@data-bind,'click: addField')]")
+        self.loc_property_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: slug')])[last()]")
+        self.loc_label_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: label')])[last()]")
         self.choice_selection = (By.XPATH, "(//div[contains(@data-bind, \"validationMode('choice')\")])[last()]")
         self.choices_button_xpath = (By.XPATH, "(//div[contains(text(), 'Choices')])[last()]")
-        self.add_choice_btn_xpath = (By.XPATH, "(//button[@data-bind='click: addChoice'])[last()]")
-        self.choice_xpath = (By.XPATH, "(//input[@data-bind='value: value'])[last()]")
+        self.add_choice_btn_xpath = (By.XPATH, "(//button[contains(@data-bind,'click: addChoice')])[last()]")
+        self.choice_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: value')])[last()]")
         self.save_btn_id = (By.ID, "save-custom-fields")
         self.success_msg_xpath = (By.XPATH, "//div[@class='alert alert-margin-top fade in alert-success']")
         self.additional_info_drop_down = (
@@ -99,7 +99,7 @@ class OrganisationStructurePage(BasePage):
         self.delete_confirm_button = (
             By.XPATH, "//button[@data-bind ='click: delete_fn, css: {disabled: !(signOff() == count)}']")
         self.delete_loc_field = (By.XPATH, "(//a[@class='btn btn-danger'])[last()]")
-        self.delete_org_level = (By.XPATH, "(//button[@class='btn btn-danger'])[last()]")
+        self.delete_org_level = (By.XPATH, "(//a[.='Cancel']//following-sibling::button[@class='btn btn-danger'])[last()]")
         self.delete_success = (By.XPATH, "//div[@class='alert fade in message-alert alert-success']")
 
     def organisation_menu_open(self):

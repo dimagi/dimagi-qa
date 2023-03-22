@@ -199,6 +199,8 @@ class MessagingPage(BasePage):
         self.wait_to_click(self.save_button_xpath)
         print("Sleeping till the alert processing completes")
         time.sleep(20)
+        self.driver.refresh()
+        self.wait_for_element(self.search_box)
         self.wait_to_click(self.search_box)
         assert self.is_displayed(self.cond_alert_created), "Conditional Alert not created successfully!"
         print("Conditional Alert created successfully!")

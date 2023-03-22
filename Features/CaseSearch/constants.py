@@ -15,3 +15,6 @@ PREV_MENU = "PREV_MENU"
 MENU = "MENU"
 FIRST_MENU = "FIRST_MENU"
 HOME_SCREEN = "HOME_SCREEN"
+
+#Answer Types
+textarea="textarea"
