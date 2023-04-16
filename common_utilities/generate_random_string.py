@@ -25,3 +25,6 @@ def fetch_random_digit():
 
 def fetch_random_boolean():
     return random.choice([True, False])
+
+def fetch_random_digit_with_range(start, end):
+    return str(random.randint(start, end))
