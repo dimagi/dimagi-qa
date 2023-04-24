@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from selenium.webdriver.common.keys import Keys
 
-from Formplayer.testPages.app_preview.login_as_app_preview_page import LoginAsAppPreviewPage
 from Formplayer.testPages.webapps.login_as_page import LoginAsPage
 from Formplayer.testPages.webapps.webapps_basics import WebAppsBasics
 from common_utilities.generate_random_string import fetch_random_string, fetch_phone_number, fetch_random_digit, \
@@ -144,6 +143,54 @@ class BasicTestWebApps(BasePage):
         self.module_search = "//td[.='{}']"
         self.continue_button = (By.XPATH, "//button[.='Continue']")
         self.module_badge_table = (By.XPATH, "//table[contains(@class, 'module-table-case-list')]")
+
+        # maps
+        self.location_input = (By.XPATH, "//input[@class='query form-control']")
+        self.location_search_button = (By.XPATH, "//button[@class ='btn btn-default search']")
+        self.submit_form_button_2 = (By.XPATH, "//button[contains(@data-bind,'enable: enableSubmitButton')]")
+        self.clear_map = (By.XPATH, "//button[contains(@data-bind,'click: onClear')]")
+
+        # Multimedia App Logo & Menu and Forms
+        self.multimedia_app_logo = (By.XPATH, "//div/i[@class='fcc appicon-custom appicon-icon']/following::div/h3["
+                                              "text()='Multimedia']")
+        self.multimedia_app = (By.XPATH, "//h3[text()='Multimedia']")
+        self.formplayer_tests_menu_icon = (By.XPATH, "//td[./h3[.='Formplayer Tests']]/preceding-sibling::td/div["
+                                                     "contains(@style,'module3')]")
+        self.formplayer_tests_audio_icon = (By.XPATH, "//h3[text()='Formplayer Tests']/following-sibling::div/div/i["
+                                                      "@class='fa fa-volume-up module-audio-icon "
+                                                      "js-module-audio-icon']")
+        self.formplayer_tests_menu = (By.XPATH, "//h3[text()='Formplayer Tests']")
+        self.formplayer_multimedia_audio_icon = (By.XPATH, "//h3[text()='Formplayer "
+                                                           "Multimedia']/following-sibling::div/div/i[@class='fa "
+                                                           "fa-volume-up module-audio-icon js-module-audio-icon']")
+        self.formplayer_multimedia_menu_icon = (By.XPATH, "//td[./h3[.='Formplayer "
+                                                          "Multimedia']]/preceding-sibling::td/div[contains(@style,"
+                                                          "'module3')]")
+        self.formplayer_multimedia_form = (By.XPATH, "//h3[text()='Formplayer Multimedia']")
+        self.multimedia_gif = (By.XPATH, "//span[text()='This should play a hillarious "
+                                         "gif']/following-sibling::div/img[contains(@src,'.gif')]")
+        self.multimedia_image = (By.XPATH, "//div[./span[text()='This question should have image multimedia. Enter "
+                                           "yes if so.']]/following::div/img[contains(@src, '.jpg')]")
+        self.image_input_box = (By.XPATH, "//div[./img[contains(@src, 'jpg')]]/preceding-sibling::div[1]/textarea")
+        self.multimedia_video = (By.XPATH, "//div/legend[./span[text()='Video Tests']]/following::div/video[contains("
+                                           "@src, 'mp4')]")
+        self.video_input_box = (By.XPATH, "//div[./video[contains(@src, 'mp4')]]/preceding-sibling::div[1]/textarea")
+        self.multimedia_audio = (By.XPATH, "//div/legend[./span[text()='Audio Tests']]/following::div/audio[contains("
+                                           "@src, 'mp3')]")
+        self.audio_input_box = (By.XPATH, "//div[./audio[contains(@src, 'mp3')]]/preceding-sibling::div[1]/textarea")
+        # Custom Badge
+        self.formplayer_badge = (By.XPATH, "//h3[text()='Formplayer Specific Tests']/preceding::span[@class='badge']")
+        self.case_tests_badge = (By.XPATH, "//h3[text()='Case Tests']/preceding::span[@class='badge'][2]")
+
+        # Sub Menu
+        self.parent_menu = (By.XPATH, "//h3[contains(text(),'Parent Menu')]")
+        self.parent_survey = (By.XPATH, "//h3[contains(text(),'Survey under parent menu')]")
+        self.child_menu = (By.XPATH, "//h3[contains(text(),'Child Menu')]")
+        self.visible_child_survey = (By.XPATH, "//h3[contains(text(),'Visible survey under child')]")
+        self.submit_survey_button = (By.XPATH, "//button[@class= 'submit btn btn-primary']")
+        self.child_survey_under_child_menu = (By.XPATH, "//h3[contains(text(),'Survey under child menu')]")
+
+
 
         # contraints
         self.success_check = (By.XPATH, "//i[@class='fa fa-check text-success']")
@@ -797,6 +844,65 @@ class BasicTestWebApps(BasePage):
         self.wait_for_element(self.home_button)
         self.wait_to_click(self.home_button)
         time.sleep(2)
+
+    def maps_record_location(self):
+        self.wait_to_clear_and_send_keys(self.location_input, UserData.map_input)
+        self.wait_to_click(self.location_search_button)
+        time.sleep(5)
+        self.js_click(self.clear_map)
+        time.sleep(5)
+        print("Coordinates cleared")
+        assert self.is_present(self.blank_latitude), "Coordinates not cleared"
+        time.sleep(3)
+        self.wait_to_click(self.submit_form_button)
+
+    def sub_menus(self):
+        self.js_click(self.parent_menu)
+        self.is_present_and_displayed(self.parent_survey)
+        self.is_present_and_displayed(self.child_menu)
+        self.is_present_and_displayed(self.visible_child_survey)
+        self.wait_to_click(self.parent_survey)
+        self.wait_to_click(self.submit_survey_button)
+        self.js_click(self.parent_menu)
+        self.wait_to_click(self.child_menu)
+        self.is_present_and_displayed(self.child_survey_under_child_menu)
+        self.wait_to_click(self.child_survey_under_child_menu)
+        self.wait_to_click(self.submit_survey_button)
+        self.js_click(self.parent_menu)
+        self.is_present_and_displayed(self.visible_child_survey)
+        self.wait_to_click(self.visible_child_survey)
+        self.wait_to_click(self.submit_survey_button)
+
+    def multimedia_logo(self):
+        self.is_displayed(self.multimedia_app_logo)
+        print("Logo is present")
+
+    def multimedia_forms_menus(self):
+        self.js_click(self.multimedia_app)
+        self.is_displayed(self.formplayer_tests_audio_icon)
+        self.is_displayed(self.formplayer_tests_menu_icon)
+        self.js_click(self.formplayer_tests_menu)
+        self.is_displayed(self.formplayer_multimedia_audio_icon)
+        self.is_displayed(self.formplayer_multimedia_menu_icon)
+
+    def multimedia_form_navigation(self):
+        self.js_click(self.formplayer_tests_menu)
+        self.js_click(self.formplayer_multimedia_form)
+        self.is_displayed(self.multimedia_gif)
+        image_present = self.is_displayed(self.multimedia_image)
+        assert image_present == True
+        self.wait_to_clear_and_send_keys(self.image_input_box, 'Yes')
+        video_present = self.is_displayed(self.multimedia_video)
+        assert video_present == True
+        self.wait_to_clear_and_send_keys(self.video_input_box, 'yes')
+        audio_present = self.is_displayed(self.multimedia_audio)
+        assert audio_present == True
+        self.wait_to_clear_and_send_keys(self.audio_input_box, 'yes')
+        self.wait_to_click(self.submit_form_button)
+
+    def custom_badge(self):
+        self.is_present_and_displayed(self.formplayer_badge)
+        self.is_present_and_displayed(self.case_tests_badge)
 
     def fixtures_form(self):
         self.wait_to_click((By.XPATH, self.choose_radio_button.format('Select at least 2!', '3')))

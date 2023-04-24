@@ -84,6 +84,10 @@ class UserData:
         "case_list": "Formplayer Specific Tests",
         "form_name": "[Formplayer] Appearance Attributes and Formatting"}
 
+    multimedia_app = {
+        "tests_app": "Multimedia"}
+    map_input = "New Delhi"
+
     expressions = ['true()', 'false()', 'boolean-from-string(1)',
                    'boolean-from-string(0)', 'boolean(1)', 'boolean(0)']
     unicode = "☕️☕️☕️"
