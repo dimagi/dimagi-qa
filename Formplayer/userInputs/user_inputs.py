@@ -87,6 +87,10 @@ class UserData:
         "linking_data": "Linking Data"
     }
 
+    multimedia_app = {
+        "tests_app": "Multimedia"}
+    map_input = "New Delhi"
+
     form_specific_tests_app = {
         "tests_app": "Basic Tests",
         "case_list": "Formplayer Specific Tests",
