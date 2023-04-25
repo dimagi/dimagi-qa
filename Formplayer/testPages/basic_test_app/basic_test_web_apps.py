@@ -190,8 +190,6 @@ class BasicTestWebApps(BasePage):
         self.submit_survey_button = (By.XPATH, "//button[@class= 'submit btn btn-primary']")
         self.child_survey_under_child_menu = (By.XPATH, "//h3[contains(text(),'Survey under child menu')]")
 
-
-
         # contraints
         self.success_check = (By.XPATH, "//i[@class='fa fa-check text-success']")
         self.error_banner_list = "//div[contains(@data-bind,'erroredQuestions')]//li[contains(.,'{}')]"
@@ -241,6 +239,9 @@ class BasicTestWebApps(BasePage):
 
         #iteration repeat
         self.show_iten_checkbox = "//label[.//span[contains(.,'{}')]]//following::fieldset[1]//div[@class='checkbox']//*[.='Show this item in the next loop']"
+
+        #formplayer_Attributes and all
+
 
     def open_form(self, case_list, form_name):
         self.scroll_to_element((By.XPATH, self.case_list_menu.format(case_list)))
