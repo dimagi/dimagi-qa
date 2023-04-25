@@ -10,7 +10,6 @@ on:
     branches: [ master ]
   repository_dispatch:
     types: [ deploy_success ]
-
   workflow_dispatch:
     inputs:
       environment:
@@ -20,11 +19,6 @@ on:
         type: choice
         options:
           - staging
-
-
-concurrency:
-  group: tests-on-formplayer-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   set_matrix:

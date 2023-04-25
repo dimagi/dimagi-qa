@@ -90,11 +90,11 @@ class LoginAsPage(BasePage):
     def login_as_user(self, username):
         self.wait_to_click(self.login_as)
         self.wait_to_clear_and_send_keys(self.search_user_input_area, username)
-        self.js_click(self.search_users_button)
+        self.wait_to_click(self.search_users_button)
         time.sleep(2)
-        self.js_click((By.XPATH, self.username_in_list.format(username)))
+        self.wait_to_click((By.XPATH, self.username_in_list.format(username)))
         time.sleep(2)
-        self.js_click(self.webapp_login_confirmation)
+        self.wait_to_click(self.webapp_login_confirmation)
         time.sleep(2)
         logged_in_username = self.get_text(self.webapp_working_as)
         assert logged_in_username == self.username, "Logged in"
