@@ -17,10 +17,6 @@ on:
           - staging
           - production
 
-concurrency:
-  group: multi-select-tests-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   set_matrix:
     runs-on: ubuntu-latest
@@ -41,6 +37,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.environment }}
+      cancel-in-progress: true
     name: Multi Select on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
     steps:

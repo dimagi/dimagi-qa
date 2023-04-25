@@ -21,10 +21,6 @@ on:
           - staging
           - production
 
-concurrency:
-  group: tests-on-hq-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   set_matrix:
     runs-on: ubuntu-latest
@@ -48,6 +44,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.environment }}
+      cancel-in-progress: true
     name: Smoke on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
     steps:

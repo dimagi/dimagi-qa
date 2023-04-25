@@ -44,6 +44,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.environment }}
+      cancel-in-progress: true
     name: Request API on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
 

@@ -40,7 +40,7 @@ class MessagingPage(BasePage):
         self.broadcast_name = (By.XPATH, "//input[@name='schedule-schedule_name']")
         self.recipients = (By.XPATH, "(//span[@class='select2-selection select2-selection--multiple'])[1]")
         self.user_recipient = (By.XPATH, "(//span[@class='select2-selection select2-selection--multiple'])[2]")
-        self.select_value_dropdown = (By.XPATH, "(//ul[@class='select2-results__options']/li)[1]")
+        self.select_value_dropdown = (By.XPATH, "//ul[@class='select2-results__options']/li[.='"+UserData.app_login+"']")
         self.broadcast_message = (By.XPATH, "(//textarea[@data-bind='value: nonTranslatedMessage'])[2]")
         self.email_subject = (By.XPATH, "(//textarea[@data-bind='value: nonTranslatedMessage'])[1]")
         self.send_broadcast = (By.XPATH, "//button[@data-bind='text: saveBroadcastText()']")
