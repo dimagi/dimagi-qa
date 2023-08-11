@@ -1,3 +1,5 @@
+from selenium.common import TimeoutException
+
 from Features.CaseSearch.constants import *
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from USH_Apps.CO_BHA.test_pages.bha_app_pages import BhaWorkflows
@@ -70,7 +72,11 @@ def test_case_02_admit_case_2(driver):
     casesearch.select_checkbox(BhaUserInput.consent, BhaUserInput.yes_small, select_by_value=text)
     webapps.search_button_on_case_search_page()
     # CHECK QUESTION TEXT
-    app.select_radio(BhaUserInput.yes)
+    try:
+        app.select_radio(BhaUserInput.yes)
+    except TimeoutException:
+        app.click_on_admit_new_client()
+        app.select_radio(BhaUserInput.yes)
     # CHECK TABLE CONTENT
     app.check_answer_options(label=BhaUserInput.admit_client_form, displayed=NO)
     """Admission question is hidden upon selecting cancel"""
