@@ -5,6 +5,7 @@ import string
 
 chars = string.ascii_lowercase + string.digits
 random_string = ''.join(random.choices(chars, k=6))
+
 N = 10
 random_number = random.randint(100, 19999)
 
