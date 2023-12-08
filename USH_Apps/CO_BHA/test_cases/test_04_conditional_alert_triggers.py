@@ -11,9 +11,8 @@ from USH_Apps.CO_BHA.user_inputs.bha_user_inputs import BhaUserInput
 from common_utilities.selenium.base_page import BasePage
 
 
-@pytest.mark.skip(reason="Test case fails due to conditional alert delay")
 def test_messaging_history_triggers(driver, settings):
-    """use case: Check if conditional alerts have been triggred for all workflows"""
+    """use case: Check if conditional alerts have been triggered for all workflows"""
     report = HomePage(driver, settings)
     load = ReportPage(driver)
     app = BhaWorkflows(driver)
