@@ -119,6 +119,8 @@ jobs:
               receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com, pruthvi.gottimukkula@fissionlabs.com'
             }
 
+            let SLACK_WEBHOOK_URL =
+
             return {
               "subject": subject,
               "body": bodyContent,
@@ -142,33 +144,10 @@ jobs:
           attachments: ${{ github.workspace }}/report_${{ matrix.environment }}.html
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
-      - name: Set slack vars
-        if: ${{ always() }}
-        id: configure_slack
-        uses: actions/github-script@v6
-        env:
-            JOB_STATUS: ${{ job.status }}
-            CC_ENV: ${{ matrix.environment }}
-            EVENT_TYPE: ${{ github.event_name }}
-        with:
-          script: |
-            let SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
-            if ${{ (github.event_name == 'repository_dispatch') && (github.event.client_payload.environment == 'production') }}
-            {
-              SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}
-            }
-            if ${{ (github.event.client_payload.environment != 'production') && (JOB_STATUS != 'success')}}{
-              SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
-            }
-
-            return {
-              "SLACK_WEBHOOK_URL": SLACK_WEBHOOK_URL
-            }
-
-      - name: Post to Slack channel on Failure
+      - name: Post to Slack channel for Prod
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
-        if: ${{ always() }}
+        if: ${{ (github.event_name == 'repository_dispatch') && (github.event.client_payload.environment == 'production') && always() }}
         with:
           payload: |
             {
@@ -219,7 +198,65 @@ jobs:
                 ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ fromJSON(steps.configure_slack.outputs.result).SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+
+      - name: Post to Slack channel for Staging
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        if: ${{(github.event.client_payload.environment == 'staging') && failure() }}
+        with:
+          payload: |
+            {
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": " Bonjour :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered!"
+                        }
+                    },
+                    {
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "*Environment: *\n ${{ matrix.environment }}  \n"
+                            },
+                          {
+                                "type": "mrkdwn",
+                                "text": " "
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": "*Status: *\n ${{ job.status }}  :x:"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Here's the corresponding workflow execution :arrow_right::arrow_right:"
+                        },
+                        "accessory": {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "View on Github",
+                                "emoji": true
+                            },
+                            "value": "click_me_123",
+                            "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                            "action_id": "button-action",
+                            "style": "danger"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Archive test results
