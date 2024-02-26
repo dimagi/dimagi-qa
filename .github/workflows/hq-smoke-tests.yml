@@ -157,7 +157,7 @@ jobs:
             {
               SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}
             }
-            if ${{ (github.event.client_payload.environment !== 'production') && (JOB_STATUS !== 'success')}}{
+            if ${{ (github.event.client_payload.environment != 'production') && (JOB_STATUS != 'success')}}{
               SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
             }
 
