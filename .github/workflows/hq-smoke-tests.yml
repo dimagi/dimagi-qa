@@ -144,7 +144,7 @@ jobs:
 
       - name: Set slack vars
         if: ${{ always() }}
-        id: configure_email
+        id: configure_slack
         uses: actions/github-script@v6
         env:
             JOB_STATUS: ${{ job.status }}
@@ -152,23 +152,23 @@ jobs:
             EVENT_TYPE: ${{ github.event_name }}
         with:
           script: |
-            echo "SLACK_WEBHOOK_URL= ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_ENV
+            let SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
             if ${{ (github.event_name == 'repository_dispatch') && (github.event.client_payload.environment == 'production') }}
             {
-              echo "SLACK_WEBHOOK_URL= ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_ENV
+              SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}
             }
             if ${{ (github.event.client_payload.environment !== 'production') && (JOB_STATUS !== 'success')}}{
-              echo "SLACK_WEBHOOK_URL= ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_ENV
+              SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
             }
 
             return {
-              "SLACK_WEBHOOK_URL": SLACK_WEBHOOK_URL,
+              "SLACK_WEBHOOK_URL": SLACK_WEBHOOK_URL
             }
 
       - name: Post to Slack channel on Failure
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
-        if: ${{ success() || failure() }}
+        if: ${{ always() }}
         with:
           payload: |
             {
@@ -219,7 +219,7 @@ jobs:
                 ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ fromJSON(steps.configure_slack.outputs.result).SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Archive test results
