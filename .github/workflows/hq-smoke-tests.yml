@@ -142,10 +142,33 @@ jobs:
           attachments: ${{ github.workspace }}/report_${{ matrix.environment }}.html
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
+      - name: Set slack vars
+        if: ${{ always() }}
+        id: configure_email
+        uses: actions/github-script@v6
+        env:
+            JOB_STATUS: ${{ job.status }}
+            CC_ENV: ${{ matrix.environment }}
+            EVENT_TYPE: ${{ github.event_name }}
+        with:
+          script: |
+            echo "SLACK_WEBHOOK_URL= ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_ENV
+            if ${{ (github.event_name == 'repository_dispatch') && (github.event.client_payload.environment == 'production') }}
+            {
+              echo "SLACK_WEBHOOK_URL= ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_ENV
+            }
+            if ${{ (github.event.client_payload.environment !== 'production') && (JOB_STATUS !== 'success')}}{
+              echo "SLACK_WEBHOOK_URL= ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_ENV
+            }
+
+            return {
+              "SLACK_WEBHOOK_URL": SLACK_WEBHOOK_URL,
+            }
+
       - name: Post to Slack channel on Failure
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
-        if: failure()
+        if: ${{ success() || failure() }}
         with:
           payload: |
             {
@@ -196,7 +219,7 @@ jobs:
                 ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Archive test results
