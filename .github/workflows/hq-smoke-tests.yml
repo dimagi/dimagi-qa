@@ -119,7 +119,6 @@ jobs:
               receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com, pruthvi.gottimukkula@fissionlabs.com'
             }
 
-            let SLACK_WEBHOOK_URL =
 
             return {
               "subject": subject,
@@ -205,7 +204,7 @@ jobs:
       - name: Post to Slack channel for Staging
         id: slack_staging
         uses: slackapi/slack-github-action@v1.23.0
-        if: ${{(github.event.client_payload.environment == 'staging') && failure() }}
+        if: ${{(github.event_name != 'repository_dispatch' && github.event.client_payload.environment == 'production') || (github.event.client_payload.environment == 'staging') && failure() }}
         with:
           payload: |
             {
