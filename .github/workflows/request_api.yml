@@ -127,6 +127,7 @@ jobs:
           return {
           "SLACK_WEBHOOK_URL" : SLACK_WEBHOOK_URL,
           "FLAG" : FLAG
+          }
 
     - name: Post to Slack channel
       id: slack-api-staging
