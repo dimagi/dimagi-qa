@@ -94,68 +94,29 @@ jobs:
         priority: normal
 
 
-    - name: Post to Slack channel for Prod
-      id: slack-api-prod
-      uses: slackapi/slack-github-action@v1.23.0
-      if: ${{ (github.event_name == 'repository_dispatch') && (github.event.client_payload.environment == 'production') && always() }}
-      with:
-        payload: |
-          {
-              "blocks": [
-                  {
-                      "type": "section",
-                      "text": {
-                          "type": "mrkdwn",
-                          "text": " Hola  👋 \n*${{ github.workflow }}* were just triggered!"
-                      }
-                  },
-                  {
-                      "type": "context",
-                      "elements": [
-                          {
-                              "type": "mrkdwn",
-                              "text": "*Environment: *\n ${{ matrix.environment }}  \n"
-                          },
-                        {
-                              "type": "mrkdwn",
-                              "text": " "
-                          },
-                          {
-                              "type": "mrkdwn",
-                              "text": "*Status: *\n ${{ job.status }}  :x:"
-                          }
-                      ]
-                  },
-                  {
-                      "type": "section",
-                      "text": {
-                          "type": "mrkdwn",
-                          "text": "Here's the corresponding workflow execution :arrow_right::arrow_right:"
-                      },
-                      "accessory": {
-                          "type": "button",
-                          "text": {
-                              "type": "plain_text",
-                              "text": "View on Github",
-                              "emoji": true
-                          },
-                          "value": "click_me_123",
-                          "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                          "action_id": "button-action",
-                          "style": "danger"
-                      }
-                  }
-              ]
-          }
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}
-        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+      - name: Set slack vars
+        if: ${{ always() }}
+        id: configure_slack
+        uses: actions/github-script@v6
+        env:
+            JOB_STATUS: ${{ job.status }}
+            CC_ENV: ${{ matrix.environment }}
+        with:
+          result-encoding: string
+          script: |
+            const {CC_ENV, JOB_STATUS} = process.env
+            let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+            if (context.event_name == 'repository_dispatch' && CC_ENV == 'production') {
+              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
+            }
+
+            return SLACK_WEBHOOK_URL
 
 
-    - name: Post to Slack channel for Staging
+    - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if: ${{(github.event_name != 'repository_dispatch' && github.event.client_payload.environment == 'production') || (github.event.client_payload.environment == 'staging') && failure() }}
+      if: ${{ matrix.environment == 'production' || failure() }}
       with:
         payload: |
           {
@@ -206,7 +167,7 @@ jobs:
               ]
           }
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
+        SLACK_WEBHOOK_URL: ${{ steps.conigure_slack.outputs.result }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
     - name: Archive test results

@@ -161,7 +161,7 @@ jobs:
             
             return SLACK_WEBHOOK_URL
 
-      - name: Post to Slack channel on Failure
+      - name: Post to Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
         if: ${{ success() || failure() }}
