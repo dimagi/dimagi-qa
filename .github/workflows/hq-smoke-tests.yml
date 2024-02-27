@@ -79,7 +79,7 @@ jobs:
           echo "matrix environment: ${{ matrix.environment }}"
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
-          echo "pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html"
+          pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html
 
       - name: Set email vars
         if: ${{ failure() }}
@@ -164,7 +164,7 @@ jobs:
       - name: Post to Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
-        if: ${{ success() || failure() }}
+        if: ${{ matrix.environment == 'production' || failure() }}
         with:
           payload: |
             {
