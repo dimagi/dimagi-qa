@@ -9,7 +9,7 @@ from common_utilities.path_settings import PathSettings
 class MobileWorkerMethods(Base):
     def __init__(self, settings):
         # self.filepath = "./RequestAPI/Payloads/"
-        self.filepath = PathSettings.ROOT + "/RequestAPI/Payloads/"
+        self.filepath = PathSettings.ROOT + "/Payloads/"
         self.password = settings["password"]
         self.headers = {'Content-Type': 'application/json; charset=utf-8',
                         'Authorization': 'ApiKey ' + settings['login_user'] + ':' + settings['api_key']}
