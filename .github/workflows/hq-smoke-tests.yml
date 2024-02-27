@@ -79,7 +79,7 @@ jobs:
           echo "matrix environment: ${{ matrix.environment }}"
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
-          pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html
+          echo "pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html"
 
       - name: Set email vars
         if: ${{ failure() }}
@@ -155,7 +155,7 @@ jobs:
           script: |
             const {CC_ENV, JOB_STATUS} = process.env
             let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-            if (context.event_name == 'repository_dispatch') && (CC_ENV == 'production') {
+            if (context.event_name == 'repository_dispatch' && CC_ENV == 'production') {
               SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
             }
             
