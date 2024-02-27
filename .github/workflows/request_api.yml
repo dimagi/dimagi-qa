@@ -106,26 +106,32 @@ jobs:
         script: |
           const {CC_ENV, JOB_STATUS} = process.env
           let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+          let FLAG = 'false'
           if (context.event_name == 'repository_dispatch' && CC_ENV == 'production') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
+            FLAG = 'true'
             console.log( "Prod deploy")
           } else if (context.event_name != 'repository_dispatch' && CC_ENV == 'production' && JOB_STATUS == 'failure') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+            FLAG = 'true'
             console.log( "Not Prod deploy but Prof failure")
           } else if (CC_ENV == 'staging' && JOB_STATUS == 'failure') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+            FLAG = 'true'
             console.log("Staging Failure")
           } else {
-            SLACK_WEBHOOK_URL = ''
+            FLAG = 'false'
             console.log("No notification sent")
           }
 
-          return SLACK_WEBHOOK_URL
+          return {
+          "SLACK_WEBHOOK_URL" : SLACK_WEBHOOK_URL,
+          "FLAG" : FLAG
 
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if: ${{ steps.conigure_slack.outputs.SLACK_WEBHOOK_URL != '' }}
+      if: ${{ fromJSON(steps.configure_slack.outputs.result).FLAG == 'true' }}
       with:
         payload: |
           {
@@ -176,7 +182,7 @@ jobs:
               ]
           }
       env:
-        SLACK_WEBHOOK_URL: ${{ steps.conigure_slack.outputs.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ fromJSON(steps.configure_slack.outputs.result).SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
     - name: Archive test results
