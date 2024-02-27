@@ -102,11 +102,11 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
       with:
-        result-encoding: string
+#        result-encoding: string
         script: |
           const {CC_ENV, JOB_STATUS} = process.env
-          let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-          let FLAG = 'false'
+          let SLACK_WEBHOOK_URL = ''
+          let FLAG = ''
           if (context.event_name == 'repository_dispatch' && CC_ENV == 'production') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
             FLAG = 'true'
@@ -125,8 +125,8 @@ jobs:
           }
 
           return {
-          "SLACK_WEBHOOK_URL" : SLACK_WEBHOOK_URL,
-          "FLAG" : FLAG
+            "SLACK_WEBHOOK_URL" : SLACK_WEBHOOK_URL,
+            "FLAG" : FLAG
           }
 
     - name: Post to Slack channel
