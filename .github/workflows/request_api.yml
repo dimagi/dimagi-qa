@@ -108,16 +108,16 @@ jobs:
           let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
           if (context.event_name == 'repository_dispatch' && CC_ENV == 'production') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
-            echo "Prod deploy"
+            console.log(( "Prod deploy")
           } else if (context.event_name != 'repository_dispatch' && CC_ENV == 'production' && JOB_STATUS == 'failure') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-            echo "Not Prod deploy but Prof failure"
+            console.log( "Not Prod deploy but Prof failure")
           } else if (CC_ENV == 'staging' && JOB_STATUS == 'failure') {
             SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-            echo "Staging Failure"
+            console.log("Staging Failure")
           } else {
             SLACK_WEBHOOK_URL = ''
-            echo "No notification sent"
+            console.log("No notification sent")
           }
 
           return SLACK_WEBHOOK_URL
