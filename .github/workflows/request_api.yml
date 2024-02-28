@@ -97,21 +97,25 @@ jobs:
     - name: Set slack vars
       if: ${{ always() }}
       id: configure_slack
+      outputs:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
+        FLAG: NO
       shell: bash
       env:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
+          CC_EVENT: ${{ github.event_name }}
       run: |
        if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
-            echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_ENV
+            echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_OUTPUT
             echo "FLAG = YES" >> $GITHUB_OUTPUT
             echo "Prod deploy"
        elif [ ${{ github.event_name != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
-            echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_ENV
+            echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_OUTPUT
             echo "FLAG = YES" >> $GITHUB_OUTPUT
             echo "Not Prod deploy but Prof failure"
        elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
-            echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_ENV
+            echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" >> $GITHUB_OUTPUT
             echo "FLAG = YES" >> $GITHUB_OUTPUT
             echo "Staging Failure"
        else
@@ -175,7 +179,7 @@ jobs:
           }
         parse-json-secrets: true
       env:
-        SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
     - name: Archive test results
