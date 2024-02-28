@@ -102,6 +102,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
       with:
+        result-encoding: string
         script: |
           const {CC_ENV, JOB_STATUS} = process.env
           let SLACK_WEBHOOK_URL = ''
