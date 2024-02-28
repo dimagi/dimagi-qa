@@ -121,14 +121,13 @@ jobs:
             console.log("No notification sent")
           }
 
-          return {
-            "SLACK_WEBHOOK_URL" : SLACK_WEBHOOK_URL
-          }
+          return SLACK_WEBHOOK_URL
+
 
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if: ${{ fromJSON(steps.configure_slack.outputs.result).SLACK_WEBHOOK_URL != '' }}
+      if: ${{ steps.configure_slack.outputs.result.SLACK_WEBHOOK_URL != '' }}
       with:
         payload: |
           {
@@ -180,7 +179,7 @@ jobs:
           }
         parse-json-secrets: true
       env:
-        SLACK_WEBHOOK_URL: ${{ fromJSON(steps.configure_slack.outputs.result).SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ steps.configure_slack.outputs.result.SLACK_WEBHOOK_URL }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
     - name: Archive test results
