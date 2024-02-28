@@ -102,9 +102,6 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
           CC_EVENT: ${{ github.event_name }}
-      outputs:
-        FLAG: ${{ steps.configure_slack.outputs.FLAG }}
-        SLACK_WEBHOOK_URL: ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL }}
       run: |
        if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
             echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> "$GITHUB_OUTPUT"
@@ -124,11 +121,14 @@ jobs:
        fi
        echo $FLAG
        echo $SLACK_WEBHOOK_URL
+      outputs:
+        FLAG: ${{ steps.configure_slack.outputs.FLAG }}
+        SLACK_WEBHOOK_URL: ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL }}
 
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if: ${{ steps.configure_slack.outputs.FLAG == 'YES' }}
+      if: ${{ steps.configure_slack.outputs.FLAG == "YES" }}
       with:
         payload: |
           {
