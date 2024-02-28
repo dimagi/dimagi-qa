@@ -104,7 +104,7 @@ jobs:
        if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }}]; then
             echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_ENV
             echo "Prod deploy"
-       elif [ ${{ github.event_name !== 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
+       elif [ ${{ github.event_name != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
             echo "SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}' }}" >> $GITHUB_ENV
             echo "Not Prod deploy but Prof failure"
        elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
