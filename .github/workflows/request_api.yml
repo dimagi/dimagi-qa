@@ -111,7 +111,7 @@ jobs:
             echo "SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}' }}" >> $GITHUB_ENV
             echo "Staging Failure"
        else
-            echo "SLACK_WEBHOOK_URL = '' >> $GITHUB_ENV
+            echo "SLACK_WEBHOOK_URL = ''" >> $GITHUB_ENV
             echo "No notification sent"
        fi
 
