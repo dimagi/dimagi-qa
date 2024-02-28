@@ -97,21 +97,25 @@ jobs:
     - name: Set slack vars
       if: ${{ always() }}
       id: configure_slack
+      shell: bash
       env:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
       run: |
        if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
             echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_ENV
+            echo "FLAG = YES" >> $GITHUB_OUTPUT
             echo "Prod deploy"
        elif [ ${{ github.event_name != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
             echo "SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}' }}" >> $GITHUB_ENV
+            echo "FLAG = YES" >> $GITHUB_OUTPUT
             echo "Not Prod deploy but Prof failure"
        elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
             echo "SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}' }}" >> $GITHUB_ENV
+            echo "FLAG = YES" >> $GITHUB_OUTPUT
             echo "Staging Failure"
        else
-            echo "SLACK_WEBHOOK_URL = ''" >> $GITHUB_ENV
+            echo "FLAG = NO" >> $GITHUB_OUTPUT
             echo "No notification sent"
        fi
 
@@ -119,7 +123,7 @@ jobs:
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+      if: (steps.configure_slack.outputs.FLAG == 'YES')
       with:
         payload: |
           {
