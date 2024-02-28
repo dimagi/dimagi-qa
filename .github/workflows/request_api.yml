@@ -112,7 +112,7 @@ jobs:
             echo "Staging Failure"
        else
             SLACK_WEBHOOK_URL = ''
-            console.log("No notification sent")
+            echo "No notification sent"
        fi
 
 
