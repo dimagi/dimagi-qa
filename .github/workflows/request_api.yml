@@ -101,7 +101,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
       run: |
-       if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }}]; then
+       if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
             echo "SLACK_WEBHOOK_URL = ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}" >> $GITHUB_ENV
             echo "Prod deploy"
        elif [ ${{ github.event_name != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
@@ -111,7 +111,7 @@ jobs:
             echo "SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}' }}" >> $GITHUB_ENV
             echo "Staging Failure"
        else
-            SLACK_WEBHOOK_URL = ''
+            echo "SLACK_WEBHOOK_URL = '' >> $GITHUB_ENV
             echo "No notification sent"
        fi
 
