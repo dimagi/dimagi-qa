@@ -116,6 +116,7 @@ jobs:
             echo "::set-output name=FLAG::true"
             echo "Staging Failure"
        else
+            echo "::set-output name=SLACK_WEBHOOK_URL::''"
             echo "::set-output name=FLAG::false"
             echo "No notification sent"
        fi
@@ -124,7 +125,7 @@ jobs:
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if:  ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL }}
+      if: ! ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL == '' }}
       with:
         payload: |
           {
