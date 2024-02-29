@@ -95,7 +95,6 @@ jobs:
 
 
     - name: Set slack vars
-      uses: actions/checkout@v4
       if: ${{ always() }}
       id: configure_slack
       env:
