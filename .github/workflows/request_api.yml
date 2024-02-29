@@ -95,33 +95,23 @@ jobs:
 
 
     - name: Set slack vars
+      uses: actions/checkout@v4
       if: ${{ always() }}
       id: configure_slack
-      shell: bash
       env:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
           CC_EVENT: ${{ github.event_name }}
       run: |
-       if [ ${{ github.event_name == 'repository_dispatch' && (github.event_name != 'pull_request' || github.event_name != 'workflow_dispatch') && matrix.environment == 'production' }} ]; then
-            echo "::set-output name=flag::'1'"
-       elif [ ${{ github.event_name != 'repository_dispatch' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.environment == 'production' && job.status == 'failure' }} ]; then
-            echo "::set-output name=flag::'2'"
-       elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
-            echo "::set-output name=flag::'2'"
-       else
-            echo "::set-output name=flag::'3'"
-       fi
-
-       echo $flag
-
-       if [ "$flag" == "1" ]; then
-          echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
-       elif [ "$flag" == "2" ]; then
-          echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
-       else
-          echo "::set-output name=SLACK_WEBHOOK_URL::' '"
-       fi
+         if [ ${{ CC_EVENT == 'repository_dispatch' && (CC_EVENT != 'pull_request' || CC_EVENT != 'workflow_dispatch') && CC_ENV == 'production' }} ]; then
+              echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
+         elif [ ${{ CC_EVENT != 'repository_dispatch' && (CC_EVENT == 'pull_request' || CC_EVENT == 'workflow_dispatch') && CC_ENV == 'production' && JOB_STATUS == 'failure' }} ]; then
+              echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
+         elif [ ${{ CC_ENV == 'staging' && JOB_STATUS == 'failure'}} ]; then
+              echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
+         else
+              echo "::set-output name=SLACK_WEBHOOK_URL::' '"
+         fi
 
     - name: Post to Slack channel
       id: slack-api-staging
