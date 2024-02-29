@@ -103,9 +103,9 @@ jobs:
           CC_EVENT: ${{ github.event_name }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
       run: |
-         if [ ${{ matrix.environment == 'repository_dispatch' && (matrix.environment != 'pull_request' || matrix.environment != 'workflow_dispatch') && matrix.environment == 'production' }} ]; then
+         if [ ${{ matrix.environment == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
               echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
-         elif [ ${{ matrix.environment != 'repository_dispatch' && (matrix.environment == 'pull_request' || matrix.environment == 'workflow_dispatch') && matrix.environment == 'production' && job.status == 'failure' }} ]; then
+         elif [ ${{ matrix.environment != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
               echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
          elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
              echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
