@@ -117,11 +117,11 @@ jobs:
             echo "No notification sent"
        fi
 
-       echo $flag
+       echo "$flag"
 
-       if [ $flag == '1' ]; then
+       if [ "$flag" == "1" ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
-       elif [ $flag == '2' ]; then
+       elif [ "$flag" == "2" ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
        else
           echo "::set-output name=SLACK_WEBHOOK_URL::' '"
