@@ -104,19 +104,19 @@ jobs:
           CC_EVENT: ${{ github.event_name }}
       run: |
        if [ ${{ github.event_name == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
-            echo "::set-output name=SLACK_WEBHOOK_URL:: ${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
+            echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
             echo "::set-output name=FLAG::true"
             echo "Prod deploy"
        elif [ ${{ github.event_name != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
-            echo "::set-output name=SLACK_WEBHOOK_URL:: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
+            echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
             echo "::set-output name=FLAG::true"
             echo "Not Prod deploy but Prof failure"
        elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
-            echo "::set-output name=SLACK_WEBHOOK_URL:: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
+            echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
             echo "::set-output name=FLAG::true"
             echo "Staging Failure"
        else
-            echo "::set-output name=SLACK_WEBHOOK_URL::''"
+            echo "::set-output name=SLACK_WEBHOOK_URL::' '"
             echo "::set-output name=FLAG::false"
             echo "No notification sent"
        fi
@@ -125,7 +125,7 @@ jobs:
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if: '! ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL == '''' }}'
+      if:  ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL != ' ' && always() }}
       with:
         payload: |
           {
