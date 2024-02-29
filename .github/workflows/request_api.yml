@@ -105,19 +105,15 @@ jobs:
       run: |
        if [ ${{ github.event_name == 'repository_dispatch' && (github.event_name != 'pull_request' || github.event_name != 'workflow_dispatch') && matrix.environment == 'production' }} ]; then
             echo "::set-output name=flag::'1'"
-            echo "Prod deploy"
        elif [ ${{ github.event_name != 'repository_dispatch' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') && matrix.environment == 'production' && job.status == 'failure' }} ]; then
             echo "::set-output name=flag::'2'"
-            echo "Not Prod deploy but Prof failure"
        elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
             echo "::set-output name=flag::'2'"
-            echo "Staging Failure"
        else
             echo "::set-output name=flag::'3'"
-            echo "No notification sent"
        fi
 
-       echo "$flag"
+       echo $flag
 
        if [ "$flag" == "1" ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
