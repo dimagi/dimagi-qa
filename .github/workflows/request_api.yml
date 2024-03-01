@@ -97,22 +97,32 @@ jobs:
     - name: Set slack vars
       if: ${{ always() }}
       id: configure_slack
+      uses: actions/github-script@v6
       env:
           JOB_STATUS: ${{ job.status }}
           CC_ENV: ${{ matrix.environment }}
           CC_EVENT: ${{ github.event_name }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
-      run: |
-        if [ ${{ matrix.environment == 'repository_dispatch' && matrix.environment == 'production' }} ]; then echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}";
-        elif [ ${{ matrix.environment != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}";
-        elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}";
-        else echo "::set-output name=SLACK_WEBHOOK_URL::' '";
-        fi
+      with:
+        result-encoding: string
+        script: |
+          const {CC_ENV, JOB_STATUS, CC_EVENT} = process.env
+          let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+          if (CC_EVENT == 'repository_dispatch' && CC_ENV == 'production') {
+            SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
+          } else if (CC_EVENT != 'repository_dispatch' && CC_ENV == 'production' && JOB_STATUS == 'failure')
+            SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+          } else if (CC_ENV == 'staging' && JOB_STATUS == 'failure')
+            SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
+          } else {
+            SLACK_WEBHOOK_URL = ' '
+          }
+
+          return SLACK_WEBHOOK_URL
 
     - name: Post to Slack channel
       id: slack-api-staging
       uses: slackapi/slack-github-action@v1.23.0
-      if:  ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL != ' ' && always() }}
+      if:  ${{ steps.configure_slack.outputs.SLACK_WEBHOOK_URL != ' ' }}
       with:
         payload: |
           {
