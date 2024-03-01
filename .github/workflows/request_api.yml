@@ -104,13 +104,16 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}
       run: |
          if [ ${{ matrix.environment == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
-              echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
-         elif [ ${{ matrix.environment != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
-              echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
-         elif [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
-             echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
-         else
-              echo "::set-output name=SLACK_WEBHOOK_URL::' '"
+          echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
+         fi
+         if [ ${{ matrix.environment != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
+          echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
+         fi
+         if [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
+          echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" ;
+         fi
+         if [ ${{ matrix.environment != 'repository_dispatch' && job.status == 'success' && ( matrix.environment == 'production' || matrix.environment == 'staging')}} ]; then
+          echo "::set-output name=SLACK_WEBHOOK_URL::' '"
          fi
 
     - name: Post to Slack channel
