@@ -105,12 +105,18 @@ jobs:
       run: |
          if [ ${{ matrix.environment == 'repository_dispatch' && matrix.environment == 'production' }} ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}"
+         else
+          echo "::set-output name=SLACK_WEBHOOK_URL::' '"
          fi
          if [ ${{ matrix.environment != 'repository_dispatch' && matrix.environment == 'production' && job.status == 'failure' }} ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}"
+         else
+          echo "::set-output name=SLACK_WEBHOOK_URL::' '"
          fi
          if [ ${{ matrix.environment == 'staging' && job.status == 'failure'}} ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}" ;
+         else
+          echo "::set-output name=SLACK_WEBHOOK_URL::' '"
          fi
          if [ ${{ matrix.environment != 'repository_dispatch' && job.status == 'success' && ( matrix.environment == 'production' || matrix.environment == 'staging')}} ]; then
           echo "::set-output name=SLACK_WEBHOOK_URL::' '"
