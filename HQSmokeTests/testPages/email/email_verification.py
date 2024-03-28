@@ -53,7 +53,7 @@ class EmailVerification:
             n = 2
         else:
             n = 1
-        if "Application Status" in subject:
+        if "Application Status" in subject or "Device Log" in subject or "Case List" in subject:
             end = None
         else:
             end = -1

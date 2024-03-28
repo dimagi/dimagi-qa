@@ -5,7 +5,7 @@ from dateutil.parser import parse
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, \
     UnexpectedAlertPresentException, StaleElementReferenceException, NoSuchElementException
-from selenium.webdriver import ActionChains
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -393,3 +393,10 @@ class BasePage:
             list_opt.append(opt.text)
         print("Option list", list_opt)
         return list_opt
+
+    def select_multiple_by_text(self, source_locator, value_list):
+        select_source = Select(self.driver.find_element(*source_locator))
+        ActionChains(self.driver).key_down(Keys.CONTROL).perform()
+        for value in value_list:
+            select_source.select_by_visible_text(value)
+        ActionChains(self.driver).key_up(Keys.CONTROL).perform()
