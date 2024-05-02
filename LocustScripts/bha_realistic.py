@@ -53,7 +53,7 @@ class LoginCommCareHQWithUniqueUsers(BaseLoginCommCareUser):
         )
 
     @task
-    def run_script(self):
+    def find_matching_beds(self):
         script = [
             actions.NavigateStart(
                 "Navigate Start",
