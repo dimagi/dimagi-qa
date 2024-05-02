@@ -88,6 +88,7 @@ class HQUser:
             # raise StopUser(f"Validation error for user {self}: {str(e)}")
         except Exception as e:
             logging.error("user: %s; request: %s; exception: %s", self.user_details, command, str(e))
+            raise e
 
     def __str__(self):
         return str(self.user_details)
