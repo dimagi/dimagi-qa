@@ -158,7 +158,6 @@ class LoginCommCareHQWithUniqueUsers(BaseLoginCommCareUser):
         AppScriptRunner("Find Matching Beds", self, script).run()
 
 
-
 FACILITY_REVIEW_FORM_ANSWERS = {
     "0,0": "OK",
     "1_0,1,0,0,0": None,
