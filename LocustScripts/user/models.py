@@ -1,5 +1,6 @@
 import logging
 
+from app_script.validations import ValidationError
 from common.web_apps import get_app_build_info
 import formplayer
 from locust import HttpUser
@@ -56,48 +57,44 @@ class HQUser:
             raise StopUser(f"Login failed for user {self.user_details.username}: Sign In failed")
         logging.info("User logged in: " + self.user_details.username)
 
-    def navigate_start(self, expected_title=None):
-        validation = None
-        if expected_title:
-            validation = formplayer.ValidationCriteria(key_value_pairs={"title": expected_title})
+    def navigate_start(self, name="Home Screen", validations=None):
         return self.post_formplayer(
             "navigate_menu_start",
-            name="Home Screen",
-            validation=validation
+            name=name,
+            validations=validations
         )
 
-    def navigate(self, name, data, expected_title=None):
-        validation = None
-        if expected_title:
-            validation = formplayer.ValidationCriteria(key_value_pairs={"title": expected_title})
+    def navigate(self, name, data, validations=None):
         return self.post_formplayer(
-            "navigate_menu", data, name=name, validation=validation
+            "navigate_menu", data, name=name, validations=validations
         )
 
-    def answer(self, name, data):
-        return self.post_formplayer("answer", data, name=name)
+    def answer(self, name, data, validations=None):
+        return self.post_formplayer("answer", data, name=name, validations=validations)
 
-    def submit_all(self, name, data, expected_response_message=None):
-        validation = None
-        if expected_response_message:
-            validation = formplayer.ValidationCriteria(key_value_pairs={
-                "submitResponseMessage": expected_response_message
-            })
+    def submit_all(self, name, data, validations=None):
         return self.post_formplayer(
-            "submit-all", data, name=name, validation=validation
+            "submit-all", data, name=name, validations=validations
         )
 
-    def post_formplayer(self, command, extra_json=None, name=None, validation=None):
+    def post_formplayer(self, command, extra_json=None, name=None, validations=None):
         logging.info("User: %s; Request: %s; Name: %s", self.user_details, command, name)
         try:
             return formplayer.post(
-                command, self.client, self.app_details, self.user_details, extra_json, name, validation
+                command, self.client, self.app_details, self.user_details, extra_json, name, validations
             )
+        except ValidationError as e:
+            raise
+            # raise StopUser(f"Validation error for user {self}: {str(e)}")
         except Exception as e:
             logging.error("user: %s; request: %s; exception: %s", self.user_details, command, str(e))
 
+    def __str__(self):
+        return str(self.user_details)
+
+
 class BaseLoginCommCareUser(HttpUser):
-    abstract=True
+    abstract = True
 
     def on_start(self, domain, host, user_details, app_id):
         self.user_detail = user_details.pop()

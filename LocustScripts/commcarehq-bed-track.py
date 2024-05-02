@@ -3,6 +3,7 @@ import logging
 from locust import SequentialTaskSet, constant_pacing, events, run_single_user, tag, task
 from locust.exception import InterruptTaskSet
 
+from app_script.validations import ValidateTitle
 from common.args import file_path
 from common.utils import load_json_data, load_yaml_data
 from user.models import UserDetails, BaseLoginCommCareUser
@@ -82,7 +83,8 @@ class WorkloadModelSteps(SequentialTaskSet):
     @tag('home_screen')
     @task
     def home_screen(self):
-        self.user.hq_user.navigate_start(expected_title=self.FUNC_HOME_SCREEN['title'])
+        self.user.wait()
+        self.user.hq_user.navigate_start([ValidateTitle(self.FUNC_HOME_SCREEN['title'])])
 
     @tag('search_for_beds_menu')
     @task
@@ -90,7 +92,8 @@ class WorkloadModelSteps(SequentialTaskSet):
         data = {"selections": [self.FUNC_SEARCH_FOR_BEDS_MENU['selections']]}
         self.user.hq_user.navigate(
             "Open Search for Beds Menu",
-            data=data, expected_title=self.FUNC_SEARCH_FOR_BEDS_MENU['title']
+            data=data,
+            alidations=[ValidateTitle(self.FUNC_SEARCH_FOR_BEDS_MENU['title'])]
         )
 
     @tag('non_facet_search')
@@ -143,6 +146,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         logging.info("stopping - mobile worker: %s", self.user.user_detail)
         self.interrupt()
 
+
 class LoginCommCareHQWithUniqueUsers(BaseLoginCommCareUser):
     tasks = [WorkloadModelSteps]
     wait_time = constant_pacing(5)
@@ -154,6 +158,7 @@ class LoginCommCareHQWithUniqueUsers(BaseLoginCommCareUser):
             user_details=USERS_DETAILS,
             app_id=CONFIG["app_id"]
         )
+
 
 if __name__ == "__main__":
     run_single_user(LoginCommCareHQWithUniqueUsers)
