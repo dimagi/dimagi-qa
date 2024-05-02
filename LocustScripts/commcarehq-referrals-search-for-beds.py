@@ -5,6 +5,7 @@ import time
 from locust import SequentialTaskSet, between, events, tag, task
 from locust.exception import InterruptTaskSet
 
+from app_script.validations import SubmitResponseMessage, ValidateTitle
 from common.args import file_path
 from common.utils import load_json_data
 from user.models import UserDetails, BaseLoginCommCareUser
@@ -36,7 +37,7 @@ class WorkloadModelSteps(SequentialTaskSet):
     @tag('home_screen')
     @task
     def home_screen(self):
-        self.user.hq_user.navigate_start(expected_title=self.FUNC_HOME_SCREEN['title'])
+        self.user.hq_user.navigate_start([ValidateTitle(self.FUNC_HOME_SCREEN['title'])])
 
     @tag('search_for_beds_menu')
     @task
@@ -47,7 +48,7 @@ class WorkloadModelSteps(SequentialTaskSet):
                 "selections": [self.FUNC_SEARCH_FOR_BEDS_MENU['selections']],
                 "cases_per_page": self.cases_per_page,
             },
-            expected_title=self.FUNC_SEARCH_FOR_BEDS_MENU['title']
+            validations=[ValidateTitle(self.FUNC_SEARCH_FOR_BEDS_MENU['title'])]
         )
         if data:
             self.page_count = data["pageCount"]
@@ -82,7 +83,7 @@ class WorkloadModelSteps(SequentialTaskSet):
             data = self.user.hq_user.navigate(
                 "Paginate for Case Selection",
                 data=extra_json,
-                expected_title=self.FUNC_SEARCH_FOR_BEDS_MENU['title']
+                validations=[ValidateTitle(self.FUNC_SEARCH_FOR_BEDS_MENU['title'])]
             )
 
             entities = data["entities"]
@@ -116,7 +117,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         data = self.user.hq_user.navigate(
             "Enter 'Create Profile and Refer' Form",
             data=extra_json,
-            expected_title=self.FUNC_CREATE_PROFILE_AND_REFER_FORM['title']
+            validations=[ValidateTitle(self.FUNC_CREATE_PROFILE_AND_REFER_FORM['title'])]
         )
         self.session_id = data['session_id']
 
@@ -187,7 +188,9 @@ class WorkloadModelSteps(SequentialTaskSet):
         self.user.hq_user.submit_all(
             "Submit Create Profile and Refer Form",
             extra_json,
-            expected_response_message=self.FUNC_CREATE_PROFILE_AND_REFER_FORM_SUBMIT['submitResponseMessage']
+            validations=[
+                SubmitResponseMessage(self.FUNC_CREATE_PROFILE_AND_REFER_FORM_SUBMIT['submitResponseMessage'])
+            ]
         )
 
 

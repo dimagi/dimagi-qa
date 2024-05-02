@@ -6,6 +6,7 @@ import time
 from locust import SequentialTaskSet, between, task, tag, events
 from locust.exception import InterruptTaskSet
 
+from app_script.validations import ValidateTitle
 from user.models import UserDetails, BaseLoginCommCareUser
 from common.args import file_path
 from common.utils import load_json_data
@@ -35,7 +36,7 @@ class WorkloadModelSteps(SequentialTaskSet):
     @tag('home_screen')
     @task
     def home_screen(self):
-        self.user.hq_user.navigate_start(expected_title=self.FUNC_HOME_SCREEN['title'])
+        self.user.hq_user.navigate_start([ValidateTitle(self.FUNC_HOME_SCREEN['title'])])
 
     @tag('search_and_admit_menu')
     @task
@@ -43,7 +44,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         self.user.hq_user.navigate(
             "Open 'Search And Admit' Menu",
             data={"selections": [self.FUNC_SEARCH_AND_ADMIT_MENU['selections']]},
-            expected_title=self.FUNC_SEARCH_AND_ADMIT_MENU['title']
+            validations=[ValidateTitle(self.FUNC_SEARCH_AND_ADMIT_MENU['title'])]
         )
 
     @tag('case_search_inputs')
@@ -82,7 +83,7 @@ class WorkloadModelSteps(SequentialTaskSet):
             self.user.hq_user.navigate(
                 "Input for fields in 'Search and Admit' Menu",
                 data=extra_json,
-                expected_title=self.FUNC_SEARCH_AND_ADMIT_MENU['title']
+                validations=[ValidateTitle(self.FUNC_SEARCH_AND_ADMIT_MENU['title'])]
             )
 
             rng = random.randrange(1, 3)
@@ -106,7 +107,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         self.user.hq_user.navigate(
             "Perform a Search and enter 'Admit Client' Form",
             data=extra_json,
-            expected_title=self.FUNC_ADMIT_CLIENT_FORM['title']
+            validations=[ValidateTitle(self.FUNC_ADMIT_CLIENT_FORM['title'])]
         )
 
 @events.init.add_listener

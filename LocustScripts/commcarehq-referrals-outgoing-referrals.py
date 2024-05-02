@@ -5,6 +5,7 @@ import random
 from locust import SequentialTaskSet, between, task, tag, events
 from locust.exception import InterruptTaskSet
 
+from app_script.validations import SubmitResponseMessage, ValidateTitle
 from user.models import UserDetails, BaseLoginCommCareUser
 from common.args import file_path
 from common.utils import load_json_data
@@ -35,7 +36,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         self.user.hq_user.navigate(
             "Open Outgoing Referrals Menu",
             data={"selections": [self.FUNC_OUTGOING_REFERRALS_MENU['selections']]},
-            expected_title=self.FUNC_OUTGOING_REFERRALS_MENU['title']
+            validations=[ValidateTitle(self.FUNC_OUTGOING_REFERRALS_MENU['title'])]
         )
 
     @tag('perform_a_search')
@@ -57,7 +58,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         data = self.user.hq_user.navigate(
             "Perform a Search",
             data=extra_json,
-            expected_title=self.FUNC_OUTGOING_REFERRALS_MENU['title']
+            validations=[ValidateTitle(self.FUNC_OUTGOING_REFERRALS_MENU['title'])]
         )
 
         self.entities = data["entities"]
@@ -92,7 +93,7 @@ class WorkloadModelSteps(SequentialTaskSet):
             data = self.user.hq_user.navigate(
                 "Paginate for Case Selection",
                 data=extra_json,
-                expected_title=self.FUNC_OUTGOING_REFERRALS_MENU['title']
+                validations=[ValidateTitle(self.FUNC_OUTGOING_REFERRALS_MENU['title'])]
             )
             self.entities = data["entities"]
 
@@ -113,7 +114,7 @@ class WorkloadModelSteps(SequentialTaskSet):
                                  self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM['selections']
                                 ]
                 },
-            expected_title=self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM['title']
+            validations=[ValidateTitle(self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM['title'])]
         )
         self.session_id = data['session_id']
 
@@ -202,7 +203,9 @@ class WorkloadModelSteps(SequentialTaskSet):
         self.user.hq_user.submit_all(
             "Submit Outgoing Referral Details Form",
             extra_json,
-            expected_response_message=self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM_SUBMIT['submitResponseMessage']
+            validations=[
+                SubmitResponseMessage(self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM_SUBMIT['submitResponseMessage'])
+            ]
         )
 
 @events.init.add_listener
