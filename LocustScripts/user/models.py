@@ -78,7 +78,7 @@ class HQUser:
         )
 
     def post_formplayer(self, command, extra_json=None, name=None, validations=None):
-        logging.info("User: %s; Request: %s; Name: %s", self.user_details, command, name)
+        logging.debug("User: %s; Request: %s; Name: %s", self.user_details, command, name)
         try:
             return formplayer.post(
                 command, self.client, self.app_details, self.user_details, extra_json, name, validations
