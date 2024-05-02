@@ -155,7 +155,8 @@ class LoginCommCareHQWithUniqueUsers(BaseLoginCommCareUser):
             ),
             actions.SubmitForm("Submit Form", answers=FACILITY_REVIEW_FORM_ANSWERS)
         ]
-        AppScriptRunner(self, script).run()
+        AppScriptRunner("Find Matching Beds", self, script).run()
+
 
 
 FACILITY_REVIEW_FORM_ANSWERS = {
