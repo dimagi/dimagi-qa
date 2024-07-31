@@ -75,6 +75,7 @@ class CaseSearchWorkflows(BasePage):
             assert expected_value in values_
 
     def check_default_values_displayed(self, search_property, default_value, search_format):
+        time.sleep(5)
         if search_format == text:
             search_property = (
                 By.XPATH, self.text_search_property_name_and_value_format.format(search_property, default_value))
@@ -82,7 +83,7 @@ class CaseSearchWorkflows(BasePage):
             search_property = (
                 By.XPATH, self.combobox_search_property_name_and_value_format.format(search_property, default_value))
         self.wait_for_ajax()
-        assert self.is_visible_and_displayed(search_property)
+        assert self.is_visible_and_displayed(search_property, 100), "Search property not present"
 
     def search_against_property(self, search_property, input_value, property_type, include_blanks=None):
         print("Providing value: ", input_value)
@@ -116,7 +117,7 @@ class CaseSearchWorkflows(BasePage):
         if default:
             today_date = (datetime.today()).date()
             sixty_days_ago = today_date - relativedelta(days=no_of_days)
-            date_ranges = str(sixty_days_ago.strftime("%m/%d/%Y")) + " to " + str(today_date.strftime("%m/%d/%Y"))
+            date_ranges = str(sixty_days_ago.strftime("%#m/%#d/%Y")) + " to " + str(today_date.strftime("%#m/%#d/%Y"))
         else:
             date_obj = datetime.strptime(input_date, input_format)
             date_ranges = str(date_obj.strftime(output_format)) + " to " + str(date_obj.strftime(output_format))

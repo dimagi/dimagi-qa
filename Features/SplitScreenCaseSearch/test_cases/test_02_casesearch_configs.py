@@ -287,6 +287,9 @@ def test_case_09_single_date_format(driver, settings):
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)
     webapps.clear_selections_on_case_search_page()
+    song = casesearch.search_against_property(search_property=CaseSearchUserInput.song_name,
+                                              input_value=CaseSearchUserInput.song_automation_song,
+                                              property_type=TEXT_INPUT)
     date = casesearch.search_against_property(search_property=CaseSearchUserInput.song_release_date,
                                               input_value=CaseSearchUserInput.date_2022_12_30,
                                               property_type=TEXT_INPUT
@@ -296,9 +299,7 @@ def test_case_09_single_date_format(driver, settings):
                                         expected_value=casesearch.parse_date(
                                             input_date=date,
                                             input_format=CaseSearchUserInput.dates.get("YYYY-MM-DD"),
-                                            output_format=CaseSearchUserInput.dates.get("YYYY-MM-DD")
-                                            )
-                                        )
+                                            output_format=CaseSearchUserInput.dates.get("DD-MM-YYYY")))
 
 
 def test_case_10_is_multiselect_format(driver, settings):

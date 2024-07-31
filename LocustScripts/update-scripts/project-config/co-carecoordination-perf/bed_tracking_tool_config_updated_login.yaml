@@ -1,0 +1,7 @@
+host: https://www.commcarehq.org
+domain: co-carecoordination-perf
+app_id: 934451a58fe547d9bcd5a33d254654a2
+#  b62974969e57051ad70160a798ed79e8
+domain_user_credential: LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_worker_credentials.json
+owner_id: 3ca0fb9a3402487590f9b2eb5f0c876e
+app_config_bed_tracking_tool: LocustScripts/update-scripts/project-config/co-carecoordination-perf/app_config_bed_tracking_tool.json

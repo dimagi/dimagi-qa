@@ -121,7 +121,8 @@ class CaseSearchUserInput:
 
     dates = {"MM/DD/YYYY": '%m/%d/%Y', "MM-DD-YYYY": "%m-%d-%Y",
              "MM/DD/YY": "%m/%d/%y", "MM-DD-YY": "%m-%d-%y",
-             "YYYY-MM-DD": '%Y-%m-%d', "DD/MM/YYYY": "%d/%m/%Y"}
+             "YYYY-MM-DD": '%Y-%m-%d', "DD/MM/YYYY": "%d/%m/%Y",
+             "DD-MM-YYYY": '%d-%m-%Y'}
     full_home_address = "New Canada St., 3855 Brienz, Switzerland"
     full_work_address = "Avenida Benito Juárez, 77560 Alfredo V. Bonfil, Quintana Roo, Mexico"
     home_street_value = "New Canada St."

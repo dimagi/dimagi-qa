@@ -1,9 +1,9 @@
 {
     "FUNC_HOME_SCREEN": {
-        "title":"Bed Tracking Tool (Linked)"
+        "title":"Referrals Platform"
     },
     "FUNC_SEARCH_FOR_BEDS_MENU": {
-        "selections":"0", "title":"Search for Beds"
+        "selections":"0", "title":"Search Beds"
     },
     "FUNC_ENTER_AGE": {
         "selections":"0", "input":"age", "inputValue": "adults"
@@ -49,5 +49,8 @@
     },
     "FUNC_BED_AVAILABILITY_FORM_SUBMIT": {
         "submitResponseMessage":"The bed availability has been updated."
+    },
+    "FUNC_OUTGOING_REFERRALS_MENU": {
+        "selections":"4", "title": "Search Outgoing Referrals"
     }
 }

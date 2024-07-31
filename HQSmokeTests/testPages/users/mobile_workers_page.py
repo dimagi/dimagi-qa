@@ -439,7 +439,8 @@ class MobileWorkerPage(BasePage):
         time.sleep(1)
         self.mobile_worker_menu()
         self.wait_to_click(self.download_worker_btn)
-        self.wait_to_click(self.download_filter)
+        self.wait_for_element(self.download_filter)
+        self.click(self.download_filter)
         time.sleep(5)
         try:
             self.wait_and_sleep_to_click(self.download_users_btn, 150)

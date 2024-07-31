@@ -8,6 +8,12 @@ A CommCareHQ web user who is a member of the test domain is required. This user'
 
 Domain and application, both required, are specified in config.yaml.
 
+# Usage
+There are 2 directories: one has the old scripts that logs in as both web users as well as mobile workers, one is the updated scripts that logs in only once.
+For executing the old scripts provide the required values in the yaml files in /project-config/co-carecoordination-perf/
+
+For running the updated scripts, apart from the yaml values, also add the passwords in the file update-scripts/project-config/co-carecoordination-perf/mobile_worker_credentials.json
+
 # Configuring and running
 Basic usage, for a single test user:
 
@@ -39,7 +45,8 @@ Leave off --headless to view results in the Locust web UI. See docs for options 
 ## Running with a step load
 
 ```shell
-locust -f commcarehq-bed-track.py,step_load.py
+locust -f .\LocustScripts\old-scripts\commcarehq-bed-track-non-ideal-case.py --test-config .\LocustScripts\old-scripts\project-config/co-carecoordination-perf/bed_tracking_tool_config.yaml
+
 ```
 
 This will spawn users in batches of 50 with a 5 minute wait between each batch. The max users is 300 and the default

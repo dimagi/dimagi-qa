@@ -12,10 +12,10 @@ class UserDetails(pydantic.BaseModel):
     password: str
     login_as: str | None = None
 
-    def __str__(self):
-        if self.login_as:
-            return f"{self.username} as {self.login_as}"
-        return self.username
+    # def __str__(self):
+    #     if self.login_as:
+    #         return f"{self.username} as {self.login_as}"
+    #     return self.username
 
 
 class AppDetails(pydantic.BaseModel):
