@@ -1,13 +1,16 @@
 import pytest
 
+from HQSmokeTests.testPages.android.android_screen import AndroidScreen
 from HQSmokeTests.testPages.applications.app_preview import AppPreviewPage
 from HQSmokeTests.testPages.applications.application_page import ApplicationPage
 from HQSmokeTests.testPages.data.export_data_page import ExportDataPage
 from HQSmokeTests.testPages.data.import_cases_page import ImportCasesPage
 from HQSmokeTests.testPages.email.email_verification import EmailVerification
 from HQSmokeTests.testPages.home.home_page import HomePage
+from HQSmokeTests.testPages.messaging.messaging_page import MessagingPage
 from HQSmokeTests.testPages.project_settings.repeaters_page import RepeatersPage
 from HQSmokeTests.testPages.reports.report_page import ReportPage
+from HQSmokeTests.testPages.webapps.web_apps_page import WebAppsPage
 
 from HQSmokeTests.userInputs.user_inputs import UserData
 
@@ -129,4 +132,45 @@ def test_case_81_parent_child_case_imports(driver, settings):
     home.data_menu()
     export.verify_case_import(assignment)
 
+@pytest.mark.projectSettings
+@pytest.mark.createRepeater
+@pytest.mark.editRepeater
+@pytest.mark.p1p2EscapeDefect
+def test_case_83_data_forwarding_add_edit(driver, settings):
+    home = HomePage(driver, settings)
+    home.project_settings_page()
+    repeater = RepeatersPage(driver)
+    repeater.delete_all_repeaters()
+    repeater.add_repeater()
+    repeater.edit_repeater()
+    repeater.delete_repeater()
+
+@pytest.mark.data
+@pytest.mark.p1p2EscapeDefect
+def test_case_93_cond_alert_on_form_submit(driver, settings):
+    menu = HomePage(driver, settings)
+    msg = MessagingPage(driver)
+    menu.messaging_menu()
+    msg.remove_all_cond_alert()
+    menu.messaging_menu()
+    cond_alert, subject = msg.create_cond_alert_for_doesnot_have_value()
+    menu.web_apps_menu()
+    webapps = WebAppsPage(driver)
+    webapps.verify_apps_presence()
+    case_name = webapps.submit_case_change_register_form_no_value()
+    menu = HomePage(driver, settings)
+    menu.applications_menu(UserData.reassign_cases_application)
+    load = ApplicationPage(driver)
+    code = load.get_app_code(UserData.reassign_cases_application)
+    mobile = AndroidScreen(settings)
+    mobile.verify_app_install(code)
+    mobile.close_android_driver()
+    menu.reports_menu()
+    report = ReportPage(driver)
+    case_id = report.get_case_id_from_case_list_explorer(case_name)
+    export = ExportDataPage(driver)
+    menu.data_menu()
+    export.check_for_case_id(case_id)
+    email = EmailVerification(settings)
+    email.verify_email_sent(subject, settings['url'])
 

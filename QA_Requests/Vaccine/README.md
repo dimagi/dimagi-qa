@@ -21,5 +21,5 @@ pip install -r requires.txt
 - Run tests
 
 ```sh
-python main.py
+python test_new_apk.py
 ```

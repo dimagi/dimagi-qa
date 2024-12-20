@@ -3,7 +3,10 @@
         "title":"Client Care Search"
     },
     "FUNC_SEARCH_FOR_BEDS_MENU": {
-        "selections":"1", "title":"Pilot: Submit Referrals"
+        "selections":"0", "title":"Send Referrals"
+    },
+    "FUNC_OPEN_BEDS": {
+        "selections":"0", "input":"only_open_beds", "inputValue":"yes"
     },
     "FUNC_OUTGOING_REFERRALS_MENU": {
         "selections":"4", "title": "Search Outgoing Referrals"

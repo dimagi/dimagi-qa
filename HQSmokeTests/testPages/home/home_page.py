@@ -138,3 +138,4 @@ class HomePage(BasePage):
         self.js_click(self.project_settings_menu)
         assert self.PROJECT_SETTINGS == self.driver.title, "This is not the Project Settings page."
         print("Project Settings page loaded successfully!")
+

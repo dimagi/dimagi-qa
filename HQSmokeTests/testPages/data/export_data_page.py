@@ -69,6 +69,7 @@ class ExportDataPage(BasePage):
         self.date_range = (By.ID, "id_date_range")
         self.close_date_picker = (By.XPATH, "//div[@data-action='close']")
         self.case_owner = (By.XPATH, "//span[@class='select2-selection select2-selection--multiple']")
+        self.export_sharing = (By.XPATH, "//select[@id='sharing-select']")
 
         # Export Form and Case data variables
         self.export_form_data_link = (By.LINK_TEXT, 'Export Form Data')
@@ -168,6 +169,14 @@ class ExportDataPage(BasePage):
         self.to_be_edited_file = os.path.abspath(
             os.path.join(UserData.USER_INPUT_BASE_DIR, "test_data/import_parent_child_case.xlsx")
             )
+
+        self.repeat_checkbox = (By.XPATH, "//span[./span[@data-bind='text: table.label()'][contains(.,'Repeat') or contains(.,'repeat')]]//preceding-sibling::span/input[@type='checkbox'][contains(@data-bind,'disabled: false')]")
+
+        # Shared Export
+        self.shared_export_name = "//div[@class='card-header'][.='Exports Shared with Me']//following-sibling::div//td[.//span[.='{}']]"
+        self.shared_export_view_button = "//td[.//span[.='{}']]//following-sibling::td//a[contains(@data-bind,'editUrl')]//span[contains(.,'View')][not(@style)]"
+        self.shared_export_edit_button = "//td[.//span[.='{}']]//following-sibling::td//a[contains(@data-bind,'editUrl')]//span[contains(.,'Edit')][not(@style)]"
+
 
     def get_url_paste_browser(self, username, password, item):
         if item == 'cases':
@@ -840,3 +849,97 @@ class ExportDataPage(BasePage):
         self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
         assert self.is_present(self.related_cases_tab), "Parent not reassigned"
         self.validate_child_case_data()
+
+    def add_repeat_form_exports(self, app, case, form, export_name):
+        self.wait_for_element(self.add_export_button, 100)
+        self.delete_bulk_exports()
+        self.wait_and_sleep_to_click(self.add_export_button)
+        time.sleep(100)
+        self.is_visible_and_displayed(self.app_type, 200)
+        self.wait_for_element(self.app_type, 200)
+        self.is_clickable(self.app_type)
+        self.select_by_text(self.app_type, UserData.app_type)
+        self.select_by_text(self.application, app)
+        self.select_by_text(self.module, case)
+        self.select_by_text(self.form, form)
+        self.wait_to_click(self.add_export_conf)
+        self.wait_for_element(self.export_name, 200)
+        self.clear(self.export_name)
+        self.send_keys(self.export_name, export_name+Keys.TAB)
+        time.sleep(5)
+        self.scroll_to_bottom()
+        list_repeat = self.find_elements(self.repeat_checkbox)
+        if len(list_repeat) > 0:
+            assert True
+        else:
+            print("Repeat checkbox are either absent or not enabled")
+            assert False
+        time.sleep(5)
+        self.js_click(self.export_settings_create)
+        print("Export created!!")
+
+    def check_for_case_id(self, case_id):
+        self.wait_for_element(self.find_data_by_ID)
+        self.wait_to_click(self.find_data_by_ID)
+        self.wait_to_clear_and_send_keys(self.find_data_by_case_ID_textbox, case_id)
+        self.wait_and_sleep_to_click(self.find_data_by_case_ID_button)
+        self.wait_for_element(self.view_FormID_CaseID)
+        link = self.get_attribute(self.view_FormID_CaseID, "href")
+        print(link)
+        self.driver.get(link)
+        self.wait_for_element((By.XPATH, self.case_id_value.format(case_id)))
+        if self.is_present_and_displayed((By.XPATH, self.case_id_value.format(case_id))):
+            assert True, "Case ID not present"
+            print("Case ID present")
+        else:
+            print("Case ID not present")
+            assert False
+
+    def add_shared_form_exports(self, name, private='NO'):
+        self.wait_for_element(self.add_export_button, 100)
+        self.wait_and_sleep_to_click(self.add_export_button)
+        time.sleep(100)
+        self.is_visible_and_displayed(self.app_type, 200)
+        self.wait_for_element(self.app_type, 200)
+        self.is_clickable(self.app_type)
+        self.select_by_text(self.app_type, UserData.app_type)
+        self.select_by_text(self.application, UserData.village_application)
+        self.select_by_text(self.module, UserData.case_list_name)
+        self.select_by_text(self.form, UserData.form_name)
+        self.wait_to_click(self.add_export_conf)
+        self.wait_for_element(self.export_name, 200)
+        self.clear(self.export_name)
+        self.send_keys(self.export_name, name+Keys.TAB)
+        time.sleep(5)
+        if private == 'YES':
+            self.scroll_to_element(self.export_sharing)
+            self.select_by_value(self.export_sharing, 'private')
+            time.sleep(2)
+        else:
+            self.scroll_to_element(self.export_sharing)
+            self.select_by_value(self.export_sharing, 'edit_and_export')
+            time.sleep(2)
+        self.scroll_to_bottom()
+        time.sleep(5)
+        self.js_click(self.export_settings_create)
+        print("Export created!!")
+        time.sleep(10)
+
+    def verify_shared_export_section(self, shared_export, private_export, permission='YES'):
+        self.wait_to_click(self.export_form_data_link)
+        self.wait_for_element(self.add_export_button)
+        assert self.is_present_and_displayed((By.XPATH, self.shared_export_name.format(shared_export))), "Shared export not present"
+        assert not self.is_present_and_displayed((By.XPATH, self.shared_export_name.format(private_export)), 5
+                                             ), "Private export present"
+        if permission == 'YES':
+            assert self.is_present_and_displayed((By.XPATH, self.shared_export_edit_button.format(shared_export))
+                                                 ), "Shared export edit button not present"
+            assert not self.is_present_and_displayed((By.XPATH, self.shared_export_view_button.format(private_export)), 5
+                                                     ), "Shared export view button present"
+        elif permission == 'NO':
+            assert self.is_present_and_displayed((By.XPATH, self.shared_export_view_button.format(shared_export))
+                                                 ), "Shared export view button not present"
+            assert not self.is_present_and_displayed((By.XPATH, self.shared_export_edit_button.format(private_export)), 5
+                                                     ), "Shared export edit button present"
+        else:
+            print("Permission value is missing.")

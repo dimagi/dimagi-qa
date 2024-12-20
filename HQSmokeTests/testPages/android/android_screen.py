@@ -1,6 +1,7 @@
 from appium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 
 from HQSmokeTests.userInputs.user_inputs import UserData
 from appium.options.android import UiAutomator2Options
@@ -69,6 +70,7 @@ class AndroidScreen:
         self.form = "//android.widget.TextView[@text='"+UserData.new_form_name+"']"
         self.text_field = "//android.widget.EditText"
         self.submit_button = "//android.widget.TextView[@text='FINISH']"
+        self.log_out = "//android.widget.TextView[@text='Log out of CommCare']"
 
     def click_xpath(self, locator):
         element = self.driver.find_element(AppiumBy.XPATH, locator)
@@ -86,6 +88,11 @@ class AndroidScreen:
         element = self.driver.find_element(AppiumBy.ID, locator)
         element.send_keys(user_input)
 
+    def wait_for_element(self, *locator, timeout=20):
+        clickable = ec.element_to_be_clickable(locator)
+        WebDriverWait(self.driver, timeout, poll_frequency=5).until(clickable,
+                                                                    message="Couldn't find locator: " + str(locator))
+
     def install_app_and_submit_form(self, code, random_text):
         self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
         self.driver.find_element(AppiumBy.ID, self.profile_code).send_keys(code)
@@ -93,7 +100,7 @@ class AndroidScreen:
         time.sleep(3)
         self.driver.find_element(AppiumBy.XPATH, self.install).click()
         time.sleep(15)
-        self.driver.find_element(AppiumBy.ID, self.username).send_keys(UserData.app_login)
+        self.driver.find_element(AppiumBy.ID, self.username).send_keys(UserData.new_app_login)
         self.driver.find_element(AppiumBy.ID, self.password).send_keys(UserData.app_password)
         self.driver.find_element(AppiumBy.ID, self.login).click()
         time.sleep(50)
@@ -110,6 +117,51 @@ class AndroidScreen:
         assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='1 form sent to server!']").is_displayed()
         self.driver.find_element(AppiumBy.XPATH, self.sync_button).click()
         time.sleep(3)
+
+    def verify_app_install(self, code):
+        time.sleep(10)
+        self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
+        self.driver.find_element(AppiumBy.ID, self.profile_code).send_keys(code)
+        self.driver.find_element(AppiumBy.ID, self.start_install).click()
+        time.sleep(3)
+        self.driver.find_element(AppiumBy.XPATH, self.install).click()
+        time.sleep(30)
+        assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Welcome back! Please log in.']").is_displayed(), "App not installed"
+        print("App installed successfully")
+
+    def verify_login_with_old_password(self, code, username, password):
+        time.sleep(10)
+        self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
+        self.driver.find_element(AppiumBy.ID, self.profile_code).send_keys(code)
+        self.driver.find_element(AppiumBy.ID, self.start_install).click()
+        time.sleep(3)
+        self.driver.find_element(AppiumBy.XPATH, self.install).click()
+        time.sleep(30)
+        assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Welcome back! Please log in.']").is_displayed(), "App not installed"
+        print("App installed successfully")
+        self.driver.find_element(AppiumBy.ID, self.username).send_keys(username)
+        self.driver.find_element(AppiumBy.ID, self.password).send_keys(password)
+        self.driver.find_element(AppiumBy.ID, self.login).click()
+        time.sleep(40)
+        self.driver.find_element(AppiumBy.XPATH, self.log_out).click()
+        print("Successfully logged in and logged out with old password:", username, password)
+        time.sleep(3)
+        assert self.driver.find_element(AppiumBy.XPATH,
+                                        "//android.widget.TextView[@text='Welcome back! Please log in.']"
+                                        ).is_displayed(), "App not installed"
+
+    def verify_login_with_new_password(self, username, password):
+        time.sleep(30)
+        assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Welcome back! Please log in.']").is_displayed(), "App not installed"
+        print("Welcome screen present")
+        self.driver.find_element(AppiumBy.ID, self.username).send_keys(username)
+        self.driver.find_element(AppiumBy.ID, self.password).send_keys(password)
+        self.driver.find_element(AppiumBy.ID, self.login).click()
+        time.sleep(40)
+        self.driver.find_element(AppiumBy.XPATH, self.log_out).click()
+        print("Successfully logged in and logged out with new password :", username, password)
+        time.sleep(3)
+
 
     def close_android_driver(self):
         self.driver.quit()

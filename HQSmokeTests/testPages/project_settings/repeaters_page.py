@@ -38,7 +38,10 @@ class RepeatersPage(BasePage):
         By.XPATH, "//div[contains(@class,'alert-success')][contains(.,'Forwarder Successfully Updated')]")
         self.delete_success = (
             By.XPATH, "//div[contains(@class,'alert-success')][contains(.,'Forwarding stopped!')]")
+        self.close_message = (
+            By.XPATH, "//div[contains(@class,'alert-success')][contains(.,'Forwarding stopped!')]/button[contains(@class,'close')]")
         self.confirm_delete_button = "//div[./p[contains(.,'{}')]]//following-sibling::div/*[contains(.,'Delete')]"
+        self.test_repeater_row = (By.XPATH, "//td[starts-with(.,'repeater_')]")
 
     def data_forwarding(self):
         self.wait_for_element(self.data_forwarding_linked_text)
@@ -87,3 +90,24 @@ class RepeatersPage(BasePage):
         self.wait_to_click((By.XPATH, self.confirm_delete_button.format(self.repeater_name_input)))
         assert self.is_present_and_displayed(self.delete_success), "Delete repeater failed"
         print("Repeater deleted successfully")
+
+    def delete_all_repeaters(self):
+        self.data_forwarding()
+        repeater_names = []
+        list_repeater = self.find_elements(self.test_repeater_row)
+        if len(list_repeater) > 0:
+            print("Test repeaters are present")
+            for item in list_repeater:
+                repeater_names.append(item.text)
+            print("Test Repeater list: ", repeater_names)
+            for item in repeater_names:
+                self.wait_to_click((By.XPATH, self.repeater_delete_button.format(item)))
+                self.wait_for_element((By.XPATH, self.confirm_delete_button.format(item)))
+                self.wait_to_click((By.XPATH, self.confirm_delete_button.format(item)))
+                assert self.is_present_and_displayed(self.delete_success), "Delete repeater failed"
+                print("Repeater deleted successfully", item)
+                self.wait_to_click(self.close_message)
+                time.sleep(3)
+            print("All test repeaters deleted")
+        else:
+            print("No test repeaters present")
