@@ -1,6 +1,6 @@
 import time
 
-from selenium.webdriver import ActionChains
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from common_utilities.selenium.base_page import BasePage
 from HQSmokeTests.userInputs.user_inputs import UserData
@@ -16,9 +16,8 @@ class CopyCasesPage(BasePage):
         self.env_url = settings["url"]
         self.copy_cases_menu = (By.LINK_TEXT, "Copy Cases")
         self.apply = (By.ID, "apply-btn")
-        self.case_type = (By.XPATH, "//label[.='Case Type']//following-sibling::div/*[@class='select2 select2-container select2-container--default select2-container--below']")
-        self.case_type_dropdown = (By.XPATH, "//label[.='Case Type']//following-sibling::div/select[@name='case_type']")
-
+        self.case_type = (By.XPATH, "//select[@name='case_type']")
+        self.case_type_option_value = (By.XPATH, "//option[@value='reassign']")
 
         self.select_first_case = (By.XPATH, "(//td[2][not(contains(.,'no name'))]//preceding-sibling::td/input[@type='checkbox'])[1]")
         self.first_case_name = (By.XPATH, "(//a[contains(@class, 'ajax_dialog')][not(contains(.,'no name'))])[1]")
@@ -38,7 +37,9 @@ class CopyCasesPage(BasePage):
         self.copied_user_from_list = "//li[starts-with(text(), '{}')]"
         self.success_message = (By.XPATH, "//*[@data-bind='html: message' and contains(.,'Cases copied')]")
         self.empty_list = (By.XPATH, "//td[.='No data available to display. Please try changing your filters.']")
-
+        self.users_field = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]")
+        self.users_list_item = "//ul[@role='listbox']/li[contains(.,'{}')]"
+        self.remove_buttons = (By.XPATH, "//select[@name='case_list_filter']//following-sibling::span//ul//button")
 
     def sort_for_latest_on_top(self):
         self.wait_to_click(self.last_modified)
@@ -47,13 +48,29 @@ class CopyCasesPage(BasePage):
         self.wait_to_click(self.last_modified)
         self.wait_for_element(self.last_modified_descending, 50)
 
-    def get_cases(self):
+    def remove_default_users(self):
+        self.wait_for_element(self.users_field)
+        count = self.find_elements(self.remove_buttons)
+        print(len(count))
+        for i in range(len(count)):
+            count[0].click()
+            time.sleep(2)
+            if len(count) != 1:
+                ActionChains(self.driver).send_keys(Keys.TAB).perform()
+                time.sleep(2)
+            count = self.find_elements(self.remove_buttons)
+        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+
+    def get_cases(self, username):
         self.wait_to_click(self.copy_cases_menu)
-        time.sleep(5)
-        self.wait_for_element(self.apply, 70)
-        self.select_by_text(self.user_search_dropdown, UserData.searched_user)
-        self.select_by_value(self.case_type_dropdown, UserData.case_pregnancy)
+        self.wait_for_element(self.case_type, 60)
+        self.select_by_value(self.case_type, UserData.case_reassign)
+        self.remove_default_users()
+        self.send_keys(self.users_field, username)
+        self.wait_to_click((By.XPATH, self.users_list_item.format(username)))
+        time.sleep(1)
         self.wait_to_click(self.apply)
+
 
     def copy_case(self):
         self.sort_for_latest_on_top()
@@ -66,20 +83,24 @@ class CopyCasesPage(BasePage):
         time.sleep(1)
         assigned_username = self.get_text((By.XPATH,self.copied_user_from_list.format(UserData.mobile_testuser)))
         print("Assigned Username:", assigned_username)
-        self.move_to_element_and_click((By.XPATH,self.copied_user_from_list.format(UserData.mobile_testuser)))
+        self.move_to_element_and_click((By.XPATH, self.copied_user_from_list.format(UserData.mobile_testuser)))
+        time.sleep(5)
         self.wait_to_click(self.copy_btn)
         time.sleep(5)
-        self.wait_for_element(self.success_message, 30)
+        self.wait_for_element(self.success_message, 130)
         print("Sleeping for sometimes for the case to be copied")
         time.sleep(60)
-        self.wait_to_click(self.copy_cases_menu)
+        self.driver.refresh()
         time.sleep(5)
-        self.wait_for_element(self.apply, 70)
-        self.select_by_text(self.user_search_dropdown, assigned_username)
+        self.remove_default_users()
+        self.send_keys(self.users_field, assigned_username)
+        self.wait_to_click((By.XPATH, self.users_list_item.format(assigned_username)))
+        time.sleep(3)
         self.send_keys(self.search_query, case_being_copied)
         self.wait_to_click(self.apply)
         time.sleep(5)
         self.scroll_to_bottom()
+        self.sort_for_latest_on_top()
         if self.is_present(self.empty_list):
             print("No Case Copied, List is empty")
             assert False

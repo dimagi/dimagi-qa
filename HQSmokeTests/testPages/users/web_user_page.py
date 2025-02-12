@@ -202,4 +202,16 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.update_location_btn)
         time.sleep(2)
 
-
+    def change_user_role(self, username, role):
+        self.wait_to_click(self.web_users_menu)
+        self.wait_for_element(self.search_user)
+        self.wait_to_clear_and_send_keys(self.search_user, username)
+        time.sleep(1)
+        self.wait_to_click(self.search_user_btn)
+        time.sleep(2)
+        self.wait_for_element(self.user_link)
+        self.wait_to_click(self.user_link)
+        self.wait_for_element(self.select_project_role_id)
+        self.select_by_text(self.select_project_role_id, role)
+        self.wait_to_click(self.update_role_btn)
+        time.sleep(2)

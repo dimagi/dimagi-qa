@@ -11,10 +11,12 @@ class UserData:
     reassign_cases_application = 'Reassign Cases'
     case_pregnancy = "pregnancy"
     case_reassign = "reassign"
+    case_reassign_change = "reassign_change"
     model_type_case = "case"
     model_type_form = "form"
     new_form_name = "Android Test Form"
     app_login = "appiumtest"
+    new_app_login = "apptest"
     app_password = "Pass@123"
     two_fa_user = "2fa.commcare.user@gmail.com"
     web_user = "[Web Users]"
@@ -77,7 +79,8 @@ class UserData:
     """Conditional Alert"""
     alert_case_property = "name"
     alert_case_property_value = "conditional alert"
-
+    alert_case_property_random_value = "enter_a_random_value"
+    alert_no_value = "does not have a value"
     """Saved report"""
     report_for_p1p2 = "Report For P1P2"
 
@@ -104,3 +107,6 @@ class UserData:
     parent_type = "pregnancy"
     child_type = "village"
     child_name = "Saharanpur"
+
+    private_export_yes = "Smoke Shared Form Export"
+    private_export_no = "Smoke Shared Private Form Export"
