@@ -45,7 +45,8 @@ pytest -v --rootdir= Features/CaseSearch/test_cases
 ### <ins> Trigger Manually on Gitaction </ins>
 
 To manually trigger the script,
-  - Go to [HQ Smoke Tests action](https://github.com/dimagi/dimagi-qa/actions/workflows/case-search-tests.yml)
+  - Go to [Gitactions](https://github.com/dimagi/dimagi-qa/actions/)
+  - Select the desired workflow, here [Case Search Tests](https://github.com/dimagi/dimagi-qa/actions/workflows/case-search-tests.yml)
   - Run workflow
   - Use workflow from ```master```
   - Use the environment as desired

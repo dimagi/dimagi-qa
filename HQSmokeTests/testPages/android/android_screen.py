@@ -1,5 +1,14 @@
 from appium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+
 from HQSmokeTests.userInputs.user_inputs import UserData
+from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.actions import interaction
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 import time
 
 """"Contains test page elements and functions related to the app installation and form submission on mobile"""
@@ -8,32 +17,43 @@ import time
 class AndroidScreen:
 
     def __init__(self, settings):
-        self.desired_cap = {
-            # Set your access credentials
-            "browserstack.user": settings["bs_user"],
-            "browserstack.key": settings["bs_key"],
+        # This sample code uses the Appium python client v2
+        # pip install Appium-Python-Client
+        # Then you can paste this into a file and simply run with Python
+
+        self.options = UiAutomator2Options().load_capabilities({
+            # Specify device and os_version for testing
+            "platformName": "android",
+            "appium:os_version": "10.0",
+            "appium:deviceName": "Google Pixel 4 XL",
+            "appium:automationName": "UIAutomator2",
 
             # Set URL of the application under test
-            "app": "bs://f6840d8d56c10228cd1f9f748801c7648d3540b8",
+            "appium:app": "bs://ba5f44378238f3c798197f89b0b8eed55c57427c",
 
-            # Specify device and os_version for testing
-            "device": "Google Pixel 4 XL",
-            "os_version": "10.0",
+            "appium:autoGrantPermissions": "true",
+            "appium:newCommandTimeout": 3600,
 
             # Set other BrowserStack capabilities
-            "project": "First Python project",
-            "build": "Python Android",
-            "platformName": "android",
-            "name": "first_test",
-            "autoGrantPermissions": "true",
-            "fullReset": "true"
-        }
+            'bstack:options': {
+                "projectName": "First Python project",
+                "buildName": "Python Android",
+                "sessionName": "first_test",
+
+                # Set your access credentials
+                "userName": settings["bs_user"],
+                "accessKey": settings["bs_key"]
+
+            }
+        })
+
         # Initialize the remote Webdriver using BrowserStack remote URL
         # and desired capabilities defined above
         self.driver = webdriver.Remote(
-            command_executor="http://hub-cloud.browserstack.com/wd/hub",
-            desired_capabilities=self.desired_cap
+            "https://hub-cloud.browserstack.com:443/wd/hub",
+            options=self.options
         )
+        self.driver.implicitly_wait(15)
 
         # Locator
         self.enter_code = "//android.widget.TextView[@text='Enter Code']"
@@ -51,45 +71,45 @@ class AndroidScreen:
         self.submit_button = "//android.widget.TextView[@text='FINISH']"
 
     def click_xpath(self, locator):
-        element = self.driver.find_element_by_xpath(locator)
+        element = self.driver.find_element(AppiumBy.XPATH, locator)
         element.click()
 
     def click_id(self, locator):
-        element = self.driver.find_element_by_id(locator)
+        element = self.driver.find_element(AppiumBy.ID, locator)
         element.click()
 
     def send_text_xpath(self, locator, user_input):
-        element = self.driver.find_element_by_xpath(locator)
+        element = self.driver.find_element(AppiumBy.XPATH, locator)
         element.send_keys(user_input)
 
     def send_text_id(self, locator, user_input):
-        element = self.driver.find_element_by_id(locator)
+        element = self.driver.find_element(AppiumBy.ID, locator)
         element.send_keys(user_input)
 
     def install_app_and_submit_form(self, code, random_text):
-        self.driver.find_element_by_xpath(self.enter_code).click()
-        self.driver.find_element_by_id(self.profile_code).send_keys(code)
-        self.driver.find_element_by_id(self.start_install).click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath(self.install).click()
+        self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
+        self.driver.find_element(AppiumBy.ID, self.profile_code).send_keys(code)
+        self.driver.find_element(AppiumBy.ID, self.start_install).click()
+        time.sleep(3)
+        self.driver.find_element(AppiumBy.XPATH, self.install).click()
         time.sleep(15)
-        self.driver.find_element_by_id(self.username).send_keys(UserData.app_login)
-        self.driver.find_element_by_id(self.password).send_keys(UserData.app_password)
-        self.driver.find_element_by_id(self.login).click()
-        time.sleep(15)
-        self.driver.find_element_by_xpath(self.start_button).click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath(self.case_list).click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath(self.form).click()
-        time.sleep(2)
-        assert self.driver.find_element_by_xpath("//android.widget.TextView[@text='Add Text "+random_text+"']").is_displayed()
-        self.driver.find_element_by_xpath(self.text_field).send_keys(random_text)
-        self.driver.find_element_by_xpath(self.submit_button).click()
-        time.sleep(5)
-        assert self.driver.find_element_by_xpath("//android.widget.TextView[@text='1 form sent to server!']").is_displayed()
-        self.driver.find_element_by_xpath(self.sync_button).click()
-        time.sleep(2)
+        self.driver.find_element(AppiumBy.ID, self.username).send_keys(UserData.app_login)
+        self.driver.find_element(AppiumBy.ID, self.password).send_keys(UserData.app_password)
+        self.driver.find_element(AppiumBy.ID, self.login).click()
+        time.sleep(50)
+        self.driver.find_element(AppiumBy.XPATH, self.start_button).click()
+        time.sleep(3)
+        self.driver.find_element(AppiumBy.XPATH, self.case_list).click()
+        time.sleep(3)
+        self.driver.find_element(AppiumBy.XPATH, self.form).click()
+        time.sleep(3)
+        assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Add Text "+random_text+"']").is_displayed()
+        self.driver.find_element(AppiumBy.XPATH, self.text_field).send_keys(random_text)
+        self.driver.find_element(AppiumBy.XPATH, self.submit_button).click()
+        time.sleep(10)
+        assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='1 form sent to server!']").is_displayed()
+        self.driver.find_element(AppiumBy.XPATH, self.sync_button).click()
+        time.sleep(3)
 
     def close_android_driver(self):
         self.driver.quit()

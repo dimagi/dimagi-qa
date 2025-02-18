@@ -8,10 +8,12 @@ class CaseSearchUserInput:
     casesearch = "casesearch"
     casesearch_1 = "casesearch-1"
     casesearch_2 = "casesearch-2"
+    casesearch_split_screen = "casesearch-split-screen"
 
     """App Names"""
-    case_search_app_name = "Music App (Case Search & Claim)"
+    case_search_app_name = "[Master] Music App (Case Search & Claim)"
     french_app = "[French] Music App"
+    linked_case_search_app_name = "[Linked Master] Music App (Case Search & Claim)"
 
     """Users"""
     user_1 = 'automation-user-1'
@@ -30,6 +32,7 @@ class CaseSearchUserInput:
     search_setting_menu = "Songs - Case Search Settings"
     without_search_setting_menu = "Songs - Without Case Search Settings"
     inline_search_menu = "Songs Inline Case Search"
+    dot_notations = "Dot Notations"
     old_inline_search_menu = "Old Search Input Instance"
     multi_select_menu = "Songs Multi-Case List"
     display_only_forms_menu = "Play Song - Display Only Forms"
@@ -39,8 +42,12 @@ class CaseSearchUserInput:
     load_external_search_first_menu = "DR: Load external case into form (Search First)"
     smart_link_search_first_menu = "DR: Smart link to external domain (Search First)"
     smart_link_skip_default_menu = "DR: Smart link to external domain (Skip Default)"
+    shadow_smart_link_search_first_menu = "DR Shadow: Smart Link to external domain (Search First)"
+    shadow_smart_link_skip_default_menu = "DR Shadow: Smart Link to external domain (Skip Default)"
     load_external_skip_default_menu = "DR: Load external case into form (Skip Default)"
     unrelated_case_load_external_menu = "Unrelated case id\'s property: Load from external domain."
+    checkbox_selection_menu = "Checkbox Selection"
+    shows_ancestor_exists_menu = "Shows(Ancestor Exists)"
 
     """Forms"""
     play_song_form = "Play Song"
@@ -54,6 +61,8 @@ class CaseSearchUserInput:
     """Pre=Configured Cases"""
     # Song-Cases
 
+    song_just_babe = "Just5000Babe"
+    song_123 = "1"
     song_automation_song = "Automation-Song-"
     song_automation_song_no_space = "AutomationSongNoSpace"
     song_automation_song_1 = "Automation-Song-1"
@@ -64,6 +73,8 @@ class CaseSearchUserInput:
     song_case_cs4_song_300 = "CS4 Song-300"
     song_case_on_casesearch_1 = "Bugs on casesearch-1"
     song_case_b_users_song = "b_users song"
+    song_automation_song_update = "Automation Song Update"
+    song_auto_parent = "(Auto) Parent Song"
 
     # Artist-Cases
     automation_artist_1 = "Automation-Artist-1"
@@ -75,6 +86,7 @@ class CaseSearchUserInput:
     # Show-Cases
     show_case_show1 = "Automation-Show1"
     show_case_casesearch_1 = "on casesearch-1"
+    show_auto = "(Auto) Show"
 
     # Instruments-Cases
     instrument_case_guitar = "Guitar"
@@ -94,8 +106,23 @@ class CaseSearchUserInput:
     mood_help_text = "Mood\'s Rating"
     date_2022_12_30 = "2022-12-30"
     date_30_12_2022 = "30/12/2022"
-    date_12_30_2022 = "12/30/2022"
-    dates = {"MM/DD/YYYY": '%m/%d/%Y', "YYYY-MM-DD": '%Y-%m-%d', "DD/MM/YYYY": "%d/%m/%Y"}
+    date_12_30_2022_slash = "12/30/2022"
+    date_12_30_2022_hyphen = "12-30-2022"
+    date_12_30_22_slash = "12/30/22"
+    date_12_30_22_hyphen = "12-30-22"
+
+    date_2023_08_16 = "2023-08-16"
+    date_16_08_2023 = "16/08/2023"
+    date_08_16_2023_slash = "08/16/2023"
+    date_08_16_2023_hyphen = "08-16-2023"
+    date_08_16_23_slash = "08/16/23"
+    date_08_16_23_hyphen = "08-16-23"
+
+
+    dates = {"MM/DD/YYYY": '%m/%d/%Y', "MM-DD-YYYY": "%m-%d-%Y",
+             "MM/DD/YY": "%m/%d/%y", "MM-DD-YY": "%m-%d-%y",
+             "YYYY-MM-DD": '%Y-%m-%d', "DD/MM/YYYY": "%d/%m/%Y",
+             "DD-MM-YYYY": '%d-%m-%Y'}
     full_home_address = "New Canada St., 3855 Brienz, Switzerland"
     full_work_address = "Avenida Benito Juárez, 77560 Alfredo V. Bonfil, Quintana Roo, Mexico"
     home_street_value = "New Canada St."
@@ -110,8 +137,12 @@ class CaseSearchUserInput:
     validation_msg_no_spaces = "No spaces allowed!"
     validation_msg_invalid_respons = "Sorry, this response is invalid!"
     latin_music = "Latin music"
+    hiphop = "Hip Hop"
+    metal = "Metal"
+    bounce = "Bounce"
     latin_jazz = "Latin jazz"
-    funk_metal = "Funk Metal"
+    funk_metal = "Funk metal"
+    nu_metal = "Nu metal"
     default_search_title = "Case Claim"
     search_title = "Song Detail"
     french_search_title = "Song Detail (French)"
@@ -123,7 +154,7 @@ class CaseSearchUserInput:
     id_without_hyphen = "12345"
 
     """Case Properties/Search Fields"""
-
+    rating_on_form = {"1 star": '1', "2 stars": '2', "3 stars": '3', "4 stars": '4', "5 stars": '5'}
     ratings = {one_star: '1', two_star: '2', three_star: '3', four_star: '4', five_star: '5'}
     song_name = "Song Name"
     name = "Name"
@@ -138,12 +169,14 @@ class CaseSearchUserInput:
     artist = "Artist"
     song_release_date = "Song Release Date"
     show_date = "Show Date"
+    song_subgenre = "Song Subgenre"
     subgenre = "SubGenre"
     genre = "Genre"
     parent_artist = "Parent Artist"
     rating_input = "Rating Input"
     instrument_name = "Instrument Name"
     song_id = "Song ID"
+    artist_city = "City"
 
     # Case list columns
     one = "1"
@@ -155,6 +188,7 @@ class CaseSearchUserInput:
     seven = "7"
     eight = "8"
     rating_four_and_five = "#,#4#,#5"
+    list_is_empty = "empty"
 
     # Questions
     add_show_question = "Add a show in this city"

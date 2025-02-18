@@ -58,6 +58,8 @@ class LoginPage(BasePage):
             self.driver.switch_to.default_content()
         except TimeoutException:
             pass  # ignore if notification  not on page
+        except NoSuchElementException:
+            pass
 
     def accept_alert(self):
         try:

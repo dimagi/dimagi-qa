@@ -1,4 +1,5 @@
 import os
+import time
 
 from openpyxl import load_workbook
 from selenium.webdriver.common.by import By
@@ -25,21 +26,56 @@ class ImportCasesPage(BasePage):
         self.download_file = (By.XPATH, "(//span[@data-bind='text: upload_file_name'])[1]")
         self.choose_file = (By.ID, "file")
         self.next_step = (By.XPATH, "(//button[@type='submit'])[1]")
+        self.confirm_import = (By.XPATH, "//button[@type='submit'][contains(.,'Confirm Import')]")
         self.case_type = (By.XPATH, "//select[@id='case_type']")
         self.case_type_option_value = (By.XPATH, "//option[@value='pregnancy']")
-        self.success = (By.XPATH, "//span[text()='" + self.file_new_name + "']//preceding::span[@class='label label-success']")
+        self.success = "(//span[text()='{}']//preceding::span[contains(@class,'success')])[1]"
+        self.create_new_cases = (By.XPATH, "//input[@id='create_new_cases']")
+        self.alert_msg = (By.XPATH, "//div[contains(@class,'alert alert-dismissible')]")
 
     def replace_property_and_upload(self):
         self.wait_to_click(self.import_cases_menu)
+        time.sleep(5)
         self.edit_spreadsheet(self.to_be_edited_file, self.village_name_cell, self.renamed_file, self.sheet_name)
-        self.wait_to_clear_and_send_keys(self.choose_file, self.renamed_file)
-        self.wait_to_click(self.next_step)
+        self.wait_for_element(self.choose_file)
+        print(str(self.renamed_file))
+        self.send_keys(self.choose_file, self.renamed_file)
+        time.sleep(2)
+        self.wait_for_element(self.next_step)
+        self.click(self.next_step)
         self.is_visible_and_displayed(self.case_type)
         self.select_by_text(self.case_type, UserData.case_pregnancy)
+        self.wait_for_element(self.create_new_cases)
+        self.scroll_to_element(self.create_new_cases)
+        self.wait_to_click(self.create_new_cases)
+        time.sleep(5)
+        self.wait_for_element(self.next_step)
         self.wait_to_click(self.next_step)
-        self.wait_to_click(self.next_step)
+        time.sleep(5)
+        if self.is_present_and_displayed(self.alert_msg, 20):
+            print("Error message displayed on importing excel. Repeating process..")
+            self.driver.refresh()
+            self.wait_for_element(self.choose_file)
+            self.send_keys(self.choose_file, self.renamed_file)
+            self.wait_for_element(self.next_step)
+            self.click(self.next_step)
+            self.is_visible_and_displayed(self.case_type)
+            self.select_by_text(self.case_type, UserData.case_pregnancy)
+            self.wait_for_element(self.create_new_cases)
+            self.scroll_to_element(self.create_new_cases)
+            self.wait_to_click(self.create_new_cases)
+            time.sleep(5)
+            self.wait_for_element(self.next_step)
+            self.wait_to_click(self.next_step)
+            time.sleep(5)
+        else:
+            print("No error present")
+        self.wait_for_element(self.confirm_import)
+        self.scroll_to_element(self.confirm_import)
+        time.sleep(2)
+        self.click(self.confirm_import)
         print("Imported case!")
-        assert self.is_visible_and_displayed(self.success), "Waitinng to start import. Celery might have a high queue."
+        assert self.is_visible_and_displayed((By.XPATH, self.success.format(self.file_new_name))), "Waitinng to start import. Celery might have a high queue."
 
     def edit_spreadsheet(self, edited_file, cell, renamed_file, sheet_name):
         workbook = load_workbook(filename=edited_file)
@@ -47,3 +83,29 @@ class ImportCasesPage(BasePage):
         sheet[cell] = fetch_random_string()
         sheet.title = sheet_name
         workbook.save(filename=renamed_file)
+
+    def import_parent_child_excel(self, filename):
+        self.wait_to_click(self.import_cases_menu)
+        self.wait_for_element(self.choose_file)
+        print("file path: ", filename)
+        if "/" in filename:
+            text = str(filename).split("/")
+            file = text[-1]
+        else:
+            text = str(filename).split("\\")
+            file = text[-1]
+        print(file)
+        self.wait_to_clear_and_send_keys(self.choose_file, filename)
+        self.wait_to_click(self.next_step)
+        self.is_visible_and_displayed(self.case_type)
+        self.select_by_text(self.case_type, UserData.child_type)
+        self.wait_for_element(self.next_step)
+        self.wait_to_click(self.next_step)
+        self.wait_for_element(self.next_step)
+        time.sleep(5)
+        self.scroll_to_element(self.confirm_import)
+        self.js_click(self.confirm_import)
+        print("Imported case!")
+        assert self.is_visible_and_displayed((By.XPATH, self.success.format(file)), 100), "Waitinng to start import. Celery might have a high queue."
+        print("Import Completed")
+

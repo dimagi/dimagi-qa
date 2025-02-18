@@ -13,17 +13,17 @@ class ManageFormsPage(BasePage):
     def __init__(self, driver):
         super().__init__(driver)
 
-        self.manage_forms_link = (By.XPATH, '//*[@id="hq-sidebar"]/nav/ul[2]/li[3]/a')
+        self.manage_forms_link = (By.LINK_TEXT, 'Manage Forms')
         self.select_app_dropdown = (By.ID, 'report_filter_form_app_id')
         self.basic_tests_app = (By.XPATH, "//option[text()='Basic Tests']")
         self.apply_button = (By.XPATH, '//*[@id="apply-btn"]')
         self.select_all_checkbox = (By.XPATH, "//input[@name='select_all']")
-        self.first_form_checkbox = (By.XPATH, "(//input[@type='checkbox' and @name='xform_ids'])[1]")
+        self.last_form_checkbox = (By.XPATH, "(//input[@type='checkbox' and @name='xform_ids'])[last()]")
         self.checkbox1 = (By.XPATH, "//*[@id='form_options']//*[@type='checkbox']")
         self.archive_button = (By.XPATH, '//*[@id="submitForms"]')
         self.restore_button = (By.XPATH, '//*[@id="submitForms" and contains(text(),"Restore")]')
         self.success_message = (By.XPATH, "//div[@class='alert alert-success']")
-        self.view_form_link = (By.XPATH, "//a[@class='ajax_dialog']")
+        self.view_form_link = (By.XPATH, "(//a[@class='ajax_dialog'])[last()]")
         self.archived_restored_dropdown = (By.XPATH, '//*[@id="select2-report_filter_archive_or_restore-container"]')
         self.archived_forms_option = (By.XPATH, '/html/body/span/span/span[2]/ul/li[2]')
         self.manage_forms_return = (By.XPATH, '//span[contains(text(),"Return to")]/a[.="Manage Forms"]')
@@ -33,20 +33,25 @@ class ManageFormsPage(BasePage):
         self.select_archive_restore = (By.XPATH, "//select[@name='archive_or_restore']")
         self.check_data = (By.XPATH, "//tr[@class = 'form-data-question ']")
 
-    def get_normal_forms(self):
+    def get_normal_forms(self, url=None):
         self.wait_and_sleep_to_click(self.manage_forms_link)
 
         # Date Filter
         self.wait_and_sleep_to_click(self.date_range_manage_forms)
         self.select_by_value(self.select_archive_restore, "archive")
         self.clear(self.date_range_manage_forms)
-        self.send_keys(self.date_range_manage_forms, UserData.date_having_submissions)
+        if url == None:
+            self.send_keys(self.date_range_manage_forms, UserData.date_having_submissions)
+        else:
+            self.send_keys(self.date_range_manage_forms, UserData.india_date_having_submission)
         self.wait_and_sleep_to_click(self.apply)
         # Report Apply
         self.wait_and_sleep_to_click(self.apply_button)
         time.sleep(5)
 
     def assert_normal_form_view(self):
+        link=self.get_attribute(self.view_form_link,"href")
+        print("link")
         self.wait_and_sleep_to_click(self.view_form_link)
         self.switch_to_next_tab()
         verify_data = self.find_elements(self.check_data)
@@ -67,7 +72,7 @@ class ManageFormsPage(BasePage):
             self.assert_normal_form_view()
 
     def archive_forms(self):
-        self.wait_and_sleep_to_click(self.first_form_checkbox)
+        self.wait_and_sleep_to_click(self.last_form_checkbox)
         self.wait_and_sleep_to_click(self.archive_button)
         assert self.is_present_and_displayed(self.success_message)
         print("Forms archival successful!!")
@@ -90,7 +95,7 @@ class ManageFormsPage(BasePage):
         self.switch_back_to_prev_tab()
 
     def restore_forms(self):
-        self.wait_and_sleep_to_click(self.first_form_checkbox)
+        self.wait_and_sleep_to_click(self.last_form_checkbox)
         self.wait_and_sleep_to_click(self.archive_button)
         assert self.is_present_and_displayed(self.success_message)
         print("Forms Restoration successful!!")

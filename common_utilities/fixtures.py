@@ -1,10 +1,7 @@
-from py.xml import html
 import pytest
+from py.xml import html
 
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-
 from common_utilities.path_settings import PathSettings
 from common_utilities.hq_login.login_page import LoginPage
 
@@ -50,10 +47,10 @@ def driver(settings, browser):
             firefox_options.add_argument("--disable-notifications")
             firefox_options.set_preference("browser.download.dir", str(PathSettings.DOWNLOAD_PATH))
     if browser == "chrome":
-        web_driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=chrome_options)
+        web_driver = webdriver.Chrome(options=chrome_options)
         print("Chrome version:", web_driver.capabilities['browserVersion'])
     elif browser == "firefox":
-        web_driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(), options=firefox_options)
+        web_driver = webdriver.Firefox(options=firefox_options)
     else:
         print("Provide valid browser")
     login = LoginPage(web_driver, settings["url"])
@@ -82,16 +79,16 @@ def appsite(pytestconfig):
     return pytestconfig.getoption("--appsite")
 
 
-@pytest.mark.optionalhook
+@pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_header(cells):
     # <th class="sortable result initial-sort asc inactive" col="result"><div class="sort-icon">vvv</div>Result</th>
     cells.insert(1, html.th('Tags', class_="sortable", col="tags"))
     cells.pop()
 
 
-@pytest.mark.optionalhook
+@pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_row(report, cells):
-    cells.insert(1, html.td(report.tags))
+    cells.insert(1, html.td(getattr(report, 'tags', '')))
     cells.pop()
 
 
@@ -114,7 +111,5 @@ def pytest_runtest_makereport(item):
                 extra.append(pytest_html.extras.html(html))
         report.extra = extra
         report.tags = tags
-
-
 def _capture_screenshot(web_driver):
     return web_driver.get_screenshot_as_base64()

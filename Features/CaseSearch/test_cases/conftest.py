@@ -59,3 +59,23 @@ def settings(environment_settings_casesearch):
     settings = ConfigParser()
     settings.read(path)
     return settings["default"]
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    # Collect test counts
+    passed = terminalreporter.stats.get('passed', [])
+    failed = terminalreporter.stats.get('failed', [])
+    error = terminalreporter.stats.get('error', [])
+    skipped = terminalreporter.stats.get('skipped', [])
+    xfail = terminalreporter.stats.get('xfail', [])
+    # Write the counts to a file
+    # Determine the environment
+    env = os.environ.get("DIMAGIQA_ENV", "default_env")
+
+    # Define the filename based on the environment
+    filename = f'cs_test_counts_{env}.txt'
+    with open(filename, 'w') as f:
+        f.write(f'PASSED={len(passed)}\n')
+        f.write(f'FAILED={len(failed)}\n')
+        f.write(f'ERROR={len(error)}\n')
+        f.write(f'SKIPPED={len(skipped)}\n')
+        f.write(f'XFAIL={len(xfail)}\n')

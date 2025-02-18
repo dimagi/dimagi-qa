@@ -38,5 +38,7 @@ def test_case_two_factor_auth(driver, settings):
     login.logout()
     if "staging" in settings["url"]:
         login.login(UserData.two_fa_user, settings["login_password"], settings["staging_auth_key"])
+    elif "india" in settings["url"]:
+        login.login(UserData.two_fa_user, settings["login_password"], settings["india_auth_key"])
     else:
         login.login(UserData.two_fa_user, settings["login_password"], settings["prod_auth_key"])

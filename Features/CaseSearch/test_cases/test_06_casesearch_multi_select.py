@@ -7,8 +7,8 @@ from Features.CaseSearch.constants import *
 """"Contains all multi-select related test cases"""
 
 
-def test_case_01_multiple_selected_cases_accessible_on_form(driver):
-    webapps = WebApps(driver)
+def test_case_01_multiple_selected_cases_accessible_on_form(driver, settings):
+    webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)

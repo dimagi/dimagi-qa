@@ -1,0 +1,6 @@
+host: https://www.commcarehq.org
+domain: co-carecoordination-perf
+app_id: 28cc3ad39a12317726f0d733e145db21
+domain_user_credential: project-config/co-carecoordination-perf/user_credentials.json
+owner_id: 3ca0fb9a3402487590f9b2eb5f0c876e
+app_config_bed_tracking_tool: project-config/co-carecoordination-perf/app_config_v3225_referrals_platform.json

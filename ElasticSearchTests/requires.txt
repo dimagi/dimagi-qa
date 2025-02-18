@@ -1,0 +1,20 @@
+## Stores information about all the libraries, modules, and packages that are used in this project.
+
+flake8>=3.8.4
+pandas>=1.2.2
+pytest
+pytest-html
+py
+openpyxl
+selenium == 4.11.0
+pytest-rerunfailures
+pytest-xdist
+pytest-xdist[psutil]
+pytest-order
+python-dateutil
+natsort
+pyotp
+imap-tools
+beautifulsoup4
+html5lib
+requests

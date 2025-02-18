@@ -1,10 +1,11 @@
 import time
 import datetime
 
+from dateutil.parser import parse
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, \
-    UnexpectedAlertPresentException, StaleElementReferenceException, NoSuchElementException
-from selenium.webdriver import ActionChains
+    UnexpectedAlertPresentException, StaleElementReferenceException, NoSuchElementException, JavascriptException
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
@@ -60,6 +61,7 @@ class BasePage:
             alert.accept()
             element.click()
         except StaleElementReferenceException:
+            time.sleep(5)
             self.js_click(locator)
         except TimeoutException:
             if self.page_403():
@@ -88,11 +90,19 @@ class BasePage:
         return element_text
 
     def wait_for_element(self, locator, timeout=20):
+        try:
+            clickable = ec.element_to_be_clickable(locator)
+            WebDriverWait(self.driver, timeout, poll_frequency=5).until(clickable,
+                                                                    message="Couldn't find locator: " + str(locator))
+        except StaleElementReferenceException:
+            time.sleep(10)
         clickable = ec.element_to_be_clickable(locator)
         WebDriverWait(self.driver, timeout, poll_frequency=5).until(clickable,
-                                                  message="Couldn't find locator: " + str(locator))
+                                                            message="Couldn't find locator: " + str(locator)
+                                                            )
 
-    def wait_and_sleep_to_click(self, locator, timeout=60):
+
+    def wait_and_sleep_to_click(self, locator, timeout=90):
         element = None
         try:
             time.sleep(10)
@@ -110,6 +120,7 @@ class BasePage:
             alert.accept()
             element.click()
         except StaleElementReferenceException:
+            time.sleep(5)
             self.js_click(locator)
         except TimeoutException:
             if self.page_403():
@@ -147,6 +158,14 @@ class BasePage:
         select_source = Select(self.driver.find_element(*source_locator))
         select_source.select_by_value(value)
 
+    def select_by_index(self, source_locator, value):
+        select_source = Select(self.driver.find_element(*source_locator))
+        select_source.select_by_index(value)
+
+    def get_selected_text(self, source_locator):
+        select_source = Select(self.driver.find_element(*source_locator))
+        return select_source.first_selected_option.text
+
     def deselect_all(self, source_locator):
         select_source = Select(self.driver.find_element(*source_locator))
         select_source.deselect_all()
@@ -154,6 +173,10 @@ class BasePage:
     def move_to_element_and_click(self, locator):
         element = self.driver.find_element(*locator)
         ActionChains(self.driver).move_to_element(element).click(element).perform()
+
+    def hover_on_element(self, locator):
+        element = WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located(locator))
+        ActionChains(self.driver).move_to_element(element).pause(2).perform()
 
     def clear(self, locator):
         element = self.driver.find_element(*locator)
@@ -229,7 +252,7 @@ class BasePage:
             is_displayed = False
         except StaleElementReferenceException:
             self.driver.refresh()
-            time.sleep(2)
+            time.sleep(10)
             visible = ec.presence_of_element_located(locator)
             element = WebDriverWait(self.driver, timeout).until(visible,
                                                                 message="Element" + str(locator) + "not displayed")
@@ -240,14 +263,26 @@ class BasePage:
         winHandles = self.driver.window_handles
         window_after = winHandles[1]
         self.driver.switch_to.window(window_after)
+        print(self.driver.title)
+        print(self.driver.current_window_handle)
 
     def switch_to_new_tab(self):
         self.driver.switch_to.new_window('tab')
+
+    def switch_to_default_content(self):
+        self.driver.switch_to.default_content()
 
     def switch_back_to_prev_tab(self):
         winHandles = self.driver.window_handles
         window_before = winHandles[0]
         self.driver.switch_to.window(window_before)
+        print(self.driver.title)
+        print(self.driver.current_window_handle)
+
+    def get_current_url(self):
+        get_url = self.driver.current_url
+        print("Current URL : " + get_url)
+        return get_url
 
     def get_environment(self):
         get_env = self.driver.current_url
@@ -285,15 +320,12 @@ class BasePage:
     def scroll_to_bottom(self):
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
-    def scroll_to_element(self, locator):
-        self.driver.execute_script("arguments[0].scrollIntoView();", self.driver.find_element(*locator))
-
     def hover_and_click(self, locator1, locator2):
         action = ActionChains(self.driver)
-        element_1 = self.driver.find_element(*locator1)
+        element_1 = WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located(locator1))
         action.move_to_element(element_1).perform()
         # identify sub menu element
-        element_2 = self.driver.find_element(*locator2)
+        element_2 = WebDriverWait(self.driver, 20).until(ec.visibility_of_element_located(locator2))
         # hover over element and click
         action.move_to_element(element_2).click().perform()
 
@@ -314,18 +346,6 @@ class BasePage:
                                                                     + str(locator))
         self.driver.execute_script("arguments[0].click();", element)
         time.sleep(3)
-
-
-    def js_send_keys(self, locator, value, timeout=20):
-        clickable = ec.element_to_be_clickable(locator)
-        element = WebDriverWait(self.driver, timeout).until(clickable,
-                                                            message="Couldn't find locator: "
-                                                                    + str(locator))
-        self.driver.execute_script("arguments[0].setAttribute('value', '" + value +"')", element);
-        time.sleep(3)
-
-    def js_click_direct(self, locator):
-        self.driver.execute_script("arguments[0].click();", self.driver.find_element(*locator))
 
     def scroll_to_element(self, locator):
         element = self.driver.find_element(*locator)
@@ -357,38 +377,58 @@ class BasePage:
             is_clickable = False
         return bool(is_clickable)
 
-    def switch_to_frame(self, locator):
-        current_frame = self.driver.execute_script("return self.name")
-        print("Current frame", current_frame)
-        print("Requested frame", locator)
-        if current_frame != locator:
-            frame = self.driver.find_element(*locator)
-            self.driver.switch_to.frame(frame)
-        else:
-            print("Frame already switched")
-
-    def switch_to_default_content(self):
-        self.driver.switch_to.default_content()
-
-    def dismiss_popup_alert(self):
-        alert = self.driver.switch_to.alert()
-        alert.dismiss()
-
-    def accept_popup_alert(self):
-        alert = self.driver.switch_to.alert()
-        alert.accept()
-
     def get_element(self, xpath_format, insert_value):
         element = (By.XPATH, xpath_format.format(insert_value))
         return element
 
+    def wait_for_ajax(self, value=200):
+        try:
+            wait = WebDriverWait(self.driver, value)
+            if self.driver.execute_script('return jQuery.active') != 'undefined':
+                wait.until(lambda driver: self.driver.execute_script('return jQuery.active') == 0)
+            elif self.driver.execute_script('return document.readyState') != 'complete':
+                wait.until(lambda driver: self.driver.execute_script('return document.readyState') == 'complete')
+            else:
+                print("Undefined JQuery, waiting for sometime")
+                time.sleep(10)
+        except JavascriptException:
+            print("Undefined JQuery")
+            time.sleep(20)
 
-    def open_new_tab(self):
-        self.driver.execute_script("window.open('');")
+    def is_date(self, string, fuzzy=False):
+        """
+        Return whether the string can be interpreted as a date.
 
-    def wait_for_ajax(self):
-        wait = WebDriverWait(self.driver, 500)
-        wait.until(lambda driver: self.driver.execute_script('return jQuery.active') == 0)
-        wait.until(lambda driver: self.driver.execute_script('return document.readyState') == 'complete')
+        :param string: str, string to check for date
+        :param fuzzy: bool, ignore unknown tokens in string if True
+        """
+        try:
+            parse(string, fuzzy=fuzzy)
+            return True
 
+        except ValueError:
+            return False
 
+    def get_all_dropdown_options(self, source_locator):
+        select_source = Select(self.driver.find_element(*source_locator))
+        list_opt = []
+        for opt in select_source.options:
+            print(opt.text)
+            list_opt.append(opt.text)
+        print("Option list", list_opt)
+        return list_opt
+
+    def select_multiple_by_text(self, source_locator, value_list):
+        select_source = Select(self.driver.find_element(*source_locator))
+        ActionChains(self.driver).key_down(Keys.CONTROL).perform()
+        for value in value_list:
+            select_source.select_by_visible_text(value)
+        ActionChains(self.driver).key_up(Keys.CONTROL).perform()
+
+    def reload_page(self):
+        self.driver.refresh()
+        time.sleep(5)
+
+    def get_url(self, link):
+        self.driver.get(link)
+        time.sleep(10)

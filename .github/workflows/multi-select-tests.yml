@@ -16,21 +16,32 @@ on:
         options:
           - staging
           - production
+  schedule:
+    - cron: '30 7 * * 1-5'
 
 jobs:
   set_matrix:
     runs-on: ubuntu-latest
+    if: ${{ !(github.event_name == 'repository_dispatch' && github.event.client_payload.environment == 'staging') }}
     outputs:
-      matrix: ${{ steps.set-matrix-deploy.outputs.matrix || steps.set-matrix-manual.outputs.matrix }}
+      matrix: ${{ steps.set-matrix-schedule.outputs.matrix || steps.set-matrix-deploy.outputs.matrix || steps.set-matrix-manual.outputs.matrix || steps.set-matrix-default.outputs.matrix }}
     steps:
+      - id: set-matrix-schedule
+        if: ${{ github.event_name  == 'schedule' }}
+        run: |
+          echo "::set-output name=matrix::{\"environment\": [\"staging\"]}"
       - id: set-matrix-deploy
-        if: ${{ github.event_name == 'repository_dispatch' }}
+        if: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment != 'staging' }}
         run: |
           echo "::set-output name=matrix::{\"environment\": [\"${{ github.event.client_payload.environment }}\"]}"
       - id: set-matrix-manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+      - id: set-matrix-default
+        if: ${{ github.event_name != 'repository_dispatch' }}
+        run: |
+          echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\"]}"
 
   build:
     needs: set_matrix
@@ -68,6 +79,27 @@ jobs:
           echo ${{env.NOW}}
           pytest -v "./Features/MultiSelect/test_cases" --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html
 
+      - name: Parse test counts
+        id: parse_counts
+        if: always()
+        run: |
+          # Extract variables from the hqsmoke_test_counts.txt file
+          while IFS= read -r line; do
+            echo "::set-output name=${line%=*}::${line#*=}"
+          done < ms_test_counts_${{ matrix.environment }}.txt
+
+      - name: Archive test results
+        id: artifact-upload-step
+        if: ${{ success() || failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-result-reports--${{ matrix.environment }}-${{ github.run_id }}
+          path: /home/runner/work/dimagi-qa/dimagi-qa/report_${{ matrix.environment }}.html
+          retention-days: 2
+
+      - name: Fetch artifact ID
+        run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
+
       - name: Set email vars
         if: ${{ success() || failure() }}
         id: configure_email
@@ -103,7 +135,7 @@ jobs:
             
             let receivers = 'qa-automation@dimagi.com'
             if (context.eventName !== "pull_request" || context.eventName !== "push") {
-              receivers = 'qa@dimagi.com'
+              receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com'
             }
 
             return {
@@ -129,68 +161,170 @@ jobs:
           attachments: ${{ github.workspace }}/report_${{ matrix.environment }}.html
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
+      - name: Set slack vars
+        if: ${{ always() }}
+        id: configure_slack
+        uses: actions/github-script@v6
+        env:
+            JOB_STATUS: ${{ job.status }}
+            CC_ENV: ${{ matrix.environment }}
+            CC_EVENT: ${{ github.event_name }}
+        with:
+          result-encoding: string
+          script: |
+            const {CC_ENV, JOB_STATUS, CC_EVENT} = process.env
+            let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_USH }}'
+            if (CC_EVENT == 'repository_dispatch' && CC_ENV == 'production') {
+              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
+              console.log( "Prod deploy")
+            } else if (CC_EVENT != 'repository_dispatch' && CC_ENV == 'production' && JOB_STATUS == 'failure') {
+              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_USH }}'
+              console.log( "Not Prod deploy but Prof failure")
+            } else if (CC_ENV == 'staging' && JOB_STATUS == 'failure') {
+              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_USH }}'
+              console.log("Staging Failure")
+            } else {
+              SLACK_WEBHOOK_URL = ' '
+              console.log("No notification sent")
+            }
+
+            return SLACK_WEBHOOK_URL
+
 
       - name: Post to Slack channel on Failure
-        id: slack
+        id: slack_fail
         uses: slackapi/slack-github-action@v1.23.0
-        if: failure()
+        if: ${{ steps.configure_slack.outputs.result != ' ' && failure() }}
         with:
           payload: |
             {
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": " Ciao :woman-raising-hand::skin-tone-3::man-raising-hand::skin-tone-3: \n*${{ github.workflow }}* were just triggered!"
-                        }
-                    },
-                    {
-                        "type": "context",
-                        "elements": [
-                            {
-                                "type": "mrkdwn",
-                                "text": "*Environment: *\n ${{ matrix.environment }}  \n"
-                            },
-                          {
-                                "type": "mrkdwn",
-                                "text": " "
-                            },
-                            {
-                                "type": "mrkdwn",
-                                "text": "*Status: *\n ${{ job.status }}  :x:"
-                            }
-                        ]
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Here's the corresponding workflow execution :arrow_right::arrow_right:"
-                        },
-                        "accessory": {
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "View on Github",
-                                "emoji": true
-                            },
-                            "value": "click_me_123",
-                            "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                            "action_id": "button-action",
-                            "style": "danger"
-                        }
-                    }
-                ]
+            	"attachments": [
+            		{
+            			"color": "#ff0000",
+            			"blocks": [
+            				{
+            					"type": "section",
+            					"text": {
+            						"type": "mrkdwn",
+            						"text": " Ciao :woman-raising-hand::skin-tone-3::man-raising-hand::skin-tone-3: \n*${{ github.workflow }}* were just triggered!\n"
+            					}
+            				},
+            				{
+            					"type": "section",
+            					"text": {
+            						"type": "mrkdwn",
+            						"text": "*Passed:* ${{ steps.parse_counts.outputs.PASSED }} *Failed:* ${{ steps.parse_counts.outputs.FAILED }} *Error:* ${{ steps.parse_counts.outputs.ERROR }} *Skipped:* ${{ steps.parse_counts.outputs.SKIPPED }} *XFail:* ${{ steps.parse_counts.outputs.XFAIL }}\n"
+            					}
+            				},
+            				{
+            					"type": "context",
+            					"elements": [
+            						{
+            							"type": "mrkdwn",
+            							"text": "*Environment: *\n ${{ matrix.environment }}  \n"
+            						},
+            						{
+            							"type": "mrkdwn",
+            							"text": " "
+            						},
+            						{
+            							"type": "mrkdwn",
+            							"text": "*Status: *\n ${{ job.status }}  :x:"
+            						}
+            					]
+            				},
+            				{
+            					"type": "section",
+            					"text": {
+            						"type": "mrkdwn",
+            						"text": "Here's the corresponding report :arrow_right::arrow_right:"
+            					},
+            					"accessory": {
+            						"type": "button",
+            						"text": {
+            							"type": "plain_text",
+            							"text": "Click to Downlaod",
+            							"emoji": true
+            						},
+            						"value": "click_me_123",
+            						"url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }}",
+            						"action_id": "button-action",
+            						"style": "danger"
+            					}
+            				}
+            			]
+            		}
+            	]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_USH }}
+          SLACK_WEBHOOK_URL: ${{ steps.configure_slack.outputs.result }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
-
-      - name: Archive test results
-        if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v2
+      - name: Post to Slack channel on Success
+        id: slack_pass
+        uses: slackapi/slack-github-action@v1.23.0
+        if: ${{ steps.configure_slack.outputs.result != ' ' && success() }}
         with:
-          name: test-result-reports-${{ matrix.environment }}
-          path: ${{ github.workspace }}/report_${{ matrix.environment }}.html
+          payload: |
+            {
+            	"attachments": [
+            		{
+            			"color": "#36a64f",
+            			"blocks": [
+            				{
+            					"type": "section",
+            					"text": {
+            						"type": "mrkdwn",
+            						"text": " Ciao :woman-raising-hand::skin-tone-3::man-raising-hand::skin-tone-3: \n*${{ github.workflow }}* were just triggered!\n"
+            					}
+            				},
+            				{
+            					"type": "section",
+            					"text": {
+            						"type": "mrkdwn",
+            						"text": "*Passed:* ${{ steps.parse_counts.outputs.PASSED }} *Failed:* ${{ steps.parse_counts.outputs.FAILED }} *Error:* ${{ steps.parse_counts.outputs.ERROR }} *Skipped:* ${{ steps.parse_counts.outputs.SKIPPED }} *XFail:* ${{ steps.parse_counts.outputs.XFAIL }}\n"
+            					}
+            				},
+            				{
+            					"type": "context",
+            					"elements": [
+            						{
+            							"type": "mrkdwn",
+            							"text": "*Environment: *\n ${{ matrix.environment }}  \n"
+            						},
+            						{
+            							"type": "mrkdwn",
+            							"text": " "
+            						},
+            						{
+            							"type": "mrkdwn",
+            							"text": "*Status: *\n ${{ job.status }}  :white_check_mark:"
+            						}
+            					]
+            				},
+            				{
+            					"type": "section",
+            					"text": {
+            						"type": "mrkdwn",
+            						"text": "Here's the corresponding report :arrow_right::arrow_right:"
+            					},
+            					"accessory": {
+            						"type": "button",
+            						"text": {
+            							"type": "plain_text",
+            							"text": "Click to Download",
+            							"emoji": true
+            						},
+            						"value": "click_me_123",
+            						"url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }}",
+            						"action_id": "button-action",
+            						"style": "primary"
+            					}
+            				}
+            			]
+            		}
+            	]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ steps.configure_slack.outputs.result }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

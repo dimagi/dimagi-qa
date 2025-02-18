@@ -1,6 +1,7 @@
 # Property Types
 TEXT_INPUT = "TEXT_INPUT"
 COMBOBOX = "COMBOBOX"
+COMBOBOX2 = "COMBOBOX2"
 YES = "YES"
 NO = "NO"
 
@@ -9,8 +10,10 @@ combobox = "combobox"
 text = "text"
 HOME = "HOME"
 WORK = "WORK"
+index = "index"
 
 # EOF NAV
+FORM = "FORM"
 PREV_MENU = "PREV_MENU"
 MENU = "MENU"
 FIRST_MENU = "FIRST_MENU"
@@ -22,3 +25,4 @@ textarea = "textarea"
 # Case Types
 SONG = "SONG"
 SHOW = "SHOW"
+

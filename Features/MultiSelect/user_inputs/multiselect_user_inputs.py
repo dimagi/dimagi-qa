@@ -5,7 +5,7 @@ class MultiSelectUserInput:
     """User Test Data"""
 
     """App Names"""
-    multiselect_app_name = "Multi-Select"
+    multiselect_app_name = "[Master] Multi-Select"
 
     """Menu Names"""
     shadow_auto = "Shadow Menu (Auto-Proceed)"
@@ -26,12 +26,13 @@ class MultiSelectUserInput:
     yet_another_show_NMS = "Yet Another Shows (non-multi)"
     another_shows_non = "Another Shows (non)"
     child_shows_SF_MS = "Child Shows + Search First(multi)"
-    child_shows_N_MS = "Child Shows + Normal (multi)"
+    shows_N_MS = "Shows + Normal (multi)"
     another_shows_MS = "Another Show (multi)"
     another_shows_not_MS = "Another Show (non-multi)"
     shadow_menu_multi = "Shadow Menu"
-    shadow_senu_non_multi = "Shadow Menu (Non-Multi)"
-    display_only_forms = "Display Only Forms plus Multi-Case Form"
+    shadow_menu_non_multi = "Shadow Menu (Non-Multi)"
+    single_select_no_parent = "Single Select, No Parent"
+    multi_select_with_case_tiles = "Multi-Select w/case tiles"
 
     """Form Names"""
     update_song_normal_form = "Update and add shows to the songs you picked out"
@@ -41,3 +42,6 @@ class MultiSelectUserInput:
     update_shows_multi_form = "Update child shows you picked out"
     update_show_normal_form = "Update Show"
     does_nothing_form = "This form does nothing"
+    update_show_to_form_on_single_select = "Update child shows you picked out  --> Form on Single Select Menu"
+    update_show_to_single_select = "Update child shows you picked out  --> Single Select Menu"
+

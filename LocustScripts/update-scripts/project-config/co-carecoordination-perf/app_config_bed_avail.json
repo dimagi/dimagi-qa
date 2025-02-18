@@ -1,0 +1,11 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"Referrals Platform"
+    },
+    "FUNC_BED_AVAILABILITY": {
+        "selections":"1", "title":"Update Bed Availability"
+    },
+    "FUNC_BED_AVAILABILITY_FORM_SUBMIT": {
+        "submitResponseMessage":"The bed availability has been updated."
+    }
+}

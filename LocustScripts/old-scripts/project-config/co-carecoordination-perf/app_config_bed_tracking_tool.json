@@ -1,0 +1,56 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"Referrals Platform"
+    },
+    "FUNC_SEARCH_FOR_BEDS_MENU": {
+        "selections":"0", "title":"Search Beds"
+    },
+    "FUNC_ENTER_AGE": {
+        "selections":"0", "input":"age", "inputValue": "adults"
+    },
+    "FUNC_GENDER_IDENTITY": {
+        "selections":"0", "input":"gender", "inputValue":"women"
+    },
+    "FUNC_INVOLUNTARY_CLIENT": {
+        "selections":"0", "input":"voluntary_treatment" ,"inputValue":"client_is_involuntary"
+    },
+    "FUNC_JUSTICE_INVOLVED_CLIENT": {
+        "selections":"0", "input":"justice_involvement", "inputValue": "yes"
+    },
+    "FUNC_CARE_TYPE": {
+        "selections":"0", "input":"facility_category", "inputValue":"both"
+    },
+    "FUNC_FACILITY_NAME": {
+        "selections":"0", "input":"facility_name", "inputValue":"1186537e07c4419db4ac9d48f0a4d0dd"
+    },
+    "FUNC_RESIDENTIAL_SERVICE": {
+        "selections":"0", "input":"asam_level" ,"inputValue":"clinically_managed_residential_detoxification"
+    },
+    "FUNC_POPULATION_SPECIALTY": {
+        "selections":"0", "input":"population_served", "inputValue": "adults"
+    },
+    "FUNC_INSURANCE_ACCEPTED": {
+        "selections":"0", "input":"insurance", "inputValue":"private_insurance"
+    },
+    "FUNC_ACCOMMODATIONS": {
+        "selections":"0", "input":"accommodations", "inputValue":"complex_medical_needs"
+    },
+    "FUNC_LANGUAGE_SERVICES": {
+        "selections":"0", "input":"language_services" ,"inputValue":"spanish"
+    },
+    "FUNC_OPEN_BEDS": {
+        "selections":"0", "input":"only_open_beds", "inputValue":"yes"
+    },
+    "FUNC_PERFORM_A_SEARCH": {
+        "selections":"0", "input":"OK" ,"inputValue":"successfully saved!"
+    },
+    "FUNC_BED_AVAILABILITY": {
+        "selections":"1", "title":"Update Bed Availability"
+    },
+    "FUNC_BED_AVAILABILITY_FORM_SUBMIT": {
+        "submitResponseMessage":"The bed availability has been updated."
+    },
+    "FUNC_OUTGOING_REFERRALS_MENU": {
+        "selections":"4", "title": "Search Outgoing Referrals"
+    }
+}

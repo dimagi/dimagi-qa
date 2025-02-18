@@ -1,0 +1,17 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"[Linked version]Central Registry"
+    },
+    "FUNC_SEARCH_AND_ADMIT_MENU": {
+        "selections":"0", "title":"Search and Admit Client",
+        "inputs": {
+            "INPUT_REASON_FOR_NO_SSN": "client_does_not_have_ssn",
+            "INPUT_CONSENT_COLLECTED": "yes",
+            "INPUT_CASE_SEARCH_TS": "19839.240107175927",
+            "INPUT_FUZZY_MATCH_DOB": "Fuzzy"
+        }
+    },
+    "FUNC_ADMIT_CLIENT_FORM": {
+        "title":"Admit Client"
+    }
+}

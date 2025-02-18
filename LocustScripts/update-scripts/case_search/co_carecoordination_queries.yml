@@ -1,0 +1,144 @@
+queries:
+  - name: search_admit_client
+    case_types: [client]
+    value_set_types: client
+    query_params:
+      _xpath_query:
+        - central_registry = "yes" and current_status != "pending"
+        - consent_collected = "yes"
+        - (
+            (
+              (
+                (
+                  fuzzy-match(first_name, "{first_name}") and fuzzy-match(last_name, "{last_name}"))
+                  or (
+                    phonetic-match(first_name, "{first_name}") and phonetic-match(last_name, "{last_name}")
+                  )
+                ) and fuzzy-match(dob, "{dob}")
+              )
+            ) or subcase-exists("parent", @case_type = "alias" and @status = "open" and (
+              (
+                (fuzzy-match(first_name, "{first_name}") and fuzzy-match(last_name, "{last_name}"))
+                or (phonetic-match(first_name, "{first_name}") and phonetic-match(last_name, "{last_name}"))
+              ) and fuzzy-match(dob, "{dob}")
+            )
+          )
+  - name: search_my_clients
+    case_types: [client]
+    value_set_types: [client, clinic_case_ids]
+    query_params:
+      _xpath_query:
+        - central_registry = "yes" and subcase-exists(
+            "parent", @case_type = "service" and @status != "closed" and central_registry = "yes"
+            and selected(clinic_case_id,"{clinic_case_ids}")
+          )
+        - match-none() or match-none() or match-none() or match-none() or (
+            (
+              (
+                (fuzzy-match(first_name, "{first_name}") or phonetic-match(first_name, "{first_name}"))
+                and (fuzzy-match(last_name, "{last_name}") or phonetic-match(last_name, "{last_name}"))
+              )
+              or subcase-exists(
+                "parent", @case_type = "alias" and @status != "closed" and (
+                  (fuzzy-match(first_name, "{first_name}") or phonetic-match(first_name, "{first_name}"))
+                  and (fuzzy-match(last_name, "{last_name}") or phonetic-match(last_name, "{last_name}"))
+                  )
+                )
+              ) and (match-all())
+            )
+        - current_status = "admitted" and selected(active_admission_clinic_id, "{clinic_case_ids}")
+        - match-all()
+        - match-all()
+  - name: search_incoming_requests
+    case_types: [client]
+    value_set_types: [gender_params, age_range_adult, clinic_case_ids]
+    query_params:
+      x_commcare_include_all_related_cases: "true"
+      _xpath_query:
+        - selected(destination_clinic_case_id, "{clinic_case_ids}")
+        - "ancestor-exists(parent,  @status = 'open' and @case_type = 'client' and current_status != 'closed' and central_registry = 'no')"
+        - "ancestor-exists(parent, @status = 'open' and @case_type = 'client' and current_status != 'closed' and selected(gender, '{gender}') or selected(gender, '{gender_restrictions}'))"
+        - "ancestor-exists(parent, @status = 'open' and @case_type = 'client' and current_status != 'closed' and age > '{age_range_low}' and age < '{age_range_high}')"
+        - selected(current_status, 'open info_requested')
+        - match-all()
+        - match-all()
+        - match-all()
+  - name: potential_duplicate_clients
+    case_types: [ client ]
+    value_set_types: [ client ]
+    query_params:
+      _xpath_query:
+        - central_registry = "yes"
+        - consent_collected = "yes"
+        - >
+          match-none() or match-none() or match-none() or match-none() or (
+            (
+              (
+                (fuzzy-match(first_name, "{first_name}") or phonetic-match(first_name, "{first_name}"))
+                and (fuzzy-match(last_name, "{last_name}") or phonetic-match(last_name, "{last_name}"))
+              )
+              or subcase-exists("parent", 
+                @case_type = "alias" and @status != "closed"
+                and (
+                  (fuzzy-match(first_name, "{first_name}") or phonetic-match(first_name, "{first_name}"))
+                  and (fuzzy-match(last_name, "{last_name}") or phonetic-match(last_name, "{last_name}"))
+                )
+              )
+            ) and (
+              fuzzy-match(dob, "{dob}")
+              or subcase-exists("parent", @case_type = "alias" and @status != "closed" and fuzzy-match(dob, "{dob}"))
+            )
+          )
+        - '@case_id != "{case_id}"'
+        - 'not(selected(@case_id, "{case_id}"))'
+  - name: find_new_facilities
+    case_types: [unit]
+    query_params:
+      commcare_sort: +clinic_display_name:exact
+      _xpath_query:
+        - current_status != "closed"
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+  - name: search_outgoing_referrals
+    case_types: [ referral ]
+    value_set_types: [clinic_case_ids, age_range_adult]
+    query_params:
+      x_commcare_include_all_related_cases: "true"
+      _xpath_query:
+        - selected(referring_clinic_case_id, "{clinic_case_ids}")
+        - ancestor-exists(parent,  @status = "open" and @case_type = "client" and central_registry = "no" and (
+            current_status = "open" or current_status = "withdrawn" or current_status = "escalated"
+          ))
+        - match-all()
+        - match-all()
+        - ancestor-exists(parent, @status = 'open' and @case_type = 'client' and current_status != 'closed' and age > '{age_range_low}' and age < '{age_range_high}')
+        - match-all()
+        - match-all()
+        - match-all()
+        - match-all()
+value_sets:
+  - path: ush_envelop_testing_clients.csv
+    type: client
+    format: csv
+  - type: clinic_case_ids
+    values:
+      clinic_case_ids: 123 abc 456
+  - type: gender_params
+    values:
+      gender: men
+      gender_restrictions: no_gender_restrictions
+  - type: gender_params
+    values:
+      gender: women
+      gender_restrictions: no_gender_restrictions
+  - type: age_range_adult
+    values:
+      age_range_low: 17
+      age_range_high: 65

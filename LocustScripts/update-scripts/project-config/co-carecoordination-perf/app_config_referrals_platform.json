@@ -1,0 +1,70 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"Client Care Search"
+    },
+    "FUNC_SEARCH_FOR_BEDS_MENU": {
+        "selections":"1", "title":"Pilot: Submit Referrals"
+    },
+    "FUNC_OUTGOING_REFERRALS_MENU": {
+        "selections":"4", "title": "Search Outgoing Referrals"
+    },
+    "FUNC_OUTGOING_REFERRALS": {
+        "selections": "4", "title": "Outgoing Referrals"
+    },
+    "FUNC_CREATE_PROFILE_AND_REFER_FORM": {
+        "selections":"0", "title":"Create Profile and Refer",
+        "questions": {
+            "FORM_QUESTION_AGE": {
+                "ix":"1,1,1", "answer":36
+            },
+            "FORM_QUESTION_GENDER": {
+                "ix":"1,1,2", "answer":2
+            },
+            "FORM_QUESTION_SEEKING_CARE_REASON": {
+                "ix":"1,1,4", "answer": "Symptoms encouraged visit"
+            },
+            "FORM_QUESTION_LEVEL_CARE_NEEDED": {
+                "ix":"1,1,5", "answer": "Inpatient"
+            },
+            "FORM_QUESTION_SYMPTOMS": {
+                "ix":"1,1,6", "answer": "Headaches"
+            },
+            "FORM_QUESTION_TYPE_OF_CARE": {
+                "ix":"1,1,7", "answer": 3
+            },
+            "FORM_QUESTION_REFERRING_FACILITY": {
+                "ix":"1,3", "answer": 1
+            },
+            "FORM_QUESTION_CONSENT": {
+                "ix":"1,7,0", "answer": [1]
+            }
+        }
+    },
+    "FUNC_OUTGOING_REFERRAL_DETAILS_FORM": {
+        "selections":"4", "title":"Outgoing Referral Details",
+        "questions": {
+            "QUESTION_UPDATE_CLEINT_PROFILE_STATUS": {
+                "ix":"3,0", "answer":1
+            },
+            "QUESTION_WHERE_CLIENT_PLACED": {
+                "ix":"4,1,0", "answer":1
+            },
+            "QUESTION_DATE_PLACED": {
+                "ix":"4,1,5", "answer":"2024-9-17"
+            }
+        }
+    },
+    "FUNC_CREATE_PROFILE_AND_REFER_FORM_SUBMIT": {
+        "submitResponseMessage":"'Create Profile and Refer' successfully saved!"
+    },
+    "FUNC_OUTGOING_REFERRAL_DETAILS_FORM_SUBMIT": {
+        "submitResponseMessage":"'Outgoing Referral Details' successfully saved!",
+        "status": "success"
+    },
+    "FUNC_ENTER_STATUS": {
+        "input": "client_current_status", "inputValue": "open"
+    },
+    "FUNC_ENTER_GENDER": {
+        "input":"gender", "inputValue":"men"
+    }
+}

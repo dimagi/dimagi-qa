@@ -25,7 +25,7 @@ def environment_settings_hq():
             """
     settings = {}
     for name in ["url", "login_username", "login_password", "mail_username",
-                 "mail_password", "bs_user", "bs_key", "staging_auth_key", "prod_auth_key", "invited_webuser_password"]:
+                 "mail_password", "bs_user", "bs_key", "staging_auth_key", "prod_auth_key", "india_auth_key","invited_webuser_password", "imap_password"]:
 
         var = f"DIMAGIQA_{name.upper()}"
         if var in os.environ:
@@ -46,7 +46,7 @@ def settings(environment_settings_hq):
         settings["CI"] = "true"
         if any(x not in settings for x in ["url", "login_username", "login_password",
                                            "mail_username", "mail_password", "bs_user", "bs_key", "staging_auth_key",
-                                           "prod_auth_key", "invited_webuser_password"]):
+                                           "prod_auth_key", "india_auth_key","invited_webuser_password", "imap_password"]):
             lines = environment_settings_hq.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
@@ -70,3 +70,24 @@ def settings(environment_settings_hq):
     else:
         settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation"
     return settings["default"]
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    # Collect test counts
+    passed = terminalreporter.stats.get('passed', [])
+    failed = terminalreporter.stats.get('failed', [])
+    error = terminalreporter.stats.get('error', [])
+    skipped = terminalreporter.stats.get('skipped', [])
+    xfail = terminalreporter.stats.get('xfail', [])
+
+    env = os.environ.get("DIMAGIQA_ENV", "default_env")
+
+    # Define the filename based on the environment
+    filename = f'hqsmoke_test_counts_{env}.txt'
+
+    # Write the counts to a file
+    with open(filename, 'w') as f:
+        f.write(f'PASSED={len(passed)}\n')
+        f.write(f'FAILED={len(failed)}\n')
+        f.write(f'ERROR={len(error)}\n')
+        f.write(f'SKIPPED={len(skipped)}\n')
+        f.write(f'XFAIL={len(xfail)}\n')

@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
@@ -12,9 +14,9 @@ from Features.CaseSearch.constants import *
 """"Contains all multi-select related test cases"""
 
 
-def test_case_01_multiple_selected_cases_accessible_on_form(driver):
+def test_case_01_multiple_selected_cases_accessible_on_form(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
@@ -34,9 +36,9 @@ def test_case_01_multiple_selected_cases_accessible_on_form(driver):
 
 
 @pytest.mark.skip(reason="Failing, Kiran to check and raise a support ticket")
-def test_case_02_multiselect_with_omnisearch(driver):
+def test_case_02_multiselect_with_omnisearch(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.songs_MS_N_NIS)
@@ -47,9 +49,9 @@ def test_case_02_multiselect_with_omnisearch(driver):
     multiselect.check_if_checkbox_is_selected(case_name)
 
 
-def test_case_03_multiselect_with_pagination(driver):
+def test_case_03_multiselect_with_pagination(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.songs_MS_N_NIS)
@@ -67,12 +69,18 @@ def test_case_03_multiselect_with_pagination(driver):
 
 
 def test_case_04_multiselect_with_select_parent_first_as_parent(driver, settings):
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     multiselect = MultiSelectWorkflows(driver)
+    casesearch = CaseSearchWorkflows(driver)
+
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.shows_MS_SPFP)
-    webapps.select_first_case_on_list()
+    casename = webapps.omni_search(CaseSearchUserInput.song_auto_parent)
+    webapps.select_case(casename)
+    casesearch.search_against_property(search_property=CaseSearchUserInput.artist_city,
+                                       input_value=CaseSearchUserInput.show_auto,
+                                       property_type=TEXT_INPUT)
     webapps.search_button_on_case_search_page()
     multiselect.multi_select_cases(case_count=1)
     multiselect.continue_to_proceed_multiselect()
@@ -81,8 +89,8 @@ def test_case_04_multiselect_with_select_parent_first_as_parent(driver, settings
 
 
 @pytest.mark.skip(reason="Failing on prod: https://dimagi-dev.atlassian.net/browse/SUPPORT-16271")
-def test_case_05_multiselect_disabled_select_parent_first(driver):
-    webapps = WebApps(driver)
+def test_case_05_multiselect_disabled_select_parent_first(driver, settings):
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.yet_another_show_NMS)
@@ -92,14 +100,13 @@ def test_case_05_multiselect_disabled_select_parent_first(driver):
     webapps.submit_the_form()
 
 
-def test_case_06_parent_multi_child_nonmulti(driver):
+def test_case_06_parent_multi_child_nonmulti(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     """"Parent multi, child non-multi"""
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.shows_MS_SPFO)
-    webapps.search_button_on_case_search_page()
     multiselect.multi_select_cases(case_count=3)
     multiselect.continue_to_proceed_multiselect()
     webapps.search_button_on_case_search_page()
@@ -111,29 +118,29 @@ def test_case_06_parent_multi_child_nonmulti(driver):
     webapps.submit_the_form()
 
 
-def test_case_07_parent_multi_child_multi(driver):
+def test_case_07_parent_multi_child_multi(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     """ Parent multi, child multi"""
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.shows_MS_SPFO)
+    multiselect.multi_select_cases(case_count=2)
+    multiselect.continue_to_proceed_multiselect()
     webapps.search_button_on_case_search_page()
     cases_selected = multiselect.multi_select_cases(case_count=2)
     multiselect.continue_to_proceed_multiselect()
-    webapps.search_button_on_case_search_page()
-    multiselect.multi_select_cases(case_count=2)
-    multiselect.continue_to_proceed_multiselect()
     webapps.open_form(MultiSelectUserInput.child_shows_SF_MS)
+    webapps.search_button_on_case_search_page()
     multiselect.multi_select_cases(case_count=1)
     multiselect.continue_to_proceed_multiselect()
     multiselect.check_selected_cases_present_on_form(cases_selected, case_type=SHOW)
     webapps.submit_the_form()
 
 
-def test_case_08_parent_nonmulti_child_multi(driver):
+def test_case_08_parent_nonmulti_child_multi(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     """Parent non-multi, child multi"""
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
@@ -150,9 +157,9 @@ def test_case_08_parent_nonmulti_child_multi(driver):
     webapps.submit_the_form()
 
 
-def test_case_09_parent_nonmulti_child_nonmulti(driver):
+def test_case_09_parent_nonmulti_child_nonmulti(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     """Parent non-multi, child non-multi"""
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
@@ -165,9 +172,9 @@ def test_case_09_parent_nonmulti_child_nonmulti(driver):
     webapps.submit_the_form()
 
 
-def test_case_10_multiselect_with_shadow_menus(driver):
+def test_case_10_multiselect_with_shadow_menus(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
@@ -191,11 +198,11 @@ def test_case_10_multiselect_with_shadow_menus(driver):
     webapps.submit_the_form()
 
 
-def test_case_11_multiselect_form_linking(driver):
+def test_case_11_multiselect_form_linking(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
-    webapps.login_as(CaseSearchUserInput.user_1)
+    webapps.login_as(CaseSearchUserInput.user_2)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.songs_MS_SF_IS)
     webapps.search_button_on_case_search_page()
@@ -211,9 +218,9 @@ def test_case_11_multiselect_form_linking(driver):
                                     menu=MultiSelectUserInput.does_nothing_form)
 
 
-def test_case_12_multiselect_with_case_search_workflows(driver):
+def test_case_12_multiselect_with_case_search_workflows(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     """Normal"""
@@ -258,9 +265,9 @@ def test_case_12_multiselect_with_case_search_workflows(driver):
     webapps.submit_the_form()
 
 
-def test_case_13_multiselect_with_display_only_forms(driver):
+def test_case_13_multiselect_with_display_only_forms(driver, settings):
     multiselect = MultiSelectWorkflows(driver)
-    webapps = WebApps(driver)
+    webapps = WebApps(driver, settings)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(MultiSelectUserInput.multiselect_app_name)
     webapps.open_menu(MultiSelectUserInput.display_only_forms)
@@ -271,7 +278,73 @@ def test_case_13_multiselect_with_display_only_forms(driver):
     webapps.submit_the_form()
 
 
-def test_case_14_multiselect_enabled_select_parent_first(driver, settings):
+def test_case_14_eof_nav_to_single_select_menu(driver, settings):
+    multiselect = MultiSelectWorkflows(driver)
+    webapps = WebApps(driver, settings)
+    casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
+    webapps.open_app(MultiSelectUserInput.multiselect_app_name)
+    webapps.open_menu(MultiSelectUserInput.shows_MS_SPFP)
+    casename = webapps.omni_search(CaseSearchUserInput.song_auto_parent)
+    webapps.select_case(casename)
+    casesearch.search_against_property(search_property=CaseSearchUserInput.artist_city,
+                                       input_value=CaseSearchUserInput.show_auto,
+                                       property_type=TEXT_INPUT)
+    webapps.search_button_on_case_search_page()
+    multiselect.multi_select_cases(case_count=1)
+    multiselect.continue_to_proceed_multiselect()
+    webapps.open_form(MultiSelectUserInput.update_show_to_single_select)
+    webapps.submit_the_form()
+    """Eof Navigation"""
+    casesearch.check_eof_navigation(eof_nav=MENU,
+                                    menu=MultiSelectUserInput.single_select_no_parent)
+    webapps.select_first_case_on_list_and_continue()
+    webapps.submit_the_form()
+
+
+def test_case_15_eof_nav_to_form_on_single_select_menu(driver, settings):
+    multiselect = MultiSelectWorkflows(driver)
+    webapps = WebApps(driver, settings)
+    casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
+    webapps.open_app(MultiSelectUserInput.multiselect_app_name)
+    webapps.open_menu(MultiSelectUserInput.shows_MS_SPFP)
+    casename = webapps.omni_search(CaseSearchUserInput.song_auto_parent)
+    webapps.select_case(casename)
+    casesearch.search_against_property(search_property=CaseSearchUserInput.artist_city,
+                                       input_value=CaseSearchUserInput.show_auto,
+                                       property_type=TEXT_INPUT)
+    webapps.search_button_on_case_search_page()
+    multiselect.multi_select_cases(case_count=1)
+    multiselect.continue_to_proceed_multiselect()
+    webapps.open_form(MultiSelectUserInput.update_show_to_form_on_single_select)
+    webapps.submit_the_form()
+    """Eof Navigation"""
+    casesearch.check_eof_navigation(eof_nav=FORM,
+                                    menu=MultiSelectUserInput.does_nothing_form)
+    webapps.submit_the_form()
+
+
+def test_case_16_multiselect_with_case_tiles(driver, settings):
+    multiselect = MultiSelectWorkflows(driver)
+    webapps = WebApps(driver, settings)
+    webapps.login_as(CaseSearchUserInput.user_1)
+    webapps.open_app(MultiSelectUserInput.multiselect_app_name)
+    webapps.open_menu(MultiSelectUserInput.multi_select_with_case_tiles)
+    webapps.search_all_cases()
+    webapps.clear_and_search_all_cases_on_case_search_page()
+    cases_selected = multiselect.multi_select_case_tiles(case_count=1)
+    multiselect.continue_to_proceed_multiselect()
+    multiselect.check_selected_cases_present_on_form(cases_selected, case_type=SONG)
+    webapps.answer_repeated_questions(question_label=CaseSearchUserInput.add_show_question,
+                                      input_type=textarea,
+                                      input_value=fetch_random_string())
+    webapps.submit_the_form()
+
+
+def test_case_17_multiselect_enabled_select_parent_first(driver, settings):
+    if 'www' in settings['url']:
+        pytest.skip("Production has a linked app")
     multiselect = MultiSelectWorkflows(driver)
     menu = HomePage(driver, settings)
     menu.applications_menu(MultiSelectUserInput.multiselect_app_name)
@@ -279,3 +352,4 @@ def test_case_14_multiselect_enabled_select_parent_first(driver, settings):
     multiselect.check_if_value_present_in_drop_down(MultiSelectUserInput.shows_MS_SPFO, match=NO)
     multiselect.open_menu_settings(MultiSelectUserInput.shows_MS_SPFO)
     multiselect.check_if_value_present_in_drop_down(MultiSelectUserInput.shows_MS_SPFP, match=YES)
+

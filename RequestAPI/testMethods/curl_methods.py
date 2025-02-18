@@ -35,10 +35,13 @@ class CurlMethods(Base):
         assert result.status_code == 200
 
     def post_import_cases_from_excel(self, uri, input_file, login_user, login_pass):
-        URL = uri + 'a/qateam/importer/excel/bulk_upload_api/'
-        data = {'case_type': 'Child',
-                'search_field': 'external_id',
-                'search_column': 'household_id',
+        if "www" in uri:
+            URL = uri + 'a/qa-automation-prod/importer/excel/bulk_upload_api/'
+        else:
+            URL = uri + 'a/qa-automation/importer/excel/bulk_upload_api/'
+        data = {'case_type': 'form_linking',
+                # 'search_field': 'external_id',
+                'search_column': 'number',
                 'create_new_cases': 'on'}
         file = [
             ('file', ('case search.xlsx', open(self.filepath + input_file, 'rb'),

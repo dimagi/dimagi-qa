@@ -103,6 +103,7 @@ def test_case_50_languages(driver, settings):
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
+    msg.delete_languages()
     msg.languages_page()
 
 
@@ -119,7 +120,18 @@ def test_case_51_translations(driver, settings):
 
 @pytest.mark.projectSettings
 @pytest.mark.currentSubscription
-def test_case_52_settings_pages(driver):
+def test_case_52_settings_pages(driver, settings):
     msg = MessagingPage(driver)
-    msg.project_settings_page()
+    home = HomePage(driver, settings)
+    home.project_settings_page()
     msg.current_subscription_page()
+
+@pytest.mark.messaging
+@pytest.mark.conditionalAlerts
+@pytest.mark.report
+@pytest.mark.reportMessaging
+def test_case_cleanup_cond_alert(driver, settings):
+    menu = HomePage(driver, settings)
+    msg = MessagingPage(driver)
+    menu.messaging_menu()
+    msg.remove_all_cond_alert()
