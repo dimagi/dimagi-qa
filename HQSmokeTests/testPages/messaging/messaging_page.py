@@ -18,6 +18,7 @@ class MessagingPage(BasePage):
         super().__init__(driver)
 
         self.cond_alert_name_input = "cond_alert_" + fetch_random_string()
+        self.cond_alert_no_value_name_input = "cond_alert_no_value_" + fetch_random_string()
         self.keyword_name_input = "KEYWORD_" + fetch_random_string().upper()
         self.struct_keyword_name_input = "STRUCTURED_KEYWORD_" + fetch_random_string().upper()
         self.broadcast_input = "broadcast_" + fetch_random_string()
@@ -38,6 +39,7 @@ class MessagingPage(BasePage):
         self.broadcasts = (By.LINK_TEXT, "Broadcasts")
         self.add_broadcast = (By.XPATH, "//div[@class='btn-group']")
         self.broadcast_name = (By.XPATH, "//input[@name='schedule-schedule_name']")
+        self.recipients_select_cond_alert = (By.XPATH, "//select[@name='schedule-recipient_types']")
         self.recipients = (By.XPATH, "(//span[@class='select2-selection select2-selection--multiple'])[1]")
         self.user_recipient = (By.XPATH, "(//span[@class='select2-selection select2-selection--multiple'])[2]")
         self.select_value_dropdown = (By.XPATH, "//ul[@class='select2-results__options']/li[.='"+UserData.app_login+"']")
@@ -61,17 +63,15 @@ class MessagingPage(BasePage):
         By.XPATH, "//case-property-input//span[@class='select2-selection select2-selection--single'][@role='combobox']")
         self.select_case_property = (
         By.XPATH, "//select[@data-bind='value: valueObservable, autocompleteSelect2: casePropertyNames']")
+        self.select_match_type = (By.XPATH, "//select[@data-bind='value: match_type']")
         self.case_property_value = (By.XPATH, "//input[contains(@data-bind,'value: property_value')]")
         self.case_property_input = (By.XPATH, "//input[@class='select2-search__field']")
         self.continue_button_rule_tab = (
         By.XPATH, "//button[@data-bind='click: handleRuleNavContinue, enable: ruleTabValid']")
-        self.cond_alert_created = (By.XPATH, "//a[text()='" + str(self.cond_alert_name_input) + "']")
-        self.restart_rule_button = (By.XPATH, "//td[./a[text()='" + str(
-            self.cond_alert_name_input) + "']]//following-sibling::td/div/button[contains(@data-bind,'restart')]")
-        self.restart_rule_button_none = (By.XPATH, "//td[./a[text()='" + str(
-            self.cond_alert_name_input) + "']]//following-sibling::td/div[@style='display: none;']/button[contains(@data-bind,'restart')]")
-        self.deactive_button_visible = (By.XPATH, "//td[./a[text()='" + str(
-            self.cond_alert_name_input) + "']]//following-sibling::td/button[contains(@data-bind,'toggleStatus')]/span[contains(@data-bind,'visible: active')]")
+        self.cond_alert_created = "//a[text()='{}']"
+        self.restart_rule_button = "//td[./a[text()='{}']]//following-sibling::td/div/button[contains(@data-bind,'restart')]"
+        self.restart_rule_button_none = "//td[./a[text()='{}']]//following-sibling::td/div[@style='display: none;']/button[contains(@data-bind,'restart')]"
+        self.deactive_button_visible = "//td[./a[text()='{}']]//following-sibling::td/button[contains(@data-bind,'toggleStatus')]/span[contains(@data-bind,'visible: active')]"
         self.empty_table_alert = (
         By.XPATH, "//div[contains(@data-bind, 'emptyTable()')][contains(.,'There are no alerts to display')]")
         self.select_recipient_type = (By.XPATH, "//ul[@id='select2-id_schedule-recipient_types-results']/li[.='Users']")
@@ -79,8 +79,7 @@ class MessagingPage(BasePage):
         self.user_recipients_results = (
         By.XPATH, "//ul[@id='select2-id_schedule-user_recipients-results']/li[.='" + UserData.app_login + "']")
         self.save_button_xpath = (By.XPATH, "//button[@type='submit'and text()='Save']")
-        self.delete_cond_alert = (By.XPATH, "//a[text()='" + str(
-            self.cond_alert_name_input) + "']//preceding::button[@class='btn btn-danger'][1]")
+        self.delete_cond_alert = "//a[text()='{}']//preceding::button[@class='btn btn-danger'][1]"
         self.search_box = (By.XPATH, "//form[@class='input-group']/input[@class='form-control']")
         self.search_btn = (
         By.XPATH, "//form[@class='input-group']//button[@data-bind='click: clickAction, visible: !immediate']")
@@ -243,13 +242,13 @@ class MessagingPage(BasePage):
         self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_name_input)
         time.sleep(10)
         self.wait_to_click(self.search_box)
-        self.wait_for_element(self.delete_cond_alert, 700)
+        self.wait_for_element((By.XPATH, self.delete_cond_alert.format(self.cond_alert_name_input)), 700)
         self.driver.refresh()
-        if self.is_clickable(self.delete_cond_alert):
+        if self.is_clickable((By.XPATH, self.delete_cond_alert.format(self.cond_alert_name_input))):
             print("Restart is not required.")
         else:
             try:
-                self.js_click(self.restart_rule_button)
+                self.js_click((By.XPATH, self.restart_rule_button.format(self.cond_alert_name_input)))
                 self.accept_pop_up()
                 time.sleep(5)
                 self.accept_pop_up()
@@ -257,14 +256,14 @@ class MessagingPage(BasePage):
                 time.sleep(360)
                 self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_name_input)
                 self.wait_to_click(self.search_box)
-                self.wait_for_element(self.delete_cond_alert, 700)
+                self.wait_for_element((By.XPATH, self.delete_cond_alert.format(self.cond_alert_name_input)), 700)
                 self.driver.refresh()
             except:
                 print("Restart not required")
         self.wait_for_element(self.search_box)
         self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_name_input)
         self.wait_to_click(self.search_box)
-        assert self.is_displayed(self.cond_alert_created), "Conditional Alert not created successfully!"
+        assert self.is_displayed((By.XPATH, self.cond_alert_created.format(self.cond_alert_name_input))), "Conditional Alert not created successfully!"
         print("Conditional Alert created successfully!")
         return self.cond_alert_name_input
 
@@ -498,9 +497,9 @@ class MessagingPage(BasePage):
         self.driver.refresh()
         self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_name_input)
         self.wait_and_sleep_to_click(self.search_box)
-        self.wait_for_element(self.delete_cond_alert, 300)
+        self.wait_for_element((By.XPATH, self.delete_cond_alert.format(self.cond_alert_name_input)), 300)
         time.sleep(5)
-        self.wait_to_click(self.delete_cond_alert)
+        self.wait_to_click((By.XPATH, self.delete_cond_alert.format(self.cond_alert_name_input)))
         try:
             obj = self.driver.switch_to.alert
             obj.accept()
@@ -511,7 +510,7 @@ class MessagingPage(BasePage):
             self.driver.refresh()
             self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_name_input)
             self.wait_and_sleep_to_click(self.search_box)
-            isPresent = self.is_displayed(self.cond_alert_created)
+            isPresent = self.is_displayed((By.XPATH, self.cond_alert_created.format(self.cond_alert_name_input)))
         except NoSuchElementException:
             isPresent = False
         assert not isPresent
@@ -524,7 +523,7 @@ class MessagingPage(BasePage):
         if self.is_present_and_displayed(self.empty_table_alert):
             print("No alert created with the same name")
         else:
-            self.wait_to_click(self.delete_cond_alert)
+            self.wait_to_click((By.XPATH, self.delete_cond_alert.format(self.cond_alert_name_input)))
             try:
                 obj = self.driver.switch_to.alert
                 obj.accept()
@@ -535,7 +534,7 @@ class MessagingPage(BasePage):
                 self.driver.refresh()
                 self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_name_input)
                 self.wait_and_sleep_to_click(self.search_box)
-                isPresent = self.is_displayed(self.cond_alert_created)
+                isPresent = self.is_displayed((By.XPATH, self.cond_alert_created.format(self.cond_alert_name_input)))
             except NoSuchElementException:
                 isPresent = False
             assert not isPresent
@@ -581,7 +580,6 @@ class MessagingPage(BasePage):
             self.subscription_elements_id), "Subscription Page did not load successfully"
         print("Current Subscription page loaded successfully!")
 
-
     def remove_all_cond_alert(self):
         self.wait_to_click(self.cond_alerts)
         self.wait_for_element(self.value_per_page)
@@ -606,3 +604,63 @@ class MessagingPage(BasePage):
         else:
             print("No script created cond alerts present")
         print("All Cond Alert removed successfully!")
+
+    def create_cond_alert_for_doesnot_have_value(self):
+        self.wait_to_click(self.cond_alerts)
+        self.remove_alert_with_same_name(self.cond_alert_no_value_name_input)
+        self.wait_to_click(self.add_cond_alert)
+        self.send_keys(self.cond_alert_name, self.cond_alert_no_value_name_input)
+        self.wait_to_click(self.continue_button_basic_tab)
+        time.sleep(2)
+        self.wait_to_click(self.case_type)
+        self.select_by_text(self.case_type, UserData.case_reassign)
+        time.sleep(3)
+        self.wait_to_click(self.select_filter)
+        self.wait_to_click(self.case_property_filter)
+        time.sleep(2)
+        self.wait_to_click(self.case_property_textbox)
+        time.sleep(1)
+        # self.send_keys(self.case_property_input, UserData.alert_case_property_random_value)
+        self.wait_for_element(self.select_case_property)
+        time.sleep(2)
+        self.select_by_text(self.select_case_property, UserData.alert_case_property_random_value)
+        self.select_by_text(self.select_match_type, UserData.alert_no_value)
+        self.wait_to_click(self.continue_button_rule_tab)
+        self.wait_for_element(self.recipients_select_cond_alert)
+        self.select_by_value(self.recipients_select_cond_alert, "Owner")
+        self.select_by_text(self.alert_type, "Email")
+        self.send_keys(self.email_subject, "Test Alert for no value" + self.cond_alert_no_value_name_input)
+        self.send_keys(self.broadcast_message, "Test Alert for no value:" + self.cond_alert_no_value_name_input)
+        self.wait_to_click(self.save_button_xpath)
+        print("Sleeping till the alert processing completes")
+        time.sleep(360)
+        self.driver.refresh()
+        time.sleep(160)
+        self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_no_value_name_input)
+        time.sleep(10)
+        self.wait_to_click(self.search_box)
+        self.wait_for_element((By.XPATH, self.delete_cond_alert.format(self.cond_alert_no_value_name_input)), 700)
+        self.driver.refresh()
+        if self.is_clickable((By.XPATH, self.delete_cond_alert.format(self.cond_alert_no_value_name_input))):
+            print("Restart is not required.")
+        else:
+            try:
+                self.js_click((By.XPATH, self.restart_rule_button.format(self.cond_alert_no_value_name_input)))
+                self.accept_pop_up()
+                time.sleep(5)
+                self.accept_pop_up()
+                print("Sleeping till the alert processing completes")
+                time.sleep(360)
+                self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_no_value_name_input)
+                self.wait_to_click(self.search_box)
+                self.wait_for_element((By.XPATH, self.delete_cond_alert.format(self.cond_alert_no_value_name_input)), 700)
+                self.driver.refresh()
+            except:
+                print("Restart not required")
+        self.wait_for_element(self.search_box)
+        self.wait_to_clear_and_send_keys(self.search_box, self.cond_alert_no_value_name_input)
+        self.wait_to_click(self.search_box)
+        assert self.is_displayed((By.XPATH, self.cond_alert_created.format(self.cond_alert_no_value_name_input))), "Conditional Alert not created successfully!"
+        print("Conditional Alert created successfully!")
+        subject = "Test Alert for no value" + self.cond_alert_no_value_name_input
+        return self.cond_alert_no_value_name_input, subject

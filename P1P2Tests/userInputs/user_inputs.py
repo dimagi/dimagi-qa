@@ -29,6 +29,10 @@ class UserData:
     user_group = "automation_user"
     web_user = "[Web Users]"
 
+
+    basic_test_app = ["Basic Tests", "Formplayer Specific Tests", "[Formplayer] Repeats"]
+    repeat_form_export_name = "Smoke Repeat Form Export"
+
     # Phone Number
     area_code = "91"
 
@@ -36,6 +40,7 @@ class UserData:
     app_type = "Applications"
     case_list_name = 'Case List'
     form_name = 'Registration Form'
+    followup_form_name = "Followup Form"
     login_as = 'henry'
     update_case_change_link = "Case Change"
     case_register_form = "Case Register"

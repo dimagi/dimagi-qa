@@ -43,6 +43,7 @@ class WorkloadModelSteps(SequentialTaskSet):
         self.FUNC_ENTER_GENDER = APP_CONFIG["FUNC_ENTER_GENDER"]
         self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM = APP_CONFIG["FUNC_OUTGOING_REFERRAL_DETAILS_FORM"]
         self.FUNC_OUTGOING_REFERRAL_DETAILS_FORM_SUBMIT = APP_CONFIG["FUNC_OUTGOING_REFERRAL_DETAILS_FORM_SUBMIT"]
+        self.FUNC_OPEN_BEDS = APP_CONFIG['FUNC_OPEN_BEDS']
         self.cases_per_page = 100
 
     @tag('home_screen')
@@ -63,6 +64,26 @@ class WorkloadModelSteps(SequentialTaskSet):
             )
         if data:
             self.page_count = data["pageCount"]
+
+    @tag('open_bed_search')
+    @task
+    def open_bed_search(self):
+        logging.info(
+            "Searching open beds for - mobile worker:" + self.user.user_detail.username + "; request: navigate_menu"
+            )
+        data = {
+            "query_data": {
+                "m2_results.inline": {
+                    "inputs": {
+                        self.FUNC_OPEN_BEDS['input']: self.FUNC_OPEN_BEDS['inputValue']
+                    },
+                    "execute": True
+                }
+            },
+            "selections": ["0"],
+        }
+        self.user.hq_user.navigate("Perform a bed search", data=data)
+
 
     @tag('select_cases')
     @task

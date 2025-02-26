@@ -22,6 +22,8 @@ class RolesPermissionPage(BasePage):
 
         self.role_name_created = "role_" + fetch_random_string()
         self.role_non_admin_created = "role_non_" + fetch_random_string()
+        self.role_no_shared_export_created = "role_no_export_" + fetch_random_string()
+        self.role_yes_shared_export_created = "role_yes_export_" + fetch_random_string()
         self.role_rename_created = "role_rename_" + fetch_random_string()
         self.roles_menu = (By.XPATH, "//a[@data-title='Roles & Permissions']")
         self.add_new_role = (
@@ -35,13 +37,20 @@ class RolesPermissionPage(BasePage):
         self.delete_role = (By.XPATH, "//th[.//span[.='" + str(
             self.role_name_created) + "']]/following-sibling::td//i[@class='fa fa-trash']")
         self.edit_mobile_worker_checkbox = (By.XPATH, "//input[@id='edit-commcare-users-checkbox']")
+        self.manage_shared_exports = (By.XPATH, "//input[@id='edit-shared-exports-checkbox']")
+        self.data_checkbox = (By.XPATH, "//input[@id='edit-data-checkbox']")
+
         self.report_for_p1p2 = (By.XPATH, "//div[contains(@data-bind,'reportPermission')]//label[./span[.='"+UserData.report_for_p1p2+"']]")
         self.role_renamed = (By.XPATH, "//span[text()='" + str(self.role_rename_created) + "']")
         self.role_non_admin = (By.XPATH, "//span[text()='" + str(self.role_non_admin_created) + "']")
+        self.role_no_shared_export = "//span[text()='{}']"
         self.confirm_role_delete = (By.XPATH, "//div[@class='btn btn-danger']")
         self.full_org_access_checkbox = (By.XPATH, "//label[contains(.,'Full Organization Access')]//following-sibling::div//input")
         self.access_all_reports_checkbox = (By.XPATH, "//input[@id='access-all-reports-checkbox']")
 
+        self.web_user_permission = "//th[./span[.='{}']]//following-sibling::td/div[contains(@data-bind,'edit_web_users')]/i[contains(@class,'check')]"
+        self.mobile_worker_permission = "//th[./span[.='{}']]//following-sibling::td/div[contains(@data-bind,'edit_commcare_users')]/i[contains(@class,'check')]"
+        self.managed_shared_export_permission = "//th[./span[.='{}']]//following-sibling::td/div[contains(@data-bind,'edit_shared_exports')]/i[contains(@class,'check')]"
 
     def roles_menu_click(self):
         self.wait_to_click(self.roles_menu)
@@ -143,3 +152,36 @@ class RolesPermissionPage(BasePage):
         time.sleep(2)
         assert self.is_present_and_displayed(self.role_non_admin), "Role not added successfully!"
         return self.role_non_admin_created
+
+
+    def add_shared_export_role(self, name, flag='NO'):
+        self.wait_to_click(self.add_new_role)
+        self.wait_to_clear_and_send_keys(self.role_name, name)
+        time.sleep(1)
+        self.click(self.edit_mobile_worker_checkbox)
+        time.sleep(0.5)
+        self.click(self.edit_web_user_checkbox)
+        time.sleep(0.5)
+        self.click(self.data_checkbox)
+        time.sleep(0.5)
+        self.scroll_to_element(self.manage_shared_exports)
+        if flag == 'YES':
+            time.sleep(2)
+            self.click(self.manage_shared_exports)
+            time.sleep(2)
+        time.sleep(0.5)
+        self.scroll_to_element(self.access_all_reports_checkbox)
+        time.sleep(1)
+        self.click(self.access_all_reports_checkbox)
+        time.sleep(0.5)
+        self.scroll_to_element(self.save_button)
+        time.sleep(0.5)
+        self.click(self.save_button)
+        time.sleep(2)
+        assert self.is_present_and_displayed((By.XPATH, self.role_no_shared_export.format(name))), "Role not added successfully!"
+        assert self.is_present_and_displayed((By.XPATH, self.web_user_permission.format(name))), "Web User Permission not present"
+        assert self.is_present_and_displayed((By.XPATH, self.mobile_worker_permission.format(name))), "Mobile Worker Permission not present"
+        if flag == "NO":
+            assert not self.is_present_and_displayed((By.XPATH, self.managed_shared_export_permission.format(name)), 5), "Shared Export Permission is present"
+        else:
+            assert self.is_present_and_displayed((By.XPATH, self.managed_shared_export_permission.format(name))), "Shared Export Permission not present"
