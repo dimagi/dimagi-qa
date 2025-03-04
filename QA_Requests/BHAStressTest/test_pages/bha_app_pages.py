@@ -93,21 +93,21 @@ class BhaWorkflows(BasePage):
             time.sleep(5)
             self.wait_for_element((By.XPATH, self.current_page.format(form_name)), timeout=50)
 
-    def stress_load_files(self, app, menu, form):
-        for i in range(0, 40):
+    def stress_load_files(self, app, menu, form, file_name, input_file):
+        for i in range(0, 20):
             print("Running loop for file count: ", str(i + 1))
             self.wait_to_click(self.webapps_home)
             self.open_app(app)
             self.open_menu(menu)
             self.open_form(form)
-            time_value = self.enter_form_value((i + 1))
-            self.write_to_file(str(i + 1), str(time_value))
+            time_value = self.enter_form_value((i + 1), input_file)
+            self.write_to_file(str(i + 1), str(time_value), file_name)
 
-    def enter_form_value(self, count):
+    def enter_form_value(self, count, file_name):
         self.wait_for_element((By.XPATH, self.form_textarea.format(BhaUserInput.textarea_label)))
         self.send_keys((By.XPATH, self.form_textarea.format(BhaUserInput.textarea_label)), self.textarea_value+" "+str(count))
         filename = os.path.abspath(os.path.join(BhaUserInput.USER_INPUT_BASE_DIR,
-                                                "test_data/stress_test_file.pdf"
+                                                file_name
                                                 )
                                    )
         for i in range(0, count):
@@ -123,12 +123,12 @@ class BhaWorkflows(BasePage):
         total_time = (end_time - start_time).total_seconds()
         return total_time
 
-    def write_to_file(self, file_count, time_value):
+    def write_to_file(self, file_count, time_value, file_name):
         text = "Files uploaded " + file_count
         data = [text, time_value]
         print(data)
         filename = os.path.abspath(os.path.join(BhaUserInput.USER_INPUT_BASE_DIR,
-                                                "time_records_new.csv"
+                                                file_name
                                                 )
                                    )
         with open(filename, 'a', newline='') as csvfile:
@@ -136,9 +136,9 @@ class BhaWorkflows(BasePage):
             writer.writerow(data)
         csvfile.close()
 
-    def create_csv_file(self):
+    def create_csv_file(self, file_name):
         filename = os.path.abspath(os.path.join(BhaUserInput.USER_INPUT_BASE_DIR,
-                                                "time_records_new.csv"
+                                                file_name
                                                 )
                                    )
         with open(filename, 'w', newline='') as csvfile:
