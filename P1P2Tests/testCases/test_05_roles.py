@@ -2,6 +2,7 @@ import time
 
 import pytest
 
+from HQSmokeTests.testPages.data.export_data_page import ExportDataPage
 from HQSmokeTests.testPages.home.home_page import HomePage
 from HQSmokeTests.testPages.reports.report_page import ReportPage
 from HQSmokeTests.testPages.users.mobile_workers_page import MobileWorkerPage
@@ -49,6 +50,7 @@ def test_case_73_non_admin_role_permission(driver, settings):
     menu.users_menu()
     webuser.edit_user_permission("Admin")
 
+
 @pytest.mark.user
 @pytest.mark.mobileWorker
 @pytest.mark.groups
@@ -61,7 +63,7 @@ def test_case_74_delete_role_column(driver, settings):
     login.logout()
     time.sleep(10)
     login.login(settings["login_username"], settings["login_password"])
-    username = "username_p1p2_"+fetch_random_string()
+    username = "username_p1p2_" + fetch_random_string()
     user = MobileWorkerPage(driver)
     home = HomePage(driver, settings)
     home.users_menu()
@@ -91,6 +93,56 @@ def test_case_74_delete_role_column(driver, settings):
     home.users_menu()
     role.roles_menu_click()
     role.delete_test_roles()
+
+
+@pytest.mark.user
+@pytest.mark.role
+@pytest.mark.userExport
+@pytest.mark.p1p2EscapeDefect
+def test_case_94_roles_and_exports(driver, settings):
+    login = LoginPage(driver, settings["url"])
+    webuser = WebUsersPage(driver)
+    menu = HomePage(driver, settings)
+    menu.users_menu()
+    webuser.change_user_role(UserData.p1p2_user, 'Admin')
+    role = RolesPermissionPage(driver, settings)
+    menu.users_menu()
+    role.roles_menu_click()
+    role.delete_test_roles()
+    role.roles_menu_click()
+    role.add_shared_export_role(role.role_no_shared_export_created, "NO")
+    role.roles_menu_click()
+    role.add_shared_export_role(role.role_yes_shared_export_created, "YES")
+    menu.data_menu()
+    export = ExportDataPage(driver)
+    export.delete_bulk_exports()
+    export.add_shared_form_exports(UserData.private_export_no, 'NO')
+    menu.data_menu()
+    export.add_shared_form_exports(UserData.private_export_yes, 'YES')
+    menu.users_menu()
+    webuser.change_user_role(UserData.p1p2_user, role.role_no_shared_export_created)
+    login.logout()
+    time.sleep(10)
+    login.login(UserData.p1p2_user, settings["login_password"])
+    menu.data_menu()
+    export.verify_shared_export_section(UserData.private_export_no, UserData.private_export_yes, 'NO')
+    login.logout()
+    time.sleep(10)
+    login.login(settings["login_username"], settings["login_password"])
+    menu.users_menu()
+    webuser.change_user_role(UserData.p1p2_user, role.role_yes_shared_export_created)
+    login.logout()
+    time.sleep(10)
+    login.login(UserData.p1p2_user, settings["login_password"])
+    menu.data_menu()
+    export.verify_shared_export_section(UserData.private_export_no, UserData.private_export_yes, 'YES')
+    login.logout()
+    time.sleep(10)
+    login.login(settings["login_username"], settings["login_password"])
+    menu.data_menu()
+    export.delete_all_bulk_exports()
+    menu.users_menu()
+    webuser.change_user_role(UserData.p1p2_user, 'Admin')
 
 
 @pytest.mark.user

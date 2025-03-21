@@ -28,8 +28,8 @@ class EmailVerification:
 
         with MailBox(self.imap_host).login(self.imap_user, self.imap_pass, 'INBOX') as mailbox:
             bodies = [msg.html for msg in
-                      mailbox.fetch(AND(subject=subject, from_ =from_email, date=datetime.date.today()))]
-        soup = BeautifulSoup(str(bodies[len(bodies)-1]), "html.parser")
+                      mailbox.fetch(AND(subject=subject, from_=from_email, date=datetime.date.today()))]
+        soup = BeautifulSoup(str(bodies[len(bodies) - 1]), "html.parser")
         links = []
         for link in soup.findAll('a', attrs={'href': re.compile("^https://")}):
             links.append(link.get('href'))
@@ -49,7 +49,7 @@ class EmailVerification:
         print(subject)
         with MailBox(self.imap_host).login(self.imap_user, self.imap_pass, 'INBOX') as mailbox:
             bodies = [msg.html for msg in
-                      mailbox.fetch(AND(subject=subject, from_=from_email,  date=datetime.date.today()))]
+                      mailbox.fetch(AND(subject=subject, from_=from_email, date=datetime.date.today()))]
         print(len(bodies))
         n = ''
         end = -1
@@ -61,7 +61,7 @@ class EmailVerification:
             end = None
         else:
             end = -1
-        soup = BeautifulSoup(str(bodies[len(bodies)-1]), "html.parser")
+        soup = BeautifulSoup(str(bodies[len(bodies) - 1]), "html.parser")
         tr = []
         table = []
 
@@ -88,7 +88,7 @@ class EmailVerification:
         with MailBox(self.imap_host).login(self.imap_user, self.imap_pass, 'INBOX') as mailbox:
             bodies = [msg.html for msg in
                       mailbox.fetch(AND(subject=subject, from_=from_email, date=datetime.date.today()))]
-        soup = BeautifulSoup(str(bodies[len(bodies)-1]), "html.parser")
+        soup = BeautifulSoup(str(bodies[len(bodies) - 1]), "html.parser")
         tr = []
         td = []
         table = []
@@ -127,7 +127,6 @@ class EmailVerification:
             tab_low = ['No data available in table']
 
         print("tab low", tab_low)
-
 
         if len(table_inactive.findAll('td')) > 0:
             print(len(table_inactive.findAll('td')))
@@ -184,3 +183,19 @@ class EmailVerification:
         print("tab high", tab_high)
         table_data = [tab_low + tab_inactive + tab_high]
         return table_data
+
+    def verify_email_sent(self, subject, url):
+        if 'www' in url:
+            from_email = UserData.from_email_prod
+        elif 'india' in url:
+            from_email = UserData.from_email_india
+        else:
+            from_email = UserData.from_email
+
+        with MailBox(self.imap_host).login(self.imap_user, self.imap_pass, 'INBOX') as mailbox:
+            for msg in mailbox.fetch(
+                    AND(from_=from_email, date=datetime.date.today())
+                    ):
+                if msg.subject == subject:
+                    print("Email is received")
+                    assert True

@@ -83,6 +83,11 @@ class ApplicationPage(BasePage):
         self.advanced_settings_tab = (By.XPATH, "//a[@href='#commcare-settings']")
         self.advanced_settings_tab_content = (By.ID, "app-settings-options")
         self.form_settings_tab = (By.XPATH, "//a[@href='#form-settings']")
+        self.case_management_tab = (By.XPATH, "//a[@href='#case-configuration']")
+        self.user_properties = (By.XPATH, "//a[@href='#usercase-configuration']")
+        self.form_actions_tab = (By.XPATH, "//a[@href='#advanced']")
+
+
 
         # Form Field Edit
         self.add_new_form = (By.XPATH,"//a[@class='appnav-secondary js-add-new-item']")
@@ -109,6 +114,8 @@ class ApplicationPage(BasePage):
         self.close = (By.XPATH, "//div[.//code]/following-sibling::div//a[contains(text(),'Close')]")
         self.override_btn = (By.XPATH, "//button[contains(.,'Overwrite their work')]")
         self.enter_app_code_link = (By.LINK_TEXT, "Enter App Code")
+
+
 
         # language tab
         self.language_option = "//select[contains(@data-bind,'langcode')]/option[.='{}']"
@@ -428,3 +435,35 @@ class ApplicationPage(BasePage):
             self.click(self.delete_confirm)
             assert self.is_present_and_displayed(self.delete_success, 200), "Application "+app+" not deleted."
             print("Deleted the application", app)
+
+    def verify_form_settings_page(self, form_name):
+        self.hover_on_element((By.XPATH, self.form_link.format(form_name)))
+        self.wait_to_click((By.XPATH, self.form_settings_btn.format(form_name)))
+        time.sleep(5)
+        assert self.is_present_and_displayed(self.form_settings_tab)
+        assert self.is_present_and_displayed(self.case_management_tab)
+        assert self.is_present_and_displayed(self.form_actions_tab)
+        assert self.is_present_and_displayed(self.user_properties)
+        print("Form Settings page correctly displayed")
+
+    def verify_app_version_page(self):
+        self.wait_to_click((By.XPATH, self.field_edit_app_name.format(UserData.reassign_cases_application)))
+        time.sleep(2)
+        assert self.is_present_and_displayed(self.make_new_version_button)
+        print("Make New Version Page is correctly displayed")
+
+    def get_app_code(self, app_name):
+        self.wait_to_click((By.XPATH, self.field_edit_app_name.format(app_name)))
+        time.sleep(2)
+        self.wait_for_element(self.make_new_version_button)
+        self.wait_to_click(self.publish_button)
+        if self.is_present_and_displayed(self.enter_app_code_link):
+            self.wait_to_click(self.enter_app_code_link)
+        else:
+            print("Enter App Code link is not present")
+        code_text = self.wait_to_get_text(self.code)
+        self.wait_to_click(self.close)
+        # self.wait_to_click(self.delete_form)
+        # self.wait_to_click(self.delete_form_confirm)
+        print("App code: ", code_text)
+        return code_text
