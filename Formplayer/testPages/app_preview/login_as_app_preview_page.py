@@ -16,7 +16,7 @@ class LoginAsAppPreviewPage(BasePage):
     def __init__(self, driver, settings):
         super().__init__(driver)
         self.webapp = WebAppsBasics(self.driver)
-        
+
         self.dashboard_link = settings['url'] + "/dashboard/project/"
         self.form_input_no_login = "app preview test without login" + fetch_random_string()
         self.form_input_login = "app preview test" + fetch_random_string()

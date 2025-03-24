@@ -26,3 +26,4 @@ def test_case_01_login_as_app_preview(driver, settings):
     app_preview.login_as_app_preview_content()
     app_preview.login_as_app_preview_form_submission(app_preview.form_input_login)
     app_preview.submit_history_verification("login", UserData.app_preview_mobile_worker)
+

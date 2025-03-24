@@ -70,6 +70,7 @@ class UserData:
         "subcaseone": "Sub Case One",
         "close_subcase": "Close Case",
         "logic_test1": "Logic Tests 1",
+        "date_and_time": "Date & Time",
         "constraints": "Constraints",
         "fixtures": "Fixtures",
         "functions": "Functions",

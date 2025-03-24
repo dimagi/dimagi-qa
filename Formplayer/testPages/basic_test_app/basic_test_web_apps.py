@@ -2,7 +2,6 @@ import random
 import re
 import time
 from datetime import datetime, timedelta
-
 from selenium.webdriver.common.keys import Keys
 
 from Formplayer.testPages.webapps.login_as_page import LoginAsPage
@@ -71,6 +70,7 @@ class BasicTestWebApps(BasePage):
         self.login_as_option = (By.XPATH, "//div[@class='js-restore-as-item appicon appicon-restore-as']")
         self.incomplete_form = (By.XPATH, "//div[@class='js-incomplete-sessions-item appicon appicon-incomplete']")
         self.incomplete_form_title = (By.XPATH, "//h1[@class='page-title'][.='Incomplete Forms']")
+        self.search_user_input_area = (By.XPATH, "//input[@placeholder='Filter workers']")
         self.no_of_pages = (By.XPATH, "//li[contains(@class,'js-page')]")
         self.page_number = "(//li[contains(@class,'js-page')]/a)[{}]"
         self.page_navigation = (By.XPATH, "//div[contains(@class,'module-per-page-container')]")
@@ -86,9 +86,10 @@ class BasicTestWebApps(BasePage):
         self.followup_form = (By.XPATH, "//h3[contains(text(), 'Followup Form')]")
         self.name_question = (By.XPATH,
                               "//label[.//span[contains(.,'Enter a Name')]]/following-sibling::div//textarea[contains(@class,'textfield form-control')]")
-        self.incomplete_form_list = (By.XPATH, "//tr[@class='formplayer-request']")
+        self.incomplete_form_list = (By.XPATH, "//tr[contains(@class,'formplayer-request')]")
         self.custom_incomplete_form_list = "//tr[@class='formplayer-request']/td[2][contains(.,'{}')]"
         self.incomplete_list_count = (By.XPATH, "//tbody/tr[@class='formplayer-request']")
+        self.login_as = (By.XPATH,"//h3[text()='Log in as']")
         self.delete_incomplete_form = "(//tr[@class='formplayer-request']/descendant::div[@aria-label='Delete form'])[{}]"
         self.custom_delete_incomplete_form = "(//tr[@class='formplayer-request']/td[2][contains(.,'{}')]/following::div[@aria-label='Delete form'])[{}]"
         self.edit_incomplete_form = "(//tr[@class='formplayer-request'][./td[2][contains(.,'{}')]]/descendant::div//i[contains(@class,'fa fa-pencil')])[1]"
@@ -1337,7 +1338,8 @@ class BasicTestWebApps(BasePage):
                 self.verify_goto_page_button()
                 time.sleep(3)
                 self.verify_list_per_page()
-            elif self.is_present(self.page_navigation) == False and len(self.find_elements(self.incomplete_list_count)) > 0:
+            elif self.is_present(self.page_navigation) == False and len(
+                    self.find_elements(self.incomplete_list_count)) > 0:
                 self.verify_list_per_page()
             else:
                 print("No incomplete form present")
@@ -1350,6 +1352,23 @@ class BasicTestWebApps(BasePage):
             print("No incomplete form present")
         self.driver.back()
 
+    def verify_pagination_login_as(self):
+        self.webapp.wait_to_click(self.login_as)
+        time.sleep(3)
+        self.wait_for_element(self.search_user_input_area, 120)
+        if self.is_present(self.page_navigation):
+            time.sleep(3)
+            self.verify_page_navigation()
+            time.sleep(3)
+            self.verify_goto_page_button()
+            time.sleep(3)
+            self.verify_list_per_page()
+        elif self.is_present(self.page_navigation) == False and len(self.find_elements(self.i)) > 0:
+            self.verify_list_per_page()
+        else:
+            print("No users are present")
+        self.js_click(self.home_button)
+        time.sleep(3)
 
     def verify_list_per_page(self):
         if self.is_present(self.page_navigation):
@@ -1375,7 +1394,7 @@ class BasicTestWebApps(BasePage):
             latest_page_count = self.find_elements(self.no_of_pages)
             if self.is_present(self.page_navigation):
                 if len(latest_page_count) > 1:
-                    assert len(self.find_elements(self.incomplete_form_list)) <= int(i), "List count not equal to 10"
+                    assert len(self.find_elements(self.incomplete_form_list)) == int(i), "List count not equal to 10"
                 else:
                     assert len(self.find_elements(self.incomplete_form_list)) in range(min_list_count,
                                                                                        max_list_count), "List count is not valid"
@@ -1398,7 +1417,6 @@ class BasicTestWebApps(BasePage):
 
         self.webapp.wait_to_click(self.first_list_page)
         time.sleep(3)
-        # classname = self.get_attribute((By.XPATH, self.page_number.format(1)), "class")
         classname = self.get_attribute((By.XPATH, self.page_number.format(1)), "aria-current")
         print(classname)
         assert classname == 'page', "Click is not successful on first page"
@@ -1414,10 +1432,12 @@ class BasicTestWebApps(BasePage):
             assert classname == 'page', "Click is not successful"
 
         print("navigating backward")
+        print(len(page_count))
         for i in range(len(page_count)-1)[::]:
             self.webapp.wait_to_click(self.prev_list_button)
             time.sleep(3)
             classname = self.get_attribute((By.XPATH, self.page_number.format(len(page_count)-i-1)), "aria-current")
+            print(len(page_count)-i-1)
             print(classname)
             assert classname == 'page', "Click is not successful"
 
@@ -1426,7 +1446,7 @@ class BasicTestWebApps(BasePage):
         n = len(page_count)
         print(n)
         for i in range(len(page_count))[::-1]:
-            self.wait_to_clear_and_send_keys(self.go_to_page_input, i+1)
+            self.wait_to_clear_and_send_keys(self.go_to_page_input, str(i+1))
             self.webapp.wait_to_click(self.go_button)
             time.sleep(4)
             classname = self.get_attribute((By.XPATH, self.page_number.format(i+1)), "aria-current")
@@ -2115,5 +2135,48 @@ class BasicTestWebApps(BasePage):
         self.is_present_and_displayed(self.formplayer_badge)
         self.is_present_and_displayed(self.case_tests_badge)
 
+    # date_and_time
 
+    def check_date(self, date_check):
+        presentday = datetime.now()
+        # Get new date
+        new_date = presentday.strftime('%m/%d/%Y') #convert date to the format we want
+        given_date = datetime.strptime(date_check, "%m/%d/%Y")
+        print('New Date: ',new_date )
+        if given_date == new_date:
+            return True
+        else:
+            return False
+
+    def check_time(self, time_check):
+        time_now = datetime.now().strftime("%H:%M:%S")
+        print('Time Now: ', time_now)
+        if time_check == time_now:
+            return True
+        else:
+            return False
+        # time_diff = abs((time_now.strftime('%H:%M:%S') - time_check).total_seconds() / 60)
+        # Check if the time difference is within ±2 minutes
+        # if time_diff <= 2:
+        #     print("Time is within ±2 minutes")
+        #     return True
+        # else:
+        #     print("Time is not within ±2 minutes")
+        #     return False
+
+    # def date_and_time_form_check(self):
+    #     self.wait_for_element((By.XPATH, self.input_field.format('This should display today')))
+    #     text = self.get_attribute((By.XPATH, self.input_field.format('This should display today')),"value")
+    #     result = self.check_date(text)
+    #     print (text)
+    #     print(result)
+    #     # assert result, "Today's Date is not displayed by default"
+    #     time_text = self.get_attribute((By.XPATH, self.input_field.format('time by default')),"value")
+    #     time_result = self.check_time(time_text)
+    #     print(time_result)
+    #     print(time_text)
+    #     format_date = self.get_attribute((By.XPATH, self.input_field.format('with the format YYYY-MM-DD')), "value")
+    #     format_date_check = self.check_date(format_date)
+    #     print(format_date)
+    #     print(format_date_check)
 

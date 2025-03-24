@@ -7,6 +7,7 @@ from common_utilities.generate_random_string import fetch_random_string
 from common_utilities.selenium.base_page import BasePage
 from Formplayer.userInputs.user_inputs import UserData
 
+
 """"Contains test page elements and functions related to the Homepage of Commcare"""
 
 class LoginAsPage(BasePage):
@@ -107,3 +108,21 @@ class LoginAsPage(BasePage):
         time.sleep(2)
         logged_in_username = self.get_text(self.webapp_working_as)
         assert logged_in_username == self.username, "Logged in"
+
+    def verify_pagination_login_as(self):
+        self.webapp.wait_to_click(self.login_as)
+        time.sleep(3)
+        self.wait_for_element(self.search_user_input_area, 120)
+        if self.is_present(self.basic_webapps.page_navigation):
+            time.sleep(3)
+            self.basic_webapps.verify_page_navigation()
+            time.sleep(3)
+            self.basic_webapps.verify_goto_page_button()
+            time.sleep(3)
+            self.basic_webapps.verify_list_per_page()
+        elif self.is_present(self.basic_webapps.page_navigation) == False and len(self.find_elements(self.i)) > 0:
+            self.basic_webapps.verify_list_per_page()
+        else:
+            print("No users are present")
+        self.js_click(self.basic_webapps.home_button)
+        time.sleep(3)

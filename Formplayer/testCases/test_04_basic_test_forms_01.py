@@ -324,3 +324,31 @@ def test_case_34_form_linking_app_preview(driver, settings):
     # app_preview.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
     basic.open_form(UserData.basic_test_app_forms['form_linking'], UserData.basic_test_app_forms['form_linking_child'])
     basic.form_linking_child(case, child)
+#
+# def test_case_35_date_and_time_web_apps(driver, settings):
+#     login = LoginAsPage(driver, settings)
+#     login.open_webapps_menu()
+#     login.login_as_user(UserData.app_preview_mobile_worker)
+#     basic = BasicTestWebApps(driver)
+#     login.open_basic_tests_app(UserData.basic_tests_app['tests_app'])
+#     basic.open_form(UserData.basic_test_app_forms['logic_test1'], UserData.basic_test_app_forms['date_and_time'])
+#     basic.date_and_time_form_check()
+
+
+def test_case_36_pagination_web_apps(driver,settings):
+    login = LoginAsPage(driver, settings)
+    login.open_webapps_menu()
+    basic = BasicTestWebApps(driver)
+    basic.verify_pagination_login_as()
+
+def test_case_36_pagination_app_preview(driver,settings):
+    app_preview = LoginAsAppPreviewPage(driver, settings)
+    basic = BasicTestAppPreview(driver)
+    app_preview.open_view_app_preview(UserData.basic_tests_app['tests_app'])
+    basic.verify_pagination_login_as()
+
+def test_case_37_file_upload(driver, settings):
+    login = LoginAsPage(driver, settings)
+    login.open_webapps_menu()
+    login.login_as_user(UserData.app_preview_mobile_worker)
+    basic = BasicTestWebApps(driver)
