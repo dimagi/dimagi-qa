@@ -195,7 +195,7 @@ def test_case_05_date_range_format(driver, settings):
     if 'staging' in settings['url']:
         webapps.search_button_on_case_search_page()
     else:
-        webapps.search_button_on_case_search_page(enter_key=YES)
+        webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.six,
                                         expected_value=casesearch.parse_date(
                                             input_date=date,

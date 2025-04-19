@@ -93,7 +93,7 @@ class WebAppsPage(BasePage):
         self.wait_to_clear_and_send_keys(self.enter_text_area, self.text_value)
         self.wait_to_clear_and_send_keys(self.enter_value_area, self.text_value+Keys.TAB)
         self.wait_to_click(self.form_submit_button)
-        self.wait_for_ajax()
+        self.wait_after_interaction()
         time.sleep(2)
         self.wait_for_element(self.success_message)
         assert self.is_displayed(self.success_message), "Form not submitted"

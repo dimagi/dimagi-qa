@@ -544,11 +544,12 @@ class MessagingPage(BasePage):
             print("Cond Alert removed successfully!")
 
     def msg_trans_download(self):
-        self.wait_to_click(self.languages)
-        
-        self.wait_to_click(self.msg_translation_menu)
-        self.wait_to_click(self.download_id)
-        
+        self.wait_for_element(self.languages)
+        self.click(self.languages)
+        self.wait_for_element(self.msg_translation_menu)
+        self.click(self.msg_translation_menu)
+        self.wait_for_element(self.download_id)
+        self.click(self.download_id)
         print("Msg Trans downloaded successfully!")
 
     def msg_trans_upload(self):

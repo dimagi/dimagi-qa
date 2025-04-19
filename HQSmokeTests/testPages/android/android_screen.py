@@ -24,8 +24,8 @@ class AndroidScreen:
         self.options = UiAutomator2Options().load_capabilities({
             # Specify device and os_version for testing
             "platformName": "android",
-            "appium:os_version": "10.0",
-            "appium:deviceName": "Google Pixel 4 XL",
+            "appium:platformVersion": "15.0",
+            "appium:deviceName": "Google Pixel 9",
             "appium:automationName": "UIAutomator2",
 
             # Set URL of the application under test

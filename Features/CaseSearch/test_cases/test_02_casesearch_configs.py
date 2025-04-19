@@ -86,6 +86,7 @@ def test_case_05_date_range_format(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Check date range format search property"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)
     # MM/DD/YYYY
@@ -145,7 +146,7 @@ def test_case_05_date_range_format(driver, settings):
     casesearch.check_date_range(search_property=CaseSearchUserInput.date_opened, date_range=casesearch.parse_date_range(input_date=date,
                                                             input_format=CaseSearchUserInput.dates.get("MM/DD/YYYY"),
                                                             output_format=CaseSearchUserInput.dates.get("MM/DD/YYYY")))
-    webapps.search_button_on_case_search_page(enter_key=YES)
+    webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.six,
                                         expected_value=casesearch.parse_date(
                                             input_date=date,
@@ -173,6 +174,7 @@ def test_case_07_address_geocoder_format(driver, settings):
     casesearch = CaseSearchWorkflows(driver)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     """Check receivers in form get autopoulated after bradcast value is provided"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_menu(CaseSearchUserInput.artist_menu)
     webapps.select_first_case_on_list_and_continue()
     webapps.open_form(CaseSearchUserInput.add_address_form)

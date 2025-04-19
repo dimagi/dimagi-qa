@@ -134,7 +134,7 @@ class BhaUserInput:
 
     screens = {
         "login": "login.png",
-        "login_1" : "login_1.png",
+        "login_1" : "login_page.png",
         "home_screen": "home_screen.png",
         "central_registry_app": "central_registry_app.png",
         "search_and_admit": "search_and_admit.png"

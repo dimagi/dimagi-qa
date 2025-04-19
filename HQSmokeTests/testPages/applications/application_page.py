@@ -117,6 +117,13 @@ class ApplicationPage(BasePage):
         self.language_option_select = "//li[@role='option'][contains(.,'{} (')]"
         self.save_language = (By.XPATH, "//div[.='Save'][@class='btn btn-primary']")
 
+        #Case List feature
+        self.caselist_span = (By.XPATH, "//span[contains(@id, 'new_case_type-container')]")
+        self.caselist_dropdown = (By.XPATH, "//select[@id= 'new_case_type']")
+        self.caselist_dropdown_input = (By.XPATH, "//input[@aria-label='Search' or contains(@class,'search')]")
+        self.create_case_list_btn = (By.XPATH, "//button[@id='case-type-create-btn']")
+
+
     def create_new_application(self):
         self.wait_to_click(self.applications_menu_id)
         self.wait_to_click(self.new_application)
@@ -126,6 +133,15 @@ class ApplicationPage(BasePage):
         self.wait_to_click(self.confirm_change)
         self.wait_to_click(self.add_module)
         self.wait_to_click(self.add_case_list)
+        time.sleep(1)
+        if self.is_present(self.create_case_list_btn):
+            self.click(self.caselist_span)
+            self.wait_for_element(self.caselist_dropdown_input)
+            self.send_keys(self.caselist_dropdown_input, "Case List")
+            time.sleep(1)
+            self.select_by_value(self.caselist_dropdown, "Case List")
+            self.click(self.create_case_list_btn)
+        self.wait_for_element(self.add_questions)
         self.wait_to_click(self.add_questions)
         self.wait_to_click(self.text_question)
         self.clear(self.question_display_text)
@@ -259,9 +275,16 @@ class ApplicationPage(BasePage):
         self.send_keys(self.app_name_textbox, self.app_p1p2_name)
         self.wait_to_click(self.confirm_change)
         self.wait_to_click(self.add_module)
-        
         self.wait_to_click(self.add_case_list)
-        
+        time.sleep(1)
+        if self.is_present(self.create_case_list_btn):
+            self.click(self.caselist_span)
+            self.wait_for_element(self.caselist_dropdown_input)
+            self.send_keys(self.caselist_dropdown_input, "Case List")
+            time.sleep(1)
+            self.select_by_value(self.caselist_dropdown, "Case List")
+            self.click(self.create_case_list_btn)
+        self.wait_for_element(self.add_questions)
         self.wait_to_click(self.edit_form_name_icon)
         self.wait_to_clear_and_send_keys(self.edit_form_name_text, self.reg_form_name)
         self.wait_to_click(self.form_name_save_button)

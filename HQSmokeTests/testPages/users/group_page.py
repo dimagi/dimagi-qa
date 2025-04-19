@@ -21,6 +21,7 @@ class GroupPage(BasePage):
         self.add_group_button = (By.XPATH, "//button[@type='submit' and @class='btn btn-primary']")
         self.group_menu_xpath = (By.XPATH, "//a[@data-title='Groups']")
         self.users_drop_down = (By.XPATH, "//span[@class='select2-selection select2-selection--multiple']")
+        self.users_drop_down_textarea = (By.XPATH, "//textarea[contains(@class,'search')]")
         self.select_user =  "//li[text()='{}']"
         self.update_button = (By.ID, "submit-id-submit")
         self.group_created_success = (By.XPATH, "//h1[text()[contains(.,'Editing Group')]]")
@@ -51,7 +52,9 @@ class GroupPage(BasePage):
         return self.created_group
 
     def add_user_to_group(self, username, group_name):
-        self.send_keys(self.users_drop_down, username)
+        self.wait_to_click(self.users_drop_down)
+        self.wait_for_element(self.users_drop_down_textarea)
+        self.send_keys(self.users_drop_down_textarea, username)
         self.wait_to_click((By.XPATH, self.select_user.format(username)))
         time.sleep(10)
         self.wait_for_element(self.users_drop_down, 400)

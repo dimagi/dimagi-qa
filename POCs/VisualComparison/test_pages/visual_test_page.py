@@ -1,3 +1,4 @@
+import base64
 import os
 
 import cv2
@@ -22,7 +23,8 @@ class VisualTestPage(BasePage):
         url = self.get_current_url()
         screenshot_path = "temp_"+pic_name
         # Save the screenshot of the entire page
-        self.driver.save_screenshot(screenshot_path)
+        # self.driver.save_screenshot(screenshot_path)
+        self.take_full_screenshot(screenshot_path)
 
         if 'www' in url:
             os.makedirs(self.prod_screens_path, exist_ok=True)
@@ -65,7 +67,8 @@ class VisualTestPage(BasePage):
         url = self.get_current_url()
         screenshot_path = "new_"+pic_name
         # Save the screenshot of the entire page
-        self.driver.save_screenshot(screenshot_path)
+        # self.driver.save_screenshot(screenshot_path)
+        self.take_full_screenshot(screenshot_path)
 
         if 'www' in url:
             output_file_path = os.path.join(self.prod_screens_path, pic_name)
@@ -109,6 +112,22 @@ class VisualTestPage(BasePage):
         match_result = ImageComparisonUtil.check_match(output_file_path, screenshot_path)
         if match_result:
             print("Image matches for: ", pic_name)
+            os.remove(result_destination)
+            assert True
         else:
             print("Image mismatch for: ", pic_name)
+            assert False
         os.remove(screenshot_path)
+
+
+
+    def take_full_screenshot(self, pic_name):
+        result = self.driver.execute_cdp_cmd("Page.captureScreenshot", {
+            "captureBeyondViewport": True,
+            "fromSurface": True
+            }
+                                        )
+
+        # Save the screenshot
+        with open(pic_name, "wb") as f:
+            f.write(base64.b64decode(result['data']))

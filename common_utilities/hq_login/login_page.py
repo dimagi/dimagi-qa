@@ -33,12 +33,15 @@ class LoginPage(BasePage):
 
     def click_continue(self):
         try:
-            self.click(self.continue_button_xpath)
+            if self.is_present(self.continue_button_xpath):
+                self.click(self.continue_button_xpath)
+            else:
+                pass
         except (NoSuchElementException, ElementNotInteractableException):
             print("Non SSO workflow")
 
     def enter_password(self, password):
-        self.wait_to_clear_and_send_keys(self.password_textbox_id, password)
+        self.send_keys(self.password_textbox_id, password)
 
     def enter_otp(self, otp):
         try:
@@ -53,8 +56,12 @@ class LoginPage(BasePage):
     def dismiss_notification(self):
         try:
             self.driver.switch_to.frame(self.find_element(self.iframe))
-            self.wait_for_element(self.view_latest_updates)
-            self.wait_to_click(self.close_notification)
+            if self.is_present(self.view_latest_updates):
+                self.wait_for_element(self.view_latest_updates)
+                self.wait_to_click(self.close_notification)
+                print("notification dismissed")
+            else:
+                print("no notification present")
             self.driver.switch_to.default_content()
         except TimeoutException:
             pass  # ignore if notification  not on page
@@ -63,7 +70,11 @@ class LoginPage(BasePage):
 
     def accept_alert(self):
         try:
-            self.click(self.alert_button_accept)
+            if self.is_present(self.alert_button_accept):
+                self.click(self.alert_button_accept)
+                print("banner accepted")
+            else:
+                print("no banner present")
         except (TimeoutException, NoSuchElementException):
             pass  # ignore if alert not on page
 

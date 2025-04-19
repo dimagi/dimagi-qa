@@ -78,17 +78,17 @@ class VCLoginPage(BasePage):
 
     def vc_login(self, username, password, user_secret=None, compare=None):
         vc = VisualTestPage(self.driver)
-        vc.take_screenshots(BhaUserInput.screens['login_1'])
+        # vc.take_screenshots(BhaUserInput.screens['login_1'])
         self.enter_username(username)
         self.click_continue()
         self.enter_password(password)
         self.dismiss_notification()
         self.accept_alert()
-        vc.compare_screeshot(BhaUserInput.screens['login_1'])
-        # if compare ==  None:
-        #     vc.take_screenshots(BhaUserInput.screens['login'])
-        # else:
-        #     vc.compare_screeshot(BhaUserInput.screens['login'])
+        # vc.compare_screeshot(BhaUserInput.screens['login_1'])
+        if compare ==  None:
+            vc.take_screenshots(BhaUserInput.screens['login'])
+        else:
+            vc.compare_screeshot(BhaUserInput.screens['login'])
         self.click_submit()
         if self.is_displayed(self.otp_token_id):
             self.enter_otp(generate_auth_token(user_secret))
