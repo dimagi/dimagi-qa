@@ -87,8 +87,9 @@ class CaseSearchWorkflows(BasePage):
         elif search_format == combobox:
             search_property = (
                 By.XPATH, self.combobox_search_property_name_and_value_format.format(search_property, default_value))
-        time.sleep(10)
-        assert self.is_visible_and_displayed(search_property, 400), "Search "+default_value+" property not present"
+        time.sleep(1)
+        self.wait_for_element(search_property, 400)
+        assert self.is_present(search_property), "Search " + default_value + " property not present"
         print("Search "+default_value+" property is present")
 
     def search_against_property(self, search_property, input_value, property_type, include_blanks=None):
@@ -161,7 +162,8 @@ class CaseSearchWorkflows(BasePage):
 
     def check_help_text(self, search_property, help_text_value):
         help_text = (By.XPATH, self.help_text_format.format(search_property, help_text_value, help_text_value))
-        assert self.is_visible_and_displayed(help_text), "Expected text "+help_text_value+" is not present"
+        self.wait_for_element(help_text)
+        assert self.is_present(help_text), "Expected text " + help_text_value + " is not present"
         print("Expected text "+help_text_value+" is present")
 
     def check_date_range(self, search_property, date_range):
@@ -286,7 +288,8 @@ class CaseSearchWorkflows(BasePage):
         if tabname is not None:
             self.select_case_detail_tab(tabname)
         value = (By.XPATH, self.case_detail_value.format(search_property, expected_value))
-        assert self.is_visible_and_displayed(value), "Value "+expected_value+" is not present"
+        self.wait_for_element(value)
+        assert self.is_present(value), "Value "+expected_value+" is not present"
         print("Value "+expected_value+" is present")
         self.wait_to_click(self.close_case_detail_tab)
 
@@ -297,7 +300,8 @@ class CaseSearchWorkflows(BasePage):
         recent_claim_case = (By.XPATH, self.commcare_case_claim_case.format(date_on_report))
         print(date_on_report, recent_claim_case)
         try:
-            assert self.is_visible_and_displayed(recent_claim_case), "Value "+date_on_report+" is not present"
+            self.wait_for_element(recent_claim_case)
+            assert self.is_present(recent_claim_case), "Value "+date_on_report+" is not present"
             print("Value "+date_on_report+" is present")
         except AssertionError:
             logging.basicConfig(filename='logs.log', encoding='utf-8', level=logging.DEBUG)

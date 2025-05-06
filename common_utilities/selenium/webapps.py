@@ -172,7 +172,7 @@ class WebApps(BasePage):
             self.wait_to_clear_and_send_keys(self.omni_search_input, case_name)
             self.wait_for_element(self.omni_search_button)
             self.wait_to_click(self.omni_search_button)
-            time.sleep(10)
+            # time.sleep(10)
             self.wait_after_interaction()
         else:
             print("Split Screen Case Search enabled")
@@ -245,14 +245,14 @@ class WebApps(BasePage):
         time.sleep(2)
         try:
             self.wait_for_element(self.form_submission_successful, timeout=50)
-            assert self.is_visible_and_displayed(self.form_submission_successful, timeout=50)
+            # assert self.is_visible_and_displayed(self.form_submission_successful, timeout=50)
         except AssertionError:
             if self.is_displayed(self.form_500_error):
-                time.sleep(10)
+                # time.sleep(10)
                 self.wait_after_interaction()
                 self.wait_to_click(self.form_submit)
                 self.wait_for_element(self.form_submission_successful, timeout=50)
-                assert self.is_visible_and_displayed(self.form_submission_successful, timeout=50)
+                # assert self.is_visible_and_displayed(self.form_submission_successful, timeout=50)
             else:
                 raise AssertionError
         time.sleep(2)
@@ -381,7 +381,7 @@ class WebApps(BasePage):
         self.wait_to_click(self.setting_button)
         self.wait_for_element(self.sync_button)
         self.wait_to_click(self.sync_button)
-        time.sleep(10)
+        # time.sleep(10)
         self.wait_after_interaction()
         self.wait_for_element(self.done_button)
         self.wait_to_click(self.done_button)

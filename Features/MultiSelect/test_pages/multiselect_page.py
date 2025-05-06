@@ -33,7 +33,6 @@ class MultiSelectWorkflows(BasePage):
         song_names = []
         for i in range(1, case_count+1):
             row_checkbox = self.get_element(self.row_checkbox_xpath, str(i))
-            
             self.wait_to_click(row_checkbox)
             case_name_in_table = self.get_element(self.value_in_table_format, str(i))
             selected_song_names = self.get_text(case_name_in_table)
@@ -113,10 +112,9 @@ class MultiSelectWorkflows(BasePage):
     def open_menu_settings(self, menu):
         menu_xpath = self.get_element(self.open_app_builder_menu, menu)
         self.wait_for_element(menu_xpath)
-        self.wait_to_click(menu_xpath)
-        
+        self.click(menu_xpath)
         self.wait_for_element(self.case_list_settings)
-        self.wait_to_click(self.case_list_settings)
+        self.click(self.case_list_settings)
 
 
 
