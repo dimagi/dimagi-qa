@@ -284,7 +284,7 @@ class SubmitHistoryPage(BasePage):
         assert self.is_present(self.report_loading), "Loading Report block is not present"
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -324,7 +324,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -423,7 +423,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         pages = self.find_elements(self.pagination_list)
@@ -608,7 +608,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         print("All date ranges are correctly updated in the date range field")
 
@@ -671,7 +671,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -691,7 +691,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -756,7 +756,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         time.sleep(2)
@@ -777,7 +777,7 @@ class SubmitHistoryPage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            self.wait_for_element(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -786,7 +786,7 @@ class SubmitHistoryPage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        self.wait_for_element((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
@@ -893,7 +893,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.form_activity_results)
@@ -951,7 +951,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -981,7 +981,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_for_element(self.email_subject_field)
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        self.wait_for_element(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_dfa_with_html_table(self, table_data, web_data):
@@ -1017,7 +1017,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
         time.sleep(2)
@@ -1047,7 +1047,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
         time.sleep(2)
@@ -1070,7 +1070,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -1109,7 +1109,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -1182,7 +1182,7 @@ class SubmitHistoryPage(BasePage):
         else:
             assert self.is_selected(self.unknown_forms), "Unknown Forms radio button is not selected"
 
-        self.wait_for_element(self.unknown_form_dropdown), "Unknown forms dropdown is not present"
+        self.wait_for_element(self.unknown_form_dropdown)
         print("Application dropdown successfully disappeared after selecting option ", UserData.app_type_list[0])
         list_app = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app[1:]:
@@ -1212,7 +1212,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.app_login, UserData.web_user_email])
         time.sleep(2)
@@ -1224,7 +1224,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.app_login])
         self.verify_users_used_not_in_the_group([UserData.web_user_email])
@@ -1250,7 +1250,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([user])
         
@@ -1278,7 +1278,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         time.sleep(2)
         self.wait_for_element((By.XPATH, self.user_sort.format("Completion Time")))
@@ -1287,7 +1287,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.view_form_column_first)
         self.switch_to_next_tab()
         time.sleep(2)
-        self.wait_for_element(self.form_data_table, 200), "data Table for user is not present"
+        self.wait_for_element(self.form_data_table, 200)
         for items in UserData.view_form_tabs:
             assert self.is_present((By.XPATH, self.view_form_tabs.format(items))), "Tab " + items + " is not present"
         print("View Form page is successfully loaded")

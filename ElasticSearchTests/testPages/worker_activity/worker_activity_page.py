@@ -166,13 +166,13 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
         assert self.is_present(self.user_column), "User Column not present"
         for item in UserData.wa_column_group_names:
-            self.wait_for_element((By.XPATH, self.column_group_names.format(item))), "Column not present"
+            self.wait_for_element((By.XPATH, self.column_group_names.format(item)))
             print(item, " is present!")
 
         for item in UserData.wa_column_names:
@@ -210,7 +210,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -245,7 +245,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         pages = self.find_elements(self.pagination_list)
@@ -384,7 +384,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -439,7 +439,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -514,7 +514,7 @@ class WorkerActivityPage(BasePage):
         time.sleep(15)
         report_name = "Saved Worker Activity Report " + fetch_random_string()
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_case_type_data()
         time.sleep(2)
@@ -531,7 +531,7 @@ class WorkerActivityPage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            self.wait_for_element(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -540,7 +540,7 @@ class WorkerActivityPage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        self.wait_for_element((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
@@ -633,7 +633,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -698,7 +698,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -728,7 +728,7 @@ class WorkerActivityPage(BasePage):
         self.wait_for_element(self.email_subject_field)
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        self.wait_for_element(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_wa_with_html_table(self, table_data, web_data):
@@ -763,7 +763,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         # self.verify_users_in_the_group()
@@ -801,7 +801,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         # self.verify_users_in_the_group()

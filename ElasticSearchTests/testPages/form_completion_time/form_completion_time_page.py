@@ -229,7 +229,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -330,7 +330,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         pages = self.find_elements(self.pagination_list)
@@ -458,7 +458,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -491,7 +491,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -511,7 +511,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -579,7 +579,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         time.sleep(2)
@@ -599,7 +599,7 @@ class FormCompletionTimePage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            self.wait_for_element(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -608,7 +608,7 @@ class FormCompletionTimePage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        self.wait_for_element((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
@@ -710,7 +710,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
@@ -778,7 +778,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -813,7 +813,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_for_element(self.email_subject_field)
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        self.wait_for_element(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_fct_with_html_table(self, table_data, web_data):
@@ -854,7 +854,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
         time.sleep(2)
@@ -888,7 +888,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
         time.sleep(2)
@@ -911,7 +911,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -957,7 +957,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -969,7 +969,7 @@ class FormCompletionTimePage(BasePage):
             time.sleep(15)
             self.wait_for_element(self.submit_history_table_title)
             self.wait_for_element(self.result_table, 300)
-            self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+            self.wait_for_element(self.report_content_id, 120)
             print("Report loaded successfully!")
             assert filter == self.get_selected_text(self.filter_dates_by), "Date Filter mismatched"
             print("Date Filter matched")
@@ -1067,7 +1067,7 @@ class FormCompletionTimePage(BasePage):
         else:
             assert self.is_selected(self.unknown_forms), "Unknown Forms radio button is not selected"
 
-        self.wait_for_element(self.unknown_form_dropdown), "Unknown forms dropdown is not present"
+        self.wait_for_element(self.unknown_form_dropdown)
         print("Application dropdown successfully disappeared after selecting option ", UserData.fct_app_type_list[0])
         list_app = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app[1:]:
@@ -1124,7 +1124,7 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -1149,8 +1149,8 @@ class FormCompletionTimePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
-        self.wait_for_element(self.no_form_selected_msg), "No form selected message is not displayed."
+        self.wait_for_element(self.no_form_selected_msg)
         print("No form selected message is displayed correctly")

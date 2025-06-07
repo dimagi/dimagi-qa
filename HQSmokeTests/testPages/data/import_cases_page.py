@@ -75,7 +75,7 @@ class ImportCasesPage(BasePage):
         
         self.click(self.confirm_import)
         print("Imported case!")
-        self.wait_for_element((By.XPATH, self.success.format(self.file_new_name))), "Waitinng to start import. Celery might have a high queue."
+        self.wait_for_element((By.XPATH, self.success.format(self.file_new_name)))
 
     def edit_spreadsheet(self, edited_file, cell, renamed_file, sheet_name):
         workbook = load_workbook(filename=edited_file)
@@ -106,6 +106,6 @@ class ImportCasesPage(BasePage):
         self.scroll_to_element(self.confirm_import)
         self.wait_to_click(self.confirm_import)
         print("Imported case!")
-        self.wait_for_element((By.XPATH, self.success.format(file)), 100), "Waitinng to start import. Celery might have a high queue."
+        self.wait_for_element((By.XPATH, self.success.format(file)), 100)
         print("Import Completed")
 

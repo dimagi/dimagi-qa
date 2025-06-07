@@ -16,6 +16,7 @@ on:
         options:
           - staging
           - production
+          - eu
   schedule:
     - cron: '30 7 * * 1-5'
 
@@ -29,7 +30,7 @@ jobs:
       - id: set-matrix-schedule
         if: ${{ github.event_name  == 'schedule' }}
         run: |
-          echo "::set-output name=matrix::{\"environment\": [\"staging\", \"eu\"]}"
+          echo "::set-output name=matrix::{\"environment\": [\"staging\"]}"
       - id: set-matrix-deploy
         if: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment != 'staging' }}
         run: |
@@ -47,6 +48,11 @@ jobs:
         run: |
           echo "Invalid environment: ${{ github.event.client_payload.environment }}"
           exit 1
+      - id: block-india-deploy
+        if: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == 'india' }}
+        run: |
+          echo "India environment is not allowed for deployment runs."
+          exit 1
 
   build:
     needs: set_matrix
@@ -60,10 +66,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.13
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.13
 
       - name: Install dependencies
         run: |

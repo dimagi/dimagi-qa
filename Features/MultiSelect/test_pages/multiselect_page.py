@@ -23,6 +23,7 @@ class MultiSelectWorkflows(BasePage):
         self.checkbox = "(//td[@class='module-case-list-column' and text() = '{}'][1]//preceding::input[1])[1]"
         self.dropdown_menu_value = (By.XPATH, "//*[contains(@data-bind,'moduleOptions, value')]/option")
         self.max_limit_error = (By.XPATH, "//div[contains(text(),'Too many cases')]")
+        self.close_alerts = (By.XPATH, "//div[contains(@class, 'alert-danger')]//button[contains(@class,'close')]")
         self.open_app_builder_menu = "//span[contains(text(),'{}')]"
         self.case_list_settings = (By.XPATH, "//a[@href='#case-detail-screen-config-tab']")
         """Case Tiles"""
@@ -73,6 +74,12 @@ class MultiSelectWorkflows(BasePage):
     def check_error_message_shown_for_max_limit_exceed(self):
         assert self.is_displayed(self.max_limit_error), "Max limit error not displayed"
         print("Max limit error displayed as expected")
+
+    def close_all_alerts(self):
+        list_alert = self.find_elements(self.close_alerts)
+        print("Number of alerts present: ", len(list_alert))
+        for i in reversed(list_alert):
+            self.click(i)
 
     def check_selected_cases_present_on_form(self, items_selected_on_case_list, case_type):
         time.sleep(2)

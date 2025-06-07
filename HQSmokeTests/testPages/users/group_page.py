@@ -47,7 +47,7 @@ class GroupPage(BasePage):
         self.click_group_menu()
         self.wait_to_clear_and_send_keys(self.group_name, self.created_group)
         self.wait_to_click(self.add_group_button)
-        self.wait_for_element(self.group_created_success), "Group not created successfully"
+        self.wait_for_element(self.group_created_success)
         print("Group Added")
         return self.created_group
 

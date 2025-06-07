@@ -96,7 +96,7 @@ class CaseListPage(BasePage):
         assert self.is_present(self.report_loading), "Loading Report block is not present"
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_table_not_empty(self.case_list_table)
         self.scroll_to_element((By.XPATH, self.case_list_data.format(test_data['sub_case_name'])))

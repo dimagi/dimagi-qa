@@ -89,7 +89,7 @@ class WebUsersPage(BasePage):
         time.sleep(2)
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
-        self.wait_for_element(self.verify_user), "Unable to find delivered invite."
+        self.wait_for_element(self.verify_user)
         print("Web user invitation sent successfully")
 
     def assert_invitation_received(self, mail_url, mail_username, mail_password):

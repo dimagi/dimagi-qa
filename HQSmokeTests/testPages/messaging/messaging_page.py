@@ -188,7 +188,7 @@ class MessagingPage(BasePage):
             
             self.scroll_to_element(self.send_message)
             self.wait_to_click(self.send_message)
-            self.wait_for_element(self.message_sent_success_msg), "Message not sent successfully"
+            self.wait_for_element(self.message_sent_success_msg)
             print("SMS composed successfully!")
 
     def send_broadcast_message(self):
@@ -214,7 +214,7 @@ class MessagingPage(BasePage):
                 else:
                     assert True
         except StaleElementReferenceException:
-            self.wait_for_element(self.broadcast_created), "Broadcast not created successfully!"
+            self.wait_for_element(self.broadcast_created)
         print("Broadcast created successfully!")
 
     def create_cond_alert(self):
@@ -290,7 +290,7 @@ class MessagingPage(BasePage):
         file_that_was_downloaded = PathSettings.DOWNLOAD_PATH / newest_file
         self.send_keys(self.choose_file, str(file_that_was_downloaded))
         self.wait_to_click(self.upload)
-        self.wait_for_element(self.upload_success_message), "Conditional Alert upload not completed!"
+        self.wait_for_element(self.upload_success_message)
         print("Conditional Alert uploaded successfully!")
 
     def add_keyword_trigger(self):
@@ -305,7 +305,7 @@ class MessagingPage(BasePage):
         
         self.select_by_value(self.page_limit, "50")
         time.sleep(3)
-        self.wait_for_element(self.keyword_created), "Keyword not created successfully!"
+        self.wait_for_element(self.keyword_created)
         print("Keyword created successfully!")
 
     def add_structured_keyword_trigger(self):
@@ -361,7 +361,7 @@ class MessagingPage(BasePage):
         
         self.scroll_to_element(self.send_message)
         self.wait_to_click(self.send_message)
-        self.wait_for_element(self.message_sent_success_msg), "Settings page not updated successfully!"
+        self.wait_for_element(self.message_sent_success_msg)
         print("Settings page updated successfully!")
 
     def delete_languages(self):
@@ -564,13 +564,15 @@ class MessagingPage(BasePage):
         self.click(self.download_id)
         wait_for_download_to_finish()
         print("Msg Trans downloaded successfully!")
+        time.sleep(5)
 
     def msg_trans_upload(self):
         newest_file = latest_download_file()
         file_that_was_downloaded = PathSettings.DOWNLOAD_PATH / newest_file
+        self.wait_for_element(self.choose_file)
         self.send_keys(self.choose_file, str(file_that_was_downloaded))
         self.wait_to_click(self.upload)
-        self.wait_for_element(self.upload_success_message), "Msg Trans not uploaded successfully"
+        self.wait_for_element(self.upload_success_message)
         print("Msg Trans uploaded successfully!")
 
     # def project_settings_page(self, value=None):

@@ -12,3 +12,4 @@ pytest-xdist[psutil]
 pyotp >=2.6.0
 pytest-order
 py
+beautifulsoup4

@@ -71,7 +71,7 @@ def test_case_77_create_new_app(driver, settings):
     report.verify_form_in_submit_history(app_name, lat, lon)
     load.delete_p1p2_application(app_name)
     values['flag'] = True
-    return values
+    # return values
 
 
 @pytest.mark.projectSettings

@@ -302,7 +302,7 @@ class MessageLogPage(BasePage):
         # assert self.is_present(self.report_loading), "Loading Report block is not present"
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         time.sleep(100)
@@ -397,7 +397,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         self.select_by_value(self.page_list_dropdown, UserData.pagination[0])
@@ -582,7 +582,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -636,7 +636,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -706,7 +706,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         type_list = self.find_elements(self.type_column_list)
@@ -734,7 +734,7 @@ class MessageLogPage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            self.wait_for_element(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -743,7 +743,7 @@ class MessageLogPage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        self.wait_for_element((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
@@ -833,7 +833,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         self.verify_users_in_the_group()
@@ -909,7 +909,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         info = self.get_text(self.message_log_table_info)
         print(info)
@@ -941,7 +941,7 @@ class MessageLogPage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         assert self.is_present(self.export_to_excel), "Export to Excel button is not displayed"
         print("Export to Excel button is displayed")

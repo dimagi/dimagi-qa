@@ -24,13 +24,19 @@ class LoginPage(BasePage):
         self.settings = (By.XPATH, "//a[@data-action='Click Gear Icon']")
         self.sign_out = (By.XPATH, "//a[contains(@data-label,'Sign Out')]")
 
-        import socket
-        if "eu" in url:
-            print(socket.gethostbyname("eu.commcarehq.org"))
-        print("url: ", url)
+        # import socket
+        # if "eu" in url:
+        #     print(socket.gethostbyname("eu.commcarehq.org"))
+        # print("url: ", url)
         self.driver.get(url)
-        self.driver.maximize_window()
+        driver.set_window_position(0, 0)
+        driver.set_window_size(1920, 1080)
+        # self.driver.maximize_window()
         self.driver.implicitly_wait(10)
+        print("[DEBUG] Window size:", self.driver.get_window_size())
+        print("[DEBUG] Window rect:", self.driver.get_window_rect())
+        print("[DEBUG] Pixel ratio (JS):", self.driver.execute_script("return window.devicePixelRatio"))
+        print("[DEBUG] Viewport (JS):", self.driver.execute_script("return [window.innerWidth, window.innerHeight]"))
 
     def enter_username(self, username):
         self.wait_to_clear_and_send_keys(self.username_textbox_id, username)

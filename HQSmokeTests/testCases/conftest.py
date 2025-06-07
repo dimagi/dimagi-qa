@@ -2,12 +2,15 @@ import os
 
 from configparser import ConfigParser
 from pathlib import Path
+
+import pytest_html
+
 from common_utilities.fixtures import *
+from datetime import datetime
 
 """"This file provides fixture functions for driver initialization"""
 
 global driver
-
 
 @pytest.fixture(scope="session")
 def environment_settings_hq():
@@ -70,6 +73,7 @@ def settings(environment_settings_hq):
     else:
         settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation"
     return settings["default"]
+
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     # Collect test counts

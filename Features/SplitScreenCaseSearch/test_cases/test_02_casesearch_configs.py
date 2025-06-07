@@ -413,6 +413,7 @@ def test_case_12_allow_blank_values_geocoder(driver, settings):
 def test_case_13_allow_blank_values_others(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
     """Check allow blanks all formats"""
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)

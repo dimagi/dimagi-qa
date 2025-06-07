@@ -4,12 +4,19 @@ from py.xml import html
 from selenium import webdriver
 from common_utilities.path_settings import PathSettings
 from common_utilities.hq_login.login_page import LoginPage
+import base64
+import json
+from pathlib import Path
+import ast
+import os
 
 
 """"This file provides fixture functions for driver initialization"""
 
 global driver
+from collections import OrderedDict
 
+failed_items = OrderedDict()
 
 @pytest.fixture(scope="module", autouse=True)
 def driver(settings, browser):
@@ -18,16 +25,27 @@ def driver(settings, browser):
     firefox_options = webdriver.FirefoxOptions()
     if settings.get("CI") == "true":
         if browser == "chrome":
+            # chrome_options.add_argument('--no-sandbox')
+            # chrome_options.add_argument('disable-extensions')
+            # chrome_options.add_argument('--safebrowsing-disable-download-protection')
+            # chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
+            # chrome_options.add_argument('window-size=1920,1080')
+            # chrome_options.add_argument("--disable-setuid-sandbox")
+            # chrome_options.add_argument('--start-maximized')
+            # chrome_options.add_argument('--disable-dev-shm-usage')
+            # chrome_options.add_argument('--headless')
+            # chrome_options.add_argument("--disable-notifications")
             chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('disable-extensions')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--headless=new')  # or '--headless=chrome' for newer versions
+            chrome_options.add_argument('--disable-notifications')
+            chrome_options.add_argument('--disable-extensions')
             chrome_options.add_argument('--safebrowsing-disable-download-protection')
             chrome_options.add_argument('--safebrowsing-disable-extension-blacklist')
-            chrome_options.add_argument('window-size=1920,1080')
-            chrome_options.add_argument("--disable-setuid-sandbox")
-            chrome_options.add_argument('--start-maximized')
-            chrome_options.add_argument('--disable-dev-shm-usage')
-            chrome_options.add_argument('--headless')
-            chrome_options.add_argument("--disable-notifications")
+            chrome_options.add_argument('--window-size=1920,1080')  # sets consistent resolution
+            chrome_options.add_argument('--force-device-scale-factor=1')  # fixes zoom/dpi issues
+
             chrome_options.add_experimental_option("prefs", {
                 "download.default_directory": str(PathSettings.DOWNLOAD_PATH),
                 "download.prompt_for_download": False,
@@ -100,6 +118,9 @@ def pytest_html_results_table_row(report, cells):
     cells.pop()
 
 
+def _capture_screenshot(driver):
+    return base64.b64encode(driver.get_screenshot_as_png()).decode('utf-8')
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item):
     pytest_html = item.config.pluginmanager.getplugin("html")
@@ -107,6 +128,7 @@ def pytest_runtest_makereport(item):
     report = outcome.get_result()
     tags = ", ".join([m.name for m in item.iter_markers() if m.name != 'run'])
     extra = getattr(report, 'extra', [])
+
     if report.when == "call" or report.when == "teardown":
         xfail = hasattr(report, 'wasxfail')
         if (report.skipped and xfail) or (report.failed and not xfail):
@@ -114,10 +136,110 @@ def pytest_runtest_makereport(item):
             file_name = report.nodeid.replace("::", "_") + ".png"
             screen_img = _capture_screenshot(item.funcargs["driver"])
             if file_name:
-                html = '<div><img src="data:image/png;base64,%s" alt="screenshot" style="width:600px;height:300px;" ' \
-                       'onclick="window.open(this.src)" align="right"/></div>' % screen_img
+                html = (
+                    '<div><img src="data:image/png;base64,%s" alt="screenshot" '
+                    'style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>'
+                    % screen_img
+                )
                 extra.append(pytest_html.extras.html(html))
         report.extra = extra
         report.tags = tags
-def _capture_screenshot(web_driver):
-    return web_driver.get_screenshot_as_base64()
+
+
+
+# def pytest_sessionfinish(session, exitstatus):
+#     if not failed_items:
+#         return
+#
+#     seen = set()
+#     lines = []
+#     for nodeid, item in failed_items.items():
+#         if nodeid in seen:
+#             continue
+#         seen.add(nodeid)
+#
+#         try:
+#             doc = item.function.__doc__ or "No reproduction steps provided."
+#         except AttributeError:
+#             doc = "No docstring available (non-function test case)"
+#         lines.append(f"Test: {nodeid}\nRepro Steps:\n{doc.strip()}\n\n---")
+#
+#     with open("jira_ticket_body.txt", "w", encoding="utf-8") as f:
+#         f.write(f"🔥 Automated Failure Report - {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
+#         f.write("\n".join(lines) if lines else "✅ All tests passed.")
+#
+def check_if_any_test_failed(json_path="final_failures.json") -> bool:
+    """
+    Returns True if any test has outcome 'failed' in the JSON report.
+    """
+    try:
+        with open(json_path, "r") as f:
+            data = json.load(f)
+        return any(t.get("outcome") == "failed" for t in data.get("tests", []))
+    except Exception as e:
+        print(f"Error checking failures: {e}")
+        return False
+
+def generate_jira_summary_from_json_report(json_path="final_failures.json", html_output="jira_ticket_body.html"):
+    """
+    Extracts failed test cases from JSON report and gathers their docstrings for Jira summary as HTML.
+    """
+    json_file = Path(json_path)
+    if not json_file.exists():
+        print(f"JSON report {json_path} not found.")
+        return
+
+    with open(json_file, "r") as f:
+        report_data = json.load(f)
+
+    failures = [
+        test for test in report_data.get("tests", [])
+        if test.get("outcome") == "failed"
+    ]
+
+    seen = set()
+    unique_failures = []
+    for test in failures:
+        if test["nodeid"] not in seen:
+            unique_failures.append(test)
+            seen.add(test["nodeid"])
+
+    def extract_docstring_from_file(nodeid):
+        parts = nodeid.split("::")
+        if not parts:
+            return "Could not parse nodeid"
+
+        filepath = parts[0]
+        test_func = parts[-1]
+
+        try:
+            full_path = Path(filepath).resolve()
+            with open(full_path, "r") as f:
+                parsed = ast.parse(f.read())
+                for node in ast.walk(parsed):
+                    if isinstance(node, ast.FunctionDef) and node.name == test_func:
+                        return ast.get_docstring(node) or "Not documented."
+        except Exception as e:
+            return f"Error reading docstring: {e}"
+
+        return "Docstring not found."
+
+    with open(html_output, "w", encoding="utf-8") as f:
+        if not unique_failures:
+            f.write("<p>✅ All testcases passed.</p>")
+            return
+        else:
+            for test in unique_failures:
+                doc = extract_docstring_from_file(test["nodeid"])
+                f.write(f"""
+                    <div style="margin-bottom: 25px;">
+                      <p><strong>Test:</strong> {test['nodeid']}</p>
+                      <p><strong>Repro Steps:</strong></p>
+                      <div style="margin-left: 20px;">
+                        {"<br>".join(doc.strip().splitlines())}
+                      </div>
+                    </div>
+                    <hr style="border:1px solid #ccc;">
+                    """)
+
+    print(f"Formatted Jira summary written to {html_output}")

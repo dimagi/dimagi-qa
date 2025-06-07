@@ -208,10 +208,10 @@ class ProjectPerformancePage(BasePage):
         self.wait_for_element(self.show_filters_options)
         self.click(self.show_filters_options)
         
-        self.wait_for_element(self.group_field), "Group or Locations field is not present"
-        self.wait_for_element(self.apply_id), "Apply button is not present"
-        self.wait_for_element(self.favorite_button), "Favorites button is not present"
-        self.wait_for_element(self.save_config_button), "Save button is not present"
+        self.wait_for_element(self.group_field)
+        self.wait_for_element(self.apply_id)
+        self.wait_for_element(self.favorite_button)
+        self.wait_for_element(self.save_config_button)
         assert self.is_present(self.hide_filters_options), "Show Filters Options is not present"
         print("All filters are shown!")
 
@@ -219,10 +219,10 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.proj_perf_rep)
         self.wait_for_element(self.apply_id, 100)
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Project Performance page."
-        self.wait_for_element(self.group_field), "Group or Locations field is not present"
-        self.wait_for_element(self.apply_id), "Apply button is not present"
-        self.wait_for_element(self.favorite_button), "Favorites button is not present"
-        self.wait_for_element(self.save_config_button), "Save button is not present"
+        self.wait_for_element(self.group_field)
+        self.wait_for_element(self.apply_id)
+        self.wait_for_element(self.favorite_button)
+        self.wait_for_element(self.save_config_button)
         assert self.is_present(self.hide_filters_options), "Show Filters Options is not present"
         print("All filters are shown!")
 
@@ -233,7 +233,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -319,7 +319,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         # For Low Performance table
@@ -435,7 +435,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -468,7 +468,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -488,7 +488,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         time.sleep(2)
@@ -544,7 +544,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         time.sleep(2)
@@ -564,15 +564,15 @@ class ProjectPerformancePage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report==None:
-            self.wait_for_element(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),30), "Favorite is already Present"
         print("No Favorites yet.")
 
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
-        assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        self.wait_for_element((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        assert not self.is_visible_and_displayed(self.empty_fav_list, 10)
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
@@ -594,7 +594,7 @@ class ProjectPerformancePage(BasePage):
         assert self.is_present(self.name_field), "Name Field is not present"
         assert self.is_present(self.description_field), "Description field is not present"
         assert self.is_present(self.cancel_report_button), "Cancel button is not present"
-        assert self.is_present(self.save_report_button), "Save button is not present"
+        assert self.is_present(self.save_report_button)
         self.wait_to_clear_and_send_keys(self.name_field, report_name)
         self.wait_to_click(self.cancel_report_button)
         
@@ -607,7 +607,7 @@ class ProjectPerformancePage(BasePage):
         assert self.is_present(self.name_field), "Name Field is not present"
         assert self.is_present(self.description_field), "Description field is not present"
         assert self.is_present(self.cancel_report_button), "Cancel button is not present"
-        assert self.is_present(self.save_report_button), "Save button is not present"
+        assert self.is_present(self.save_report_button)
         self.clear(self.name_field)
         self.wait_to_click(self.save_report_button)
         time.sleep(3)
@@ -665,7 +665,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.low_perf_results)
@@ -735,7 +735,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.low_perf_results)
@@ -787,7 +787,7 @@ class ProjectPerformancePage(BasePage):
         print("Report notes field is present")
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        self.wait_for_element(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_proj_perf_with_html_table(self, table_data, web_data):
@@ -808,7 +808,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
         
         self.wait_to_click(self.apply_id)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -820,7 +820,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.location)))
         
         self.wait_to_click(self.apply_id)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group("no")
@@ -835,7 +835,7 @@ class ProjectPerformancePage(BasePage):
         self.send_keys(self.group_field, UserData.location)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.location)))
         self.wait_to_click(self.apply_id)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         assert self.is_present((By.XPATH, self.custome_remove_btn.format(UserData.user_group))), "Group not present"
         assert self.is_present((By.XPATH, self.custome_remove_btn.format(UserData.location))), "Location not present"
@@ -861,7 +861,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
         time.sleep(2)
@@ -882,7 +882,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.apply_id)
         time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -891,7 +891,7 @@ class ProjectPerformancePage(BasePage):
             time.sleep(15)
             self.wait_for_element(self.case_list_table_title)
             self.wait_for_element(self.result_table, 300)
-            self.wait_for_element(self.report_content_id, 120), "Report not loaded"
+            self.wait_for_element(self.report_content_id, 120)
             print("Report loaded successfully!")
             self.scroll_to_bottom()
             

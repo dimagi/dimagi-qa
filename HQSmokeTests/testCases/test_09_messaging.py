@@ -10,6 +10,10 @@ from HQSmokeTests.testPages.reports.report_page import ReportPage
 @pytest.mark.messaging
 @pytest.mark.messagingDashboard
 def test_case_41_dashboard(driver, settings):
+    """
+        1. Navigate to the messaging dashboard
+        2. Ensure it loads
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -19,6 +23,10 @@ def test_case_41_dashboard(driver, settings):
 @pytest.mark.messaging
 @pytest.mark.composeSMS
 def test_case_42_compose_sms(driver, settings):
+    """
+        1. Access the Compose SMS page
+        2. Ensure you can look up to various recipient types and write an SMS
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -28,6 +36,10 @@ def test_case_42_compose_sms(driver, settings):
 @pytest.mark.messaging
 @pytest.mark.broadcasts
 def test_case_43_broadcast(driver, settings):
+    """
+        1. Navigate to broadcasts
+        2. Create a new broadcast message (any data for required fields
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -40,6 +52,10 @@ def test_case_43_broadcast(driver, settings):
 @pytest.mark.report
 @pytest.mark.reportMessaging
 def test_case_44_create_cond_alert(driver, settings):
+    """
+        1. Navigate to the conditional alerts page
+        2. Create a new conditional alert
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -56,6 +72,11 @@ def test_case_44_create_cond_alert(driver, settings):
 @pytest.mark.conditionalAlerts
 @pytest.mark.bulkUploadSMS
 def test_case_45_cond_alert_bulk_upload(driver, settings):
+    """
+        1. Remaining on the conditional alerts tab, click 'Bulk Upload SMS Alert content'
+        2. Download SMS alert content
+        3. Without making edits, upload the same file
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -67,6 +88,11 @@ def test_case_45_cond_alert_bulk_upload(driver, settings):
 @pytest.mark.messaging
 @pytest.mark.keywords
 def test_case_46_keyword_creation(driver, settings):
+    """
+        1. Navigate to the keywords page
+        2. Create a keyword
+        3. Create a structured keyword
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -80,6 +106,10 @@ def test_case_46_keyword_creation(driver, settings):
 @pytest.mark.messaging
 @pytest.mark.chat
 def test_case_47_chats(driver, settings):
+    """
+        1. Ensure the chat page loads
+        (This may not have data if we're working on staging)
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -90,6 +120,12 @@ def test_case_47_chats(driver, settings):
 @pytest.mark.messaging
 @pytest.mark.messagingGeneralSettings
 def test_case_49_general_settings(driver, settings):
+    """
+        1. Access General Settings under Messaging
+        2. Ensure the page loads
+        3. Change any one value and save
+        4. Refresh and ensure that edit remains on the page
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -100,6 +136,11 @@ def test_case_49_general_settings(driver, settings):
 @pytest.mark.messaging
 @pytest.mark.messagingLanguages
 def test_case_50_languages(driver, settings):
+    """
+        1. Access the Languages tab
+        2. Add a Language
+        3. Delete an existing language (if one exists, otherwise add several languages and delete one)
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -111,6 +152,11 @@ def test_case_50_languages(driver, settings):
 @pytest.mark.messagingLanguages
 @pytest.mark.messagingTranslations
 def test_case_51_translations(driver, settings):
+    """
+        1. Select Languages, Messaging Translations
+        2. Download the translations
+        3. Without making edits, upload the file
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
@@ -121,6 +167,9 @@ def test_case_51_translations(driver, settings):
 @pytest.mark.projectSettings
 @pytest.mark.currentSubscription
 def test_case_52_settings_pages(driver, settings):
+    """
+        1. Click through account and project settings to ensure each page loads without error
+    """
     msg = MessagingPage(driver)
     home = HomePage(driver, settings)
     home.project_settings_page()
@@ -131,6 +180,9 @@ def test_case_52_settings_pages(driver, settings):
 @pytest.mark.report
 @pytest.mark.reportMessaging
 def test_case_cleanup_cond_alert(driver, settings):
+    """
+        1. Go to Conditional Alerts page and delete all test alerts created by scripts
+    """
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()

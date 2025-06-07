@@ -108,7 +108,7 @@ class BenchmarkPage(BasePage):
         self.wait_to_click(self.next_step)
         self.wait_to_click(self.next_step)
         time.sleep(15)
-        self.wait_for_element(self.success_status), "Cases upload not completed!"
+        self.wait_for_element(self.success_status)
         print("Cases uploaded successfully!")
 
     def excel_download(self):
@@ -120,7 +120,7 @@ class BenchmarkPage(BasePage):
             self.wait_to_click(self.delete_selected_exports)
             self.wait_to_click(self.bulk_delete_confirmation_btn)
             time.sleep(2)
-            # self.wait_for_element(self.success_message), "Cases upload not completed!"
+            # self.wait_for_element(self.success_message)
             # print("Cases uploaded successfully!")
         except TimeoutException:
             print("No exports available")

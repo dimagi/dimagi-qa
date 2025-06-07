@@ -30,7 +30,7 @@ def test_case_55_update_case(driver, settings):
     test_case_update_case["case_id"] = case_id
     test_case_update_case["case_name"] = case_name
     test_case_update_case["value"] = value
-    return test_case_update_case
+    # return test_case_update_case
 
 
 @pytest.mark.data

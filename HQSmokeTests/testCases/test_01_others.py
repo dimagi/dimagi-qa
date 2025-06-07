@@ -16,6 +16,19 @@ from HQSmokeTests.userInputs.user_inputs import UserData
 @pytest.mark.webApps
 @pytest.mark.messaging
 def test_case_01_menu_visibility(driver, settings):
+    """
+    1. Login into the domain with your credentials
+    2. You should be able to login as an Admin user
+    3. Verify you're able to view and access the following modules in the project space.
+    - Dashboard
+    - Reports
+    - Data
+    - Users
+    - Applications
+    - Web Apps
+    - Messaging
+    - Admin
+    """
     visible = HomePage(driver, settings)
     visible.reports_menu()
     visible.dashboard_menu()
@@ -28,12 +41,20 @@ def test_case_01_menu_visibility(driver, settings):
 
 @pytest.mark.misc
 def test_case_53_rage_clicks(driver, settings):
+    """
+        1. On a variety of pages on CCHQ, make multiple clicks on the page in rapid succession ('rage clicks'). Click 'save' multiple times while a page is still loading and click redirect links repeatedly.
+        2. Report any 500s or bizarre activity
+    """
     visible = HomePage(driver, settings)
     visible.rage_clicks()
 
 
 @pytest.mark.twoFactorAuth
 def test_case_two_factor_auth(driver, settings):
+    """
+        1. Logout from current session
+        2. Login to a 2FA account
+    """
     login = LoginPage(driver, settings["url"])
     login.logout()
     if "staging" in settings["url"]:

@@ -51,7 +51,7 @@ def test_case_01_admit_case_1(driver, settings):
     webapps.submit_the_form()
     value["first_name"] = first_name
     value["last_name"] = last_name
-    return value
+    # return value
 
 def test_case_02_admit_case_2(driver, settings):
     if value["first_name"] == None and value["last_name"] == None:

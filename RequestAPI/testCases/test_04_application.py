@@ -13,7 +13,7 @@ def test_case_14_list_of_application(settings):
     mw = ApplicationMethods(settings)
     test_data["app_id"] = mw.get_application_list(uri, settings['login_user'], settings['login_pass'])
     print(test_data["app_id"])
-    return test_data["app_id"]
+    # return test_data["app_id"]
 
 
 def test_case_15_application_structure(settings):

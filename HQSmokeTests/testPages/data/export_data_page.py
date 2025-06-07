@@ -424,7 +424,7 @@ class ExportDataPage(BasePage):
         self.wait_and_sleep_to_click((By.XPATH, self.update_data.format(UserData.dashboard_feed_form)))
         self.wait_till_progress_completes("integration")
         self.wait_and_sleep_to_click((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_form)))
-        self.wait_for_element(self.data_upload_msg), "Export not completed!"
+        self.wait_for_element(self.data_upload_msg)
         time.sleep(2)
         self.reload_page()
         time.sleep(2)
@@ -460,7 +460,7 @@ class ExportDataPage(BasePage):
         self.wait_and_sleep_to_click((By.XPATH, self.update_data.format(UserData.dashboard_feed_case)))
         self.wait_till_progress_completes("integration")
         self.wait_and_sleep_to_click((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_case)))
-        self.wait_for_element(self.data_upload_msg), "Export not completed!"
+        self.wait_for_element(self.data_upload_msg)
         time.sleep(2)
         self.reload_page()
         time.sleep(2)

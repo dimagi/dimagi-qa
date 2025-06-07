@@ -58,6 +58,7 @@ class AppPreviewPage(BasePage):
             self.wait_to_click(self.sidebar_open_app_preview)
         self.is_visible_and_displayed(self.app_preview_model)
         self.driver.switch_to.frame(self.find_element(self.iframe_app_preview))
+        self.wait_for_element(self.start)
         self.wait_to_click(self.start)
         self.is_visible_and_displayed(self.case_list)
 
@@ -72,7 +73,8 @@ class AppPreviewPage(BasePage):
         if self.is_displayed(self.next_button):
             self.wait_to_click(self.next_button)
             self.wait_to_click(self.complete_button)
-        self.is_visible_and_displayed(self.submit_success)
+        assert self.is_visible_and_displayed(self.submit_success)
+        print("Form submitted successfully")
         self.driver.switch_to.default_content()
 
     def submit_form_with_loc(self):
