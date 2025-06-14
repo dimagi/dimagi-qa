@@ -980,11 +980,15 @@ class LookUpTablePage(BasePage):
         app_preview.check_access_to_app_preview()
         self.driver.switch_to.default_content()
         self.wait_for_element(self.refresh)
-        self.wait_to_click(self.refresh)
+        self.js_click(self.refresh)
+        time.sleep(3)
         self.driver.switch_to.frame(self.find_element(app_preview.iframe_app_preview))
         if self.is_present(self.home):
+            print("Home is present..")
             self.wait_for_element(self.home)
             self.wait_to_click(self.home)
+        else:
+            print("home is not present")
         app_preview.login_as_app_preview(user)
         for i in range(len(language_list)):
             self.submit_form_on_registration(language_list[i], user, type)

@@ -182,6 +182,9 @@ class BasePage:
             select_elem = self.driver.find_element(*source_locator)
             select_source = Select(select_elem)
             select_source.select_by_visible_text(value)
+            text = self.get_selected_text(select_elem)
+            print(text)
+            assert text == value
 
         except (NoSuchElementException, ElementNotInteractableException, TimeoutException, Exception) as e:
             # Fallback to JS in case standard method fails
@@ -624,13 +627,13 @@ class BasePage:
     def back(self):
         try:
             self.driver.back()
-            self.wait_after_interaction(timeout=20)
+            self.wait_after_interaction(timeout=40)
             print("[INFO] Navigated back using driver.back()")
         except WebDriverException as e:
             print(f"[WARNING] driver.back() failed: {e}. Trying JavaScript fallback...")
             try:
                 self.driver.execute_script("window.history.back();")
-                self.wait_after_interaction(timeout=20)
+                self.wait_after_interaction(timeout=40)
                 print("[INFO] Navigated back using JavaScript")
             except Exception as js_e:
                 print(f"[ERROR] JavaScript fallback also failed: {js_e}")

@@ -35,7 +35,7 @@ class RolesPermissionPage(BasePage):
         self.delete_role = (By.XPATH, "//th[.//span[.='" + str(
             self.role_name_created) + "']]/following-sibling::td//i[@class='fa fa-trash']")
         self.edit_mobile_worker_checkbox = (By.XPATH, "//input[@id='edit-commcare-users-checkbox']//following-sibling::label/span")
-        self.report_for_p1p2 = (By.XPATH, "//div[contains(@data-bind,'reportPermission')]//label[./span[.='"+UserData.report_for_p1p2+"']]")
+        self.report_for_p1p2 = (By.XPATH, "//div[contains(@data-bind,'reportPermission')]//label/span[.='"+UserData.report_for_p1p2+"']")
         self.role_renamed = (By.XPATH, "//span[text()='" + str(self.role_rename_created) + "']")
         self.role_non_admin = (By.XPATH, "//span[text()='" + str(self.role_non_admin_created) + "']")
         self.confirm_role_delete = (By.XPATH, "//div[@class='btn btn-danger']")
@@ -127,7 +127,7 @@ class RolesPermissionPage(BasePage):
             assert True
         self.scroll_to_element(self.report_for_p1p2)
         time.sleep(0.5)
-        self.wait_to_click(self.report_for_p1p2)
+        self.js_click(self.report_for_p1p2)
         is_checked = self.get_attribute(self.full_org_access_checkbox, 'checked')
         print("All report access checked ", is_checked)
         if is_checked == True:

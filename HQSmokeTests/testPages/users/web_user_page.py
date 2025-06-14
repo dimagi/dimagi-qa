@@ -193,7 +193,7 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.web_users_menu)
         self.wait_for_element(self.search_user)
         self.wait_to_clear_and_send_keys(self.search_user, UserData.p1p2_user)
-        
+
         self.wait_to_click(self.search_user_btn)
         
         self.wait_for_element(self.user_link)
@@ -205,6 +205,7 @@ class WebUsersPage(BasePage):
         self.scroll_to_element(self.location_field)
         if self.is_present(self.remove_location):
             self.wait_to_click(self.remove_location)
+            print("removed location")
         
         self.wait_to_click(self.location_field)
         self.send_keys(self.location_field, "Test Location")

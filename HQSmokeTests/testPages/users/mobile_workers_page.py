@@ -136,6 +136,7 @@ class MobileWorkerPage(BasePage):
         self.add_new_profile = (By.XPATH, "//button[@data-bind='click: addProfile']")
         self.profile_name = (By.XPATH, "//tr[last()]//input[contains(@data-bind,'value: name')]")
         self.profile_edit_button = (By.XPATH, "//tr[last()]//a[contains(@class,'enum-edit')]")
+        self.p1p2_profile_edit = "//tr//input[contains(@value,'{}')]//following-sibling::a[contains(@class,'enum-edit')]"
         self.profile_delete_button = (
             By.XPATH, "//tbody[@data-bind='foreach: profiles']//tr[last()]//td[last()]//i[@class='fa fa-times']")
         self.add_profile_item = (
@@ -182,9 +183,11 @@ class MobileWorkerPage(BasePage):
         self.role_dropdown = (By.XPATH, "//select[@id='id_role']")
 
     def search_user(self, username):
+        self.wait_for_element(self.search_mw)
         self.wait_to_click(self.clear_button_mw)
         self.send_keys(self.search_mw, username)
         self.wait_to_click(self.search_button_mw)
+        self.wait_for_element((By.XPATH, self.username_link.format(username)))
 
     def search_webapps_user(self, username):
         self.wait_to_click(self.web_apps_menu_id)
@@ -238,10 +241,11 @@ class MobileWorkerPage(BasePage):
         time.sleep(2)
         data = pd.read_excel(path, sheet_name='users')
         df = pd.DataFrame(data)
+        print("Before: ",df)
         df = df.drop(columns="phone-number 1")
         df = df.query("username == '" + user + "'")
         df.loc[(df['username'] == user), 'user_profile'] = UserData.p1p2_profile
-        print(df)
+        print("After: ",df)
         df.to_excel(path, sheet_name='users', index=False)
 
     def remove_role_in_downloaded_file(self, newest_file, user):
@@ -301,8 +305,8 @@ class MobileWorkerPage(BasePage):
     def select_mobile_worker_created(self, username):
         self.wait_to_click(self.mobile_worker_on_left_panel)
         self.search_user(username)
-        time.sleep(3)
         if not self.is_present((By.XPATH, self.username_link.format(username))):
+            print("Username not present")
             self.wait_to_click(self.show_deactivated_users_btn)
         self.wait_to_click((By.XPATH, self.username_link.format(username)))
         self.wait_for_element(self.user_name_span)
@@ -355,7 +359,6 @@ class MobileWorkerPage(BasePage):
             self.mobile_worker_menu()
             self.search_user(username)
             time.sleep(2)
-            self.js_click(self.show_deactivated_users_btn)
             if not self.is_present_and_displayed((By.XPATH, self.username_link.format(username)), 10):
                 print("This is a rerun so skipping this steps")
                 print("User is already activated")
@@ -476,7 +479,6 @@ class MobileWorkerPage(BasePage):
             newest_file = latest_download_file()
             self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
         print("File download successful")
-
         return newest_file
 
     def upload_mobile_worker(self):
@@ -496,6 +498,7 @@ class MobileWorkerPage(BasePage):
         time.sleep(2)
 
     def click_profile(self):
+        self.wait_for_element(self.profile_tab)
         self.wait_to_click(self.profile_tab)
 
     def click_fields(self):
@@ -537,10 +540,10 @@ class MobileWorkerPage(BasePage):
         self.wait_to_click(self.field_delete)
         self.wait_to_click(self.confirm_user_field_delete)
 
-    def remove_profile(self):
+    def remove_profile(self, field):
         time.sleep(2)
-        self.scroll_to_element(self.profile_edit_button)
-        self.wait_to_click(self.profile_edit_button)
+        self.scroll_to_element((By.XPATH, self.p1p2_profile_edit.format(field)))
+        self.wait_to_click((By.XPATH, self.p1p2_profile_edit.format(field)))
         time.sleep(2)
         self.wait_for_element(self.delete_profile_item)
         self.wait_to_click(self.delete_profile_item)
@@ -599,7 +602,6 @@ class MobileWorkerPage(BasePage):
         self.save_field()
 
     def select_user_and_update_fields(self, user, field):
-        
         self.select_mobile_worker_created(user)
         self.select_by_text(self.additional_info_select2, field)
         self.wait_to_click(self.update_info_button)

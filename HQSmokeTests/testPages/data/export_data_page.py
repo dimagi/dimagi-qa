@@ -546,10 +546,10 @@ class ExportDataPage(BasePage):
         self.wait_for_element(self.model, 400)
         self.select_by_value(self.model, UserData.model_type_case)
         try:
-            self.select_by_text(self.application, UserData.village_application)
+            self.select_by_value(self.application, UserData.village_application)
         except:
             print("Application dropdown is not present")
-        self.select_by_text(self.case, UserData.case_pregnancy)
+        self.select_by_value(self.case, UserData.case_pregnancy)
         self.wait_and_sleep_to_click(self.add_export_conf)
         print("Odata Case Feed added!!")
         self.wait_for_element(self.export_name, 200)
@@ -662,15 +662,25 @@ class ExportDataPage(BasePage):
                 self.wait_and_sleep_to_click(self.prepare_export_button, timeout=10)
                 self.wait_till_progress_completes("exports")
                 self.wait_for_element(self.download_button, 300)
-                self.click(self.download_button)
+                self.js_click(self.download_button)
                 wait_for_download_to_finish()
         print("Download form button clicked")
+        return UserData.case_updated_export_name
 
-    def verify_export_has_updated_case_data(self, case_id, case_name, value):
+    def verify_export_has_updated_case_data(self, case_id, case_name, value, export_name):
         print(case_id, case_name, value)
         newest_file = latest_download_file()
         print("Newest file:" + newest_file)
-        self.assert_downloaded_file(newest_file, UserData.case_updated_export_name)
+        if newest_file == export_name:
+            print("Download successful.")
+            self.assert_downloaded_file(newest_file, export_name)
+        else:
+            print("Download file name mismatch. Redownloading...")
+            self.js_click(self.download_button)
+            wait_for_download_to_finish()
+            newest_file = latest_download_file()
+            print("Newest file:" + newest_file)
+            self.assert_downloaded_file(newest_file, export_name)
         data = pd.read_excel((PathSettings.DOWNLOAD_PATH / newest_file))
         df = pd.DataFrame(data, columns=[UserData.case_id, UserData.text_value, UserData.random_value])
         case_id_row = df[df[UserData.case_id] == case_id].index[0]
@@ -732,7 +742,7 @@ class ExportDataPage(BasePage):
         assert int(rows_count) >= 2000, "Export is not showing all the data"
         print("Export is successfully loading more than 2000 rows of data")
 
-    def download_export_without_condition(self, name, type):
+    def download_export_without_condition(self, name, type=None):
         self.wait_and_sleep_to_click((By.XPATH, self.export_form_case_data_button.format(name)))
         self.wait_for_element(self.prepare_export_button)
         if type == "form":

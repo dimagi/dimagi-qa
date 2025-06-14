@@ -310,6 +310,7 @@ def test_case_09_single_date_format(driver, settings):
 def test_case_10_is_multiselect_format(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     webapps.login_as(CaseSearchUserInput.user_1)
     """Check multiselect format search property"""
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
@@ -334,10 +335,13 @@ def test_case_10_is_multiselect_format(driver, settings):
                                        input_value=CaseSearchUserInput.artist_case_arijit,
                                        property_type=COMBOBOX
                                        )
+    time.sleep(2)
+    base.wait_after_interaction()
     casesearch.search_against_property(search_property=CaseSearchUserInput.artist,
                                        input_value=CaseSearchUserInput.artist_case_beach_boys,
                                        property_type=COMBOBOX
                                        )
+    time.sleep(2)
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.two,
                                         expected_value=[CaseSearchUserInput.artist_case_arijit,

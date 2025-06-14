@@ -9,6 +9,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
+from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.base_page import BasePage
 from Features.CaseSearch.constants import *
 
@@ -119,14 +120,17 @@ class CaseSearchWorkflows(BasePage):
             self.select_by_text(self.combox_select_element, input_value)
             time.sleep(1)
             text = self.get_selected_text(self.combox_select_element)
-            print("text")
+            print(text)
             if text == input_value:
                 print("Selected text: ", input_value)
             else:
                 print("reselecting...")
-                self.select_by_text(self.combox_select_element, input_value)
+                if "*" in input_value:
+                    self.select_by_value(self.combox_select_element, CaseSearchUserInput.ratings[input_value])
+                else:
+                    self.select_by_text(self.combox_select_element, input_value)
                 text = self.get_selected_text(self.combox_select_element)
-                print("text")
+                print(text)
             time.sleep(2)
         elif property_type == COMBOBOX2:
             self.combox_select_element = self.get_element(self.combox_select2, search_property)
@@ -189,9 +193,10 @@ class CaseSearchWorkflows(BasePage):
     def add_address(self, address, search_property):
         address_search = self.get_element(self.search_for_address, search_property)
         self.send_keys(address_search, address)
-        time.sleep(2)
+        time.sleep(1)
         self.send_keys(address_search, Keys.TAB)
         time.sleep(2)
+
 
     def check_value_on_form(self, city_address, type=HOME):
         if type == HOME:
