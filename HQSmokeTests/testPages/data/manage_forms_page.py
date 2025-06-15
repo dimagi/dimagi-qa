@@ -39,6 +39,7 @@ class ManageFormsPage(BasePage):
         self.wait_and_sleep_to_click(self.manage_forms_link)
 
         # Date Filter
+        self.wait_for_element(self.date_range_manage_forms, 30)
         self.wait_and_sleep_to_click(self.date_range_manage_forms)
         self.select_by_value(self.select_archive_restore, "archive")
         self.clear(self.date_range_manage_forms)

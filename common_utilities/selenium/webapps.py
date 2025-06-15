@@ -75,7 +75,7 @@ class WebApps(BasePage):
         self.value_in_data_preview = "//td[@title='{}']"
         self.data_preview = (By.XPATH, "//span[@class='debugger-title']")
         self.single_row_table = "//thead[1][.//th[{}][.='{}']]//following-sibling::tbody[1]/tr[1]/td[{}][contains(.,'{}')]"
-
+        self.data_preview_home_details = (By.XPATH, "//table//span[contains(.,'Home Address Details')]")
         self.sidebar_open_app_preview = (By.XPATH, "//div[@class='preview-toggler js-preview-toggle']")
         self.iframe_app_preview = (By.XPATH, "//iframe[@class='preview-phone-window']")
         self.app_preview_model = (By.XPATH, "//div[@class='preview-phone-container']")
@@ -366,9 +366,11 @@ class WebApps(BasePage):
     def open_data_preview(self):
         self.wait_to_click(self.data_preview)
         time.sleep(5)
+        self.wait_for_element(self.data_preview_home_details, 40)
 
     def present_in_data_preview(self, value):
         value_in_data_preview = self.get_element(self.value_in_data_preview, value)
+        self.scroll_to_element(value_in_data_preview)
         assert self.is_present(value_in_data_preview)
 
     def check_case_list_is_empty(self, empty_message):

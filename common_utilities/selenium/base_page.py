@@ -169,39 +169,39 @@ class BasePage:
                 return
         raise Exception(f"[ERROR] Option with partial text '{partial_text}' not found.")
 
-    # def select_by_text(self, source_locator, value):
-    #     select_source = Select(self.driver.find_element(*source_locator))
-    #     select_source.select_by_visible_text(value)
+    def select_by_text(self, source_locator, value):
+        select_source = Select(self.driver.find_element(*source_locator))
+        select_source.select_by_visible_text(value)
 
-    def select_by_text(self, source_locator, value, timeout=10):
-        try:
+    #def select_by_text(self, source_locator, value, timeout=10):
+    #    try:
             # Wait for the <select> element to be present and visible
-            WebDriverWait(self.driver, timeout).until(
-                ec.element_to_be_clickable(source_locator)
-                )
-            select_elem = self.driver.find_element(*source_locator)
-            select_source = Select(select_elem)
-            select_source.select_by_visible_text(value)
+        #    select_source = Select(self.driver.find_element(*source_locator))
+          #  select_source.select_by_visible_text(value)
+       #     time.sleep(1)
+         #   text = self.get_selected_text(select_source)
+        #    print(text)
+        #    assert text == value
 
-        except (NoSuchElementException, ElementNotInteractableException, TimeoutException, Exception) as e:
+       # except (NoSuchElementException, ElementNotInteractableException, TimeoutException, Exception) as e:
             # Fallback to JS in case standard method fails
-            print(f"Standard select_by_visible_text failed: {e}. Trying JS fallback...")
-            try:
-                select_elem = self.driver.find_element(*source_locator)
-                script = """
-                var select = arguments[0];
-                var value = arguments[1];
-                for (var i = 0; i < select.options.length; i++) {
-                    if (select.options[i].text === value) {
-                        select.selectedIndex = i;
-                        select.dispatchEvent(new Event('change'));
-                        break;
-                    }
-                }
-                """
-                self.driver.execute_script(script, select_elem, value)
-            except Exception as js_e:
-                raise Exception(f"JavaScript fallback also failed: {js_e}")
+       #     print(f"Standard select_by_visible_text failed: {e}. Trying JS fallback...")
+       #     try:
+         #       select_elem = self.driver.find_element(*source_locator)
+           #     script = """
+           #     var select = arguments[0];
+             #   var value = arguments[1];
+           #     for (var i = 0; i < select.options.length; i++) {
+             #       if (select.options[i].text === value) {
+             #           select.selectedIndex = i;
+            #            select.dispatchEvent(new Event('change'));
+             #           break;
+             #       }
+           #     }
+           #     """
+           #     self.driver.execute_script(script, select_elem, value)
+          #  except Exception as js_e:
+           #     raise Exception(f"JavaScript fallback also failed: {js_e}")
 
     def select_by_value(self, source_locator, value):
         select_source = Select(self.driver.find_element(*source_locator))
@@ -305,6 +305,20 @@ class BasePage:
         except TimeoutException:
             is_displayed = False
         return bool(is_displayed)
+
+    def is_invisible(self, locator, timeout=30):
+        try:
+            visible = ec.invisibility_of_element_located(locator)
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(visible,
+                                                                                   message="Element" + str(
+                                                                                       locator
+                                                                                       ) + "not displayed"
+                                                                                   )
+            is_not_displayed = True
+        except TimeoutException:
+            is_not_displayed = False
+        return bool(is_not_displayed)
+
 
     def is_present_and_displayed(self, locator, timeout=30):
         try:
@@ -624,13 +638,13 @@ class BasePage:
     def back(self):
         try:
             self.driver.back()
-            self.wait_after_interaction(timeout=20)
+            self.wait_after_interaction(timeout=40)
             print("[INFO] Navigated back using driver.back()")
         except WebDriverException as e:
             print(f"[WARNING] driver.back() failed: {e}. Trying JavaScript fallback...")
             try:
                 self.driver.execute_script("window.history.back();")
-                self.wait_after_interaction(timeout=20)
+                self.wait_after_interaction(timeout=40)
                 print("[INFO] Navigated back using JavaScript")
             except Exception as js_e:
                 print(f"[ERROR] JavaScript fallback also failed: {js_e}")

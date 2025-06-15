@@ -56,11 +56,11 @@ class ReassignCasesPage(BasePage):
 
     def get_cases(self, username):
         self.wait_to_click(self.reassign_cases_menu)
+        self.wait_for_element(self.case_type)
         self.select_by_value(self.case_type, UserData.case_reassign)
         self.remove_default_users()
         self.send_keys(self.users_field, username)
         self.wait_to_click((By.XPATH, self.users_list_item.format(username)))
-        
         self.wait_to_click(self.apply)
 
     def reassign_case(self):

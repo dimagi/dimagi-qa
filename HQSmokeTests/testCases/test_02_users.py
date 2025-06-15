@@ -202,7 +202,7 @@ def test_case_04_reactivate_user(driver, settings):
         2. Click on Reactivate button.
         3. Verify the user shows up in the list and you can login in the application with this user.
     """
-    if group_id["user"]==None or group_id["active"] == None:
+    if group_id["user"]==None or group_id["active"] != "No":
         pytest.skip("Skipping as user/active name is null")
     user = MobileWorkerPage(driver)
     menu = HomePage(driver, settings)
