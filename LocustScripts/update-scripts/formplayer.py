@@ -28,6 +28,8 @@ def post(command, client, app_details, user_details, extra_json=None, name=None,
     with client.post(f"{formplayer_host}/{command}", json=data, name=name,
                      catch_response=True
                      ) as response:
+        # logger.info("json submitted: "+ str(data))
+        # logger.info("response"+str(response.json()))
         if command == 'submit-all':
             logger.info(f"{formplayer_host}/{command}/")
             # logger.info("json submitted: "+ str(data))
@@ -35,6 +37,16 @@ def post(command, client, app_details, user_details, extra_json=None, name=None,
         if validation:
             validate_response(response, validation)
         return response.json()
+
+# def get_session_data(client, session_id):
+#     url = f"/formplayer/answer"
+#     try:
+#         response = client.get(url, name="Get Session Data")
+#         response.raise_for_status()
+#         return response.json()
+#     except Exception as e:
+#         logger.error(f"Error fetching session data for session_id {session_id}: {e}")
+#         return {}
 
 
 @dataclass
