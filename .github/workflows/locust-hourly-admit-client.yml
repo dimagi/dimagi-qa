@@ -4,6 +4,9 @@
 name: Hourly Admit Client Load test
 
 on:
+  schedule:
+    - cron: '0 0 * * 1-5'
+
   workflow_dispatch:
     inputs:
       environment:
@@ -44,6 +47,7 @@ jobs:
       cancel-in-progress: true
     name: LoadTest on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
+    timeout-minutes: 1440
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.13
@@ -57,6 +61,7 @@ jobs:
           pip install -r LocustScripts/requirements.txt
 
       - name: Hourly Admit Client Load test with Locust
+        continue-on-error: true
         env:
           DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
           DIMAGIQA_LOCUST_PASSWORD: ${{ secrets.DIMAGIQA_LOCUST_PASSWORD }}
@@ -69,19 +74,33 @@ jobs:
           echo ${{env.NOW}}
           python LocustScripts/update-scripts/run_24hr_locust_schedule.py \
             --locust-file LocustScripts/update-scripts/commcarehq-hourly-search-and-admit-mw-login.py \
-            --users-json LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_worker_credentials_search_admit_hourly.json \
+            --user-details LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_worker_credentials_search_admit_hourly.json \
             --app-config LocustScripts/update-scripts/project-config/co-carecoordination-perf/app_config_automated_cr_admit_client.json \
             --host https://www.commcarehq.org \
             --domain co-carecoordination-perf \
             --app-id 77bbaaa1d7e5404781bbe680ce9a90d2 \
             --build-id 2ae6dcfc44834e40a703155ebedd3bec
 
+      - name: Echo current Mountain Time hour
+        run: |
+          python -c "
+          import pytz
+          from datetime import datetime
+          mt = pytz.timezone('US/Mountain')
+          now = datetime.now(mt)
+          print('Current Mountain Time hour:', now.strftime('%H'))
+          "
+
+      - name: Set MT hour to env
+        run: |
+          echo "MT_HOUR=$(python -c 'import pytz; from datetime import datetime; print(datetime.now(pytz.timezone(\"US/Mountain\")).strftime(\"%H\"))')" >> $GITHUB_ENV
+
       - name: Archive test results
         id: artifact-upload-step
-        if: ${{ success() || failure() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: hourly-locust-reports-*
+          name: hourly-locust-reports-${{ env.MT_HOUR }}
           path:  /home/runner/work/dimagi-qa/dimagi-qa/hour_*.html
           retention-days: 2
 
@@ -90,7 +109,7 @@ jobs:
 
 
       - name: Set email vars
-        if: ${{ failure() }}
+        if: ${{ always() }}
         id: configure_email
         uses: actions/github-script@v6
         env:
@@ -115,7 +134,7 @@ jobs:
             }
 
             let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
-            let testSuite = 'BHA Admit Client Hourle Load Tests'
+            let testSuite = 'BHA Admit Client Hourly Load Tests for ${{ env.MT_HOUR }} hrs'
             let bodyContent = await fs.readFile(bodyFile, 'utf8')
             bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
                 .replace(/{{runNumber}}/g, context.runNumber)
@@ -135,7 +154,7 @@ jobs:
             }
 
       - name: Send Result Email
-        if: ${{ failure() }}
+        if: ${{ always() }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -162,22 +181,10 @@ jobs:
           result-encoding: string
           script: |
             const {CC_ENV, JOB_STATUS, CC_EVENT} = process.env
-            let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-            if (CC_EVENT == 'repository_dispatch' && CC_ENV == 'production') {
-              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_PROD_RESULTS }}'
-              console.log( "Prod deploy")
-            } else if (CC_EVENT != 'repository_dispatch' && CC_ENV == 'production' && JOB_STATUS == 'failure') {
-              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-              console.log( "Not Prod deploy but Prof failure")
-            } else if (CC_ENV == 'staging' && JOB_STATUS == 'failure') {
-              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-              console.log("Staging Failure")
-            } else if (CC_EVENT == 'repository_dispatch' && CC_ENV == 'india') {
-              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_INDIA }}'
-              console.log("India Failure")
-            } else if (CC_EVENT != 'repository_dispatch' && CC_ENV == 'india' && JOB_STATUS == 'failure') {
-              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_SMOKE }}'
-              console.log("India Success")
+            let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_BHA }}'
+            if (CC_ENV == 'production') {
+              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_BHA }}'
+              console.log("Slack notification")
             } else {
               SLACK_WEBHOOK_URL = ' '
               console.log("No notification sent")
@@ -200,7 +207,7 @@ jobs:
             					"type": "section",
             					"text": {
             						"type": "mrkdwn",
-            						"text": " Bonjour :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered!\n"
+            						"text": " Hola :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered for ${{ env.MT_HOUR }} hrs!\n"
             					}
             				},
             				{
@@ -262,7 +269,7 @@ jobs:
             					"type": "section",
             					"text": {
             						"type": "mrkdwn",
-            						"text": " Bonjour :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered!\n"
+            						"text": " Hola :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered for ${{ env.MT_HOUR }} hrs!\n"
             					}
             				},
             				{

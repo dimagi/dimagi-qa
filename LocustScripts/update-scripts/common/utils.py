@@ -3,6 +3,7 @@ import json
 import random
 
 import yaml
+from locust.exception import StopUser
 
 
 def load_data(path):
@@ -49,4 +50,6 @@ class RandomItems:
         random.shuffle(self.items)
 
     def get(self):
-        return self.items.pop()
+        if self.items:
+            return self.items.pop()
+        return None
