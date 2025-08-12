@@ -196,7 +196,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.proj_perf_rep)
         self.wait_for_element(self.hide_filters_options)
         self.click(self.hide_filters_options)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.group_field, 10), "Group or Locations field is still present"
         assert not self.is_visible_and_displayed(self.apply_id, 10), "Apply button is still present"
         assert not self.is_visible_and_displayed(self.favorite_button, 10), "Favorites button is still present"
@@ -207,11 +207,11 @@ class ProjectPerformancePage(BasePage):
     def show_filters(self):
         self.wait_for_element(self.show_filters_options)
         self.click(self.show_filters_options)
-        time.sleep(2)
-        assert self.is_visible_and_displayed(self.group_field), "Group or Locations field is not present"
-        assert self.is_visible_and_displayed(self.apply_id), "Apply button is not present"
-        assert self.is_visible_and_displayed(self.favorite_button), "Favorites button is not present"
-        assert self.is_visible_and_displayed(self.save_config_button), "Save button is not present"
+        
+        self.wait_for_element(self.group_field)
+        self.wait_for_element(self.apply_id)
+        self.wait_for_element(self.favorite_button)
+        self.wait_for_element(self.save_config_button)
         assert self.is_present(self.hide_filters_options), "Show Filters Options is not present"
         print("All filters are shown!")
 
@@ -219,10 +219,10 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.proj_perf_rep)
         self.wait_for_element(self.apply_id, 100)
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Project Performance page."
-        assert self.is_visible_and_displayed(self.group_field), "Group or Locations field is not present"
-        assert self.is_visible_and_displayed(self.apply_id), "Apply button is not present"
-        assert self.is_visible_and_displayed(self.favorite_button), "Favorites button is not present"
-        assert self.is_visible_and_displayed(self.save_config_button), "Save button is not present"
+        self.wait_for_element(self.group_field)
+        self.wait_for_element(self.apply_id)
+        self.wait_for_element(self.favorite_button)
+        self.wait_for_element(self.save_config_button)
         assert self.is_present(self.hide_filters_options), "Show Filters Options is not present"
         print("All filters are shown!")
 
@@ -231,12 +231,12 @@ class ProjectPerformancePage(BasePage):
         self.wait_for_element(self.apply_id, 100)
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Project Performance page."
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present(self.low_perf_user_column), "User Column not present for Low Performance Table"
         assert self.is_present(self.low_perf_last_month_column), "Last Month Column not present for Low Performance Table"
         assert self.is_present(self.low_perf_this_month_column), "This Month Column not present for Low Performance Table"
@@ -273,7 +273,7 @@ class ProjectPerformancePage(BasePage):
 
     def verify_user_lookup_table(self):
         self.wait_to_click(self.group_field)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.users_list_empty, 10), "Case Type List is not empty"
         list = self.find_elements(self.users_list)
         print(len(list))
@@ -317,9 +317,9 @@ class ProjectPerformancePage(BasePage):
         self.wait_for_element(self.apply_id, 100)
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Project Performance page."
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         # For Low Performance table
@@ -337,7 +337,7 @@ class ProjectPerformancePage(BasePage):
                 time.sleep(15)
                 assert self.is_present((By.XPATH, self.next_page_button_disabled.format(i+1))), "Next button is not disabled."
                 print("Next button disabled correctly")
-                time.sleep(5)
+                time.sleep(2)
                 print("Clicking on page " + first_page)
                 self.wait_to_click((By.XPATH, self.page_button.format(i+1,first_page)))
                 time.sleep(15)
@@ -346,7 +346,7 @@ class ProjectPerformancePage(BasePage):
                 for item in list1:
                     list1_names.append(item.text)
                 self.wait_to_click(self.next_page_button)
-                time.sleep(10)
+                time.sleep(2)
                 list2 = self.find_elements((By.XPATH, self.user_names_column_list.format(i+1)))
                 list2_names = list()
                 for item in list2:
@@ -355,7 +355,7 @@ class ProjectPerformancePage(BasePage):
                 assert list1_names != list2_names, "Both Pages have same values"
                 print("Next button functioning correctly.")
                 self.wait_to_click(self.prev_page_button)
-                time.sleep(5)
+                time.sleep(2)
                 list3 = self.find_elements((By.XPATH, self.user_names_column_list.format(i+1)))
                 list3_names = list()
                 for item in list3:
@@ -377,7 +377,7 @@ class ProjectPerformancePage(BasePage):
             if int(info[-2]) > 10:
                 for item in UserData.pagination:
                     self.select_by_value((By.XPATH,self.page_list_dropdown.format(i+1)), item)
-                    time.sleep(10)
+                    time.sleep(2)
                     list = self.find_elements((By.XPATH, self.user_names_column_list.format(i+1)))
                     print(len(list))
                     if int(info[-2]) < int(item):
@@ -431,14 +431,14 @@ class ProjectPerformancePage(BasePage):
         elif date_range == UserData.date_range[2]:
             date_string, start_date, end_date = self.value_date_range_30_days()
         assert text == date_string
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         list_of_columns = self.date_generator(start_date, end_date)
         self.verify_date_column_name_headers(list_of_columns)
         print("Dates are with in range for " + date_range)
@@ -466,12 +466,12 @@ class ProjectPerformancePage(BasePage):
         text = self.get_attribute(self.date_input, "value")
         print(text)
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present_and_displayed(self.date_range_error), "Date Range Error not displayed"
         print("Date Range error correctly displayed")
         self.wait_to_click(self.case_activity_rep)
@@ -481,17 +481,17 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[3])))
         date_string, start_date, end_date = self.get_custom_dates_past(20, 0, 0)
         self.select_date_from_picker(start_date, end_date)
-        time.sleep(2)
+        
         text = self.get_attribute(self.date_input, "value")
         print(text)
         assert text == date_string
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         list_of_columns = self.date_generator(start_date, end_date)
         self.verify_date_column_name_headers(list_of_columns)
         print("Dates are with in range for " + UserData.date_range[3])
@@ -520,18 +520,18 @@ class ProjectPerformancePage(BasePage):
         end_year = str(end_date.year)
         self.wait_for_element(self.from_month)
         self.select_by_value(self.from_year, start_year)
-        time.sleep(2)
+        
         self.select_by_value(self.from_month, start_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.from_date.format(start_day)))
-        time.sleep(2)
+        
         self.wait_for_element(self.to_month)
         self.select_by_value(self.to_year, end_year)
-        time.sleep(2)
+        
         self.select_by_value(self.to_month, end_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.to_date.format(end_day)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_date)
 
     def proj_perf_save_report(self):
@@ -540,14 +540,14 @@ class ProjectPerformancePage(BasePage):
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.group_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
-        time.sleep(10)
+        time.sleep(2)
         report_name = "Saved Project Performance Report " + fetch_random_string()
         self.verify_favorite_empty(report_name)
         self.save_report_donot_save(report_name)
@@ -555,7 +555,7 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.proj_perf_rep)
         self.wait_for_element(self.apply_id, 100)
         self.verify_favorite_created(report_name)
-        time.sleep(10)
+        time.sleep(2)
         self.verify_users_in_the_group()
         self.delete_saved_report(report_name)
         self.wait_to_click(self.proj_perf_rep)
@@ -564,40 +564,40 @@ class ProjectPerformancePage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report==None:
-            assert self.is_visible_and_displayed(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),30), "Favorite is already Present"
         print("No Favorites yet.")
 
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
-        assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        assert not self.is_visible_and_displayed(self.empty_fav_list, 10)
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
     def delete_saved_report(self, report):
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report)), 120)
         print("Report Present!")
         self.click((By.XPATH, self.delete_saved.format(report)))
         print("Deleted Saved Report")
-        time.sleep(5)
-        self.driver.refresh()
+        time.sleep(2)
+        self.reload_page()
         assert not self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 20)
         print("Deleted Report Successfully")
 
     def save_report_donot_save(self, report_name):
         self.wait_for_element(self.save_config_button)
         self.wait_to_click(self.save_config_button)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present(self.name_field), "Name Field is not present"
         assert self.is_present(self.description_field), "Description field is not present"
         assert self.is_present(self.cancel_report_button), "Cancel button is not present"
-        assert self.is_present(self.save_report_button), "Save button is not present"
+        assert self.is_present(self.save_report_button)
         self.wait_to_clear_and_send_keys(self.name_field, report_name)
         self.wait_to_click(self.cancel_report_button)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.name_field, 10), "Save Report Form not closed"
         print("Save Report Form is closed")
 
@@ -607,7 +607,7 @@ class ProjectPerformancePage(BasePage):
         assert self.is_present(self.name_field), "Name Field is not present"
         assert self.is_present(self.description_field), "Description field is not present"
         assert self.is_present(self.cancel_report_button), "Cancel button is not present"
-        assert self.is_present(self.save_report_button), "Save button is not present"
+        assert self.is_present(self.save_report_button)
         self.clear(self.name_field)
         self.wait_to_click(self.save_report_button)
         time.sleep(3)
@@ -615,10 +615,10 @@ class ProjectPerformancePage(BasePage):
         print("Error is correctly displayed")
         self.wait_to_clear_and_send_keys(self.name_field, report_name)
         self.wait_to_click(self.try_again_button)
-        time.sleep(2)
-        self.driver.refresh()
+        
+        self.reload_page()
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report_name)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report_name)), 120)
         print("Report Saved successfully!")
         print("Report name: ", report_name)
         return report_name
@@ -634,7 +634,7 @@ class ProjectPerformancePage(BasePage):
                 else:
                     self.wait_to_click(item)
                     self.switch_to_next_tab()
-                    time.sleep(10)
+                    time.sleep(2)
                     self.wait_for_element(self.case_list_table_title, 200)
                     self.scroll_to_bottom()
                     info = self.get_text(self.case_list_table_info)
@@ -643,16 +643,16 @@ class ProjectPerformancePage(BasePage):
                     assert info[-2] == text, "Case created count mismatch"
                     print("Cases created count matched")
                     self.select_by_value(self.case_list_page_dropdown, '100')
-                    time.sleep(10)
+                    time.sleep(2)
                     cases = self.find_elements(self.case_list_table)
                     if len(cases) > 0:
                         for case in cases:
                             name = case.text
                             assert name == UserData.case_reassign, "Case Type mismatch"
                             print("Case Type matching")
-                    time.sleep(2)
+                    
                     self.driver.close()
-                    time.sleep(2)
+                    
                     self.switch_back_to_prev_tab()
 
     def export_proj_perf_to_excel(self):
@@ -661,11 +661,11 @@ class ProjectPerformancePage(BasePage):
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.group_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.low_perf_results)
@@ -685,7 +685,7 @@ class ProjectPerformancePage(BasePage):
             list_high.append(c.text)
         print(list_high)
         self.wait_to_click(self.export_to_excel)
-        time.sleep(5)
+        time.sleep(2)
         print("Export to excel successful")
         return list_low, list_inactive, list_high
 
@@ -731,11 +731,11 @@ class ProjectPerformancePage(BasePage):
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.group_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.low_perf_results)
@@ -787,7 +787,7 @@ class ProjectPerformancePage(BasePage):
         print("Report notes field is present")
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        assert self.is_visible_and_displayed(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_proj_perf_with_html_table(self, table_data, web_data):
@@ -806,36 +806,36 @@ class ProjectPerformancePage(BasePage):
         assert self.proj_perf_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.group_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
         self.wait_to_click((By.XPATH, self.custome_remove_btn.format(UserData.user_group)))
-        time.sleep(2)
+        
         assert not self.is_present((By.XPATH, self.custome_remove_btn.format(UserData.user_group))), "Group still present"
         print("Group removed successfully")
         self.send_keys(self.group_field, UserData.location)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.location)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group("no")
         self.wait_to_click((By.XPATH, self.custome_remove_btn.format(UserData.location)))
-        time.sleep(2)
+        
         assert not self.is_present(
             (By.XPATH, self.custome_remove_btn.format(UserData.location))), "Location still present"
         print("Location removed successfully")
         self.send_keys(self.group_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.send_keys(self.group_field, UserData.location)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.location)))
         self.wait_to_click(self.apply_id)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         assert self.is_present((By.XPATH, self.custome_remove_btn.format(UserData.user_group))), "Group not present"
         assert self.is_present((By.XPATH, self.custome_remove_btn.format(UserData.location))), "Location not present"
@@ -849,22 +849,22 @@ class ProjectPerformancePage(BasePage):
         self.wait_to_click(self.remove_deactive_worker)
         assert not self.is_present(self.remove_deactive_worker), "Deactivated Mobile Worker is still not removed"
         print("Deactivated Mobile Worker is removed successfully")
-        self.driver.refresh()
+        self.reload_page()
         self.wait_for_element(self.apply_id, 100)
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[1])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[1])))
-        time.sleep(1)
+        
         self.select_by_text(self.case_type_dropdown, UserData.case_reassign)
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         assert self.is_present((By.XPATH, self.result_rows_names.format(UserData.deactivated_user))), "Deactivated user " + UserData.deactivated_user + " is not present in the Deactivated worker list."
         print("All Deactivated users are present")
 
@@ -876,13 +876,13 @@ class ProjectPerformancePage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.case_type_dropdown, UserData.case_reassign)
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -891,10 +891,10 @@ class ProjectPerformancePage(BasePage):
             time.sleep(15)
             self.wait_for_element(self.case_list_table_title)
             self.wait_for_element(self.result_table, 300)
-            assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+            self.wait_for_element(self.report_content_id, 120)
             print("Report loaded successfully!")
             self.scroll_to_bottom()
-            time.sleep(2)
+            
             owner_list = self.find_elements(self.owner_column_list)
             print(len(owner_list))
             if len(owner_list)>1:
@@ -902,9 +902,9 @@ class ProjectPerformancePage(BasePage):
                     text = owner.text
                     assert items in text or text in UserData.user_group, "Owner does not match"
                     print("Owner matching")
-            time.sleep(5)
-            self.driver.back()
             time.sleep(2)
+            self.driver.back()
+            
             self.driver.back()
 
 

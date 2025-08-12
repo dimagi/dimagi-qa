@@ -27,7 +27,7 @@ def test_case_01_eof_navigations(driver, settings):
     webapps.search_button_on_case_search_page()
     webapps.select_case_and_continue(CaseSearchUserInput.song_automation_song)
     """EOF Nav - Prev Menu"""
-    time.sleep(2)
+    
     webapps.open_form(CaseSearchUserInput.play_song_form)
     webapps.submit_the_form()
     casesearch.check_eof_navigation(eof_nav=PREV_MENU,
@@ -62,6 +62,7 @@ def test_case_01_eof_navigations(driver, settings):
 def test_case_02_related_property_search(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     """Check related property search"""
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)
@@ -79,10 +80,12 @@ def test_case_02_related_property_search(driver, settings):
                                        )
     webapps.search_button_on_case_search_page()
     webapps.omni_search(CaseSearchUserInput.automation_artist_1)
+    base.wait_after_interaction(20)
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.four,
                                         expected_value=CaseSearchUserInput.automation_artist_1
                                         )
     webapps.omni_search(CaseSearchUserInput.show_case_show1)
+    base.wait_after_interaction(20)
     webapps.select_case(CaseSearchUserInput.show_case_show1)
     casesearch.check_value_on_case_detail(search_property=CaseSearchUserInput.parent_artist,
                                           expected_value=CaseSearchUserInput.automation_artist_1

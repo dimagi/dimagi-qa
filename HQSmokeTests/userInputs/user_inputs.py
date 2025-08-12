@@ -58,6 +58,7 @@ class UserData:
     # Date Filter
     date_having_submissions = "2022-01-18 to 2022-02-18"
     india_date_having_submission = "2024-05-10 to 2024-05-30"
+    eu_date_having_submission = "2025-05-01 to 2025-05-30"
 
     # Excel column names
     case_id = 'caseid'

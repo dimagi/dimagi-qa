@@ -43,13 +43,13 @@ class CopyCasesPage(BasePage):
     def sort_for_latest_on_top(self):
         self.wait_to_click(self.last_modified)
         self.wait_for_element(self.last_modified_ascending, 50)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_to_click(self.last_modified)
         self.wait_for_element(self.last_modified_descending, 50)
 
     def get_cases(self):
         self.wait_to_click(self.copy_cases_menu)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply, 70)
         self.select_by_text(self.user_search_dropdown, UserData.searched_user)
         self.select_by_value(self.case_type_dropdown, UserData.case_pregnancy)
@@ -57,28 +57,28 @@ class CopyCasesPage(BasePage):
 
     def copy_case(self):
         self.sort_for_latest_on_top()
-        time.sleep(5)
+        time.sleep(2)
         self.wait_to_click(self.select_first_case)
         case_being_copied = self.get_text(self.first_case_name)
         self.wait_to_click(self.copy_dropdown)
-        time.sleep(1)
+        
         self.send_keys(self.copy_to_user_dropdown_input, UserData.mobile_testuser)
-        time.sleep(1)
+        
         assigned_username = self.get_text((By.XPATH,self.copied_user_from_list.format(UserData.mobile_testuser)))
         print("Assigned Username:", assigned_username)
         self.move_to_element_and_click((By.XPATH,self.copied_user_from_list.format(UserData.mobile_testuser)))
         self.wait_to_click(self.copy_btn)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.success_message, 30)
         print("Sleeping for sometimes for the case to be copied")
         time.sleep(60)
         self.wait_to_click(self.copy_cases_menu)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply, 70)
         self.select_by_text(self.user_search_dropdown, assigned_username)
         self.send_keys(self.search_query, case_being_copied)
         self.wait_to_click(self.apply)
-        time.sleep(5)
+        time.sleep(2)
         self.scroll_to_bottom()
         if self.is_present(self.empty_list):
             print("No Case Copied, List is empty")
@@ -86,7 +86,7 @@ class CopyCasesPage(BasePage):
         else:
             self.wait_for_element(self.new_owner_name, 60)
             self.sort_for_latest_on_top()
-            time.sleep(5)
+            time.sleep(2)
             self.wait_for_element(self.new_owner_name, 60)
             copied_username = self.get_text(self.new_owner_name)
             time_modified = self.get_text(self.copied_time)

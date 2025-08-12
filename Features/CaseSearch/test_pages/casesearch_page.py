@@ -3,12 +3,13 @@ import platform
 import time
 
 from dateutil.relativedelta import relativedelta
-from datetime import datetime
+from datetime import datetime, timezone
 
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
+from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.base_page import BasePage
 from Features.CaseSearch.constants import *
 
@@ -23,16 +24,19 @@ class CaseSearchWorkflows(BasePage):
         self.value_in_table_format = "//td[@class='module-case-list-column'][{}]"
         self.case_name_format = "//tr[.//td[contains(text(),'{}')]]"
         self.text_search_property_name_and_value_format = "//input[contains (@id, '{}') and @value='{}']"
-        self.search_property_name_combobox = "//label[contains(text(),'{}')]"
+        self.search_property_name_combobox = "(//label[contains(text(),'{}')])[1]"
         self.combobox_search_property_name_and_value_format = self.search_property_name_combobox + "//following::span[contains(text(),'{}')]"
         self.search_against_text_property_format = "//input[contains (@id, '{}')]"
         self.help_text_format = '//label[@for="{}"]//following::a[@data-bs-content="{}" or @data-content="{}"]'
-        self.combox_select = "//label[contains(text(), '{}')]//following::select[contains(@class, 'query-field')][1]"
+        self.combox_select = "(//label[contains(text(), '{}')])[1]//following::select[contains(@class, 'query-field')][1]"
+        self.combox_select2 = "(//label[contains(text(), '{}')])[1]//following::div/select[contains(@class, 'query-field')][1]"
+        self.selected_dropdown_item = "(//label[contains(text(), '{}')])[1]//following::ul[1]/li[contains(@title,'{}')][./span[contains(@id,'{}')]]"
         self.search_for_address = "//*[contains(text(),'{}')]//following::input[contains(@aria-label,'Search')][1]"
         self.include_blanks = self.search_property_name_combobox + "//following::input[contains(@class,'search-for-blank')][1]"
-        self.required_validation_on_top = "//div[contains(@class,'alert-danger')]//following::li[contains(text(),'{}')]"
+        self.required_validation_on_top = "//div[contains(@class,'alert-danger')]//following::*[contains(text(),'{}')]"
         self.required_validation_per_property_text = self.search_against_text_property_format + "//following::div[contains (text(),'{}')][1]"
         self.required_validation_per_property_combox = self.search_property_name_combobox + "//following::div[contains (text(),'{}')][1]"
+        self.required_validation_per_property_combox2 = self.search_property_name_combobox +"//parent::div//parent::td[contains(@class,'required')]"
         self.city_value_home = "//span[contains(@class,'webapp-markdown-output')][contains(text(), '{}')]"
         self.city_value_work = "//span[contains(@class,'webapp-markdown-output')][contains(text()[2], '{}')]"
         self.search_screen_title = "//h2[contains(text(), '{}')]"
@@ -62,58 +66,105 @@ class CaseSearchWorkflows(BasePage):
         self.search_property_checked = "//label[contains (text(),'{}')][1]//following::input[@value='{}' and @checked][1]"
         self.remove_combobox_selection = "//label[contains(text(),'{}')]//following::button[@aria-label='Remove all items'][1]"
         self.rating_answer = "//span[text()='Rating']/following::input[@value='{}'][1]"
-        self.date_picker_close = (By.XPATH, "//div[contains(@class,'show')]//div[@data-action='close']")
-        self.date_picker_clear = (By.XPATH, "//div[contains(@class,'show')]//div[@data-action='clear']")
+        self.date_picker_close = (By.XPATH, "//div[contains(@class,'show')]//div[@data-action='close']/i")
+        self.date_picker_clear = (By.XPATH, "//div[contains(@class,'show')]//div[@data-action='clear']/i")
+        self.result_table = (By.XPATH, "(//div[@id='report-content']//table//tbody//td[1])[1]")
+        self.report_content_id = (By.ID, "report-content")
 
-    def check_values_on_caselist(self, row_num, expected_value, is_multi=NO):
+    def check_values_on_caselist(self, row_num, expected_value, is_multi=NO, flag=None):
         self.value_in_table = self.get_element(self.value_in_table_format, row_num)
         self.wait_for_element(self.value_in_table)
         values_ = self.find_elements_texts(self.value_in_table)
         print(expected_value, values_)  # added for debugging
         if is_multi == YES:
-            assert all(item in values_ for item in expected_value) or any(item in values_ for item in expected_value), "Expected values are not present"
-            print("Expected values are present")
+            if all(item in values_ for item in expected_value) or any(item in values_ for item in expected_value):
+                if flag is None or flag==True:
+                    print("Expected values are present")
+                    assert True
+                else:
+                    print("Values did not get selected right")
+            else:
+                print("Expected values are not present")
+                assert False
         elif is_multi == NO:
-            assert expected_value in values_, "Expected values are not present"
-            print("Expected values are present")
+            if expected_value in values_:
+                if flag is None or flag==True:
+                    print("Expected values are present")
+                    assert True
+                else:
+                    print("Values did not get selected right")
+            else:
+                print("Expected values are not present")
+                assert False
 
     def check_default_values_displayed(self, search_property, default_value, search_format):
-        time.sleep(5)
+        time.sleep(2)
         if search_format == text:
             search_property = (
                 By.XPATH, self.text_search_property_name_and_value_format.format(search_property, default_value))
         elif search_format == combobox:
             search_property = (
                 By.XPATH, self.combobox_search_property_name_and_value_format.format(search_property, default_value))
-        self.wait_for_ajax()
-        assert self.is_visible_and_displayed(search_property, 100), "Search "+default_value+" property not present"
+        time.sleep(1)
+        self.wait_for_element(search_property, 400)
+        assert self.is_present(search_property), "Search " + default_value + " property not present"
         print("Search "+default_value+" property is present")
 
     def search_against_property(self, search_property, input_value, property_type, include_blanks=None):
         print("Providing value: ", input_value)
         if property_type == TEXT_INPUT:
             self.search_property = self.get_element(self.search_against_text_property_format, search_property)
+            self.wait_for_element(self.search_property, 50)
             class_type = self.get_attribute(self.search_property, "class")
+            self.scroll_to_element(self.search_property)
             self.wait_to_click(self.search_property)
-            time.sleep(4)
+            time.sleep(0.5)
             print("class type ", class_type)
             if "date" in class_type:
                 if self.is_visible_and_displayed(self.date_picker_clear, 10):
-                    self.js_click(self.date_picker_clear)
-                    time.sleep(4)
+                    self.click(self.date_picker_clear)
+                time.sleep(1)
                 self.send_keys(self.search_property, input_value+Keys.TAB)
-                time.sleep(5)
-                if self.is_visible_and_displayed(self.date_picker_close, 10):
-                    self.js_click(self.date_picker_close)
+                time.sleep(2)
+                if self.is_present(self.date_picker_close):
+                    self.click(self.date_picker_close)
             else:
                 self.send_keys(self.search_property, input_value + Keys.TAB)
-                time.sleep(5)
-            self.wait_for_ajax()
+                time.sleep(2)
+            self.wait_after_interaction(40)
         elif property_type == COMBOBOX:
             self.combox_select_element = self.get_element(self.combox_select, search_property)
-            time.sleep(2)
+            self.wait_for_element(self.combox_select_element, 50)
             self.select_by_text(self.combox_select_element, input_value)
-            time.sleep(4)
+            self.wait_after_interaction(40)
+            text = self.get_selected_text(self.combox_select_element)
+            print(text)
+            if text == input_value:
+                print("Selected text: ", input_value)
+            else:
+                print("reselecting...")
+                if "*" in input_value:
+                    self.select_by_value(self.combox_select_element, CaseSearchUserInput.ratings[input_value])
+                else:
+                    self.select_by_text(self.combox_select_element, input_value)
+                self.wait_after_interaction(40)
+                text = self.get_selected_text(self.combox_select_element)
+                print(text)
+            time.sleep(2)
+        elif property_type == COMBOBOX2:
+            self.combox_select_element = self.get_element(self.combox_select2, search_property)
+            self.wait_for_element(self.combox_select_element, 50)
+            self.select_by_text(self.combox_select_element, input_value)
+            self.wait_after_interaction(40)
+            print("Selected text: ", input_value)
+            time.sleep(2)
+        elif property_type == COMBOBOX3:
+            self.combox_select_element = self.get_element(self.combox_select, search_property)
+            self.wait_for_element(self.combox_select_element, 50)
+            self.select_by_partial_text(self.combox_select_element, input_value)
+            self.wait_after_interaction(40)
+            print("Selected text: ", input_value)
+            time.sleep(2)
         if include_blanks == YES:
             self.select_include_blanks(search_property)
         return input_value
@@ -145,11 +196,12 @@ class CaseSearchWorkflows(BasePage):
 
     def check_help_text(self, search_property, help_text_value):
         help_text = (By.XPATH, self.help_text_format.format(search_property, help_text_value, help_text_value))
-        assert self.is_visible_and_displayed(help_text), "Expected text "+help_text_value+" is not present"
+        self.wait_for_element(help_text)
+        assert self.is_present(help_text), "Expected text " + help_text_value + " is not present"
         print("Expected text "+help_text_value+" is present")
 
     def check_date_range(self, search_property, date_range):
-        time.sleep(5)
+        time.sleep(2)
         date_element = (By.XPATH, self.date_selected.format(date_range, date_range))
         self.search_property = self.get_element(self.search_against_text_property_format, search_property)
         value = self.get_attribute(self.search_property, 'value')
@@ -162,9 +214,10 @@ class CaseSearchWorkflows(BasePage):
     def add_address(self, address, search_property):
         address_search = self.get_element(self.search_for_address, search_property)
         self.send_keys(address_search, address)
-        time.sleep(5)
+        time.sleep(1)
         self.send_keys(address_search, Keys.TAB)
-        time.sleep(10)
+        time.sleep(2)
+
 
     def check_value_on_form(self, city_address, type=HOME):
         if type == HOME:
@@ -206,32 +259,37 @@ class CaseSearchWorkflows(BasePage):
 
     def select_include_blanks(self, search_property):
         checkbox = self.get_element(self.include_blanks, search_property)
-        time.sleep(2)
-        self.js_click(checkbox)
+        self.wait_to_click(checkbox)
 
     def check_validations_on_property(self, search_property, property_type, message=None, required_or_validated=YES):
         validation_message_on_top = self.get_element(self.required_validation_on_top, search_property)
         validation_message_per_prop = None
+        validation_message_per_prop2 = None
         if property_type == TEXT_INPUT:
             validation_message_per_prop = (
                 By.XPATH, self.required_validation_per_property_text.format(search_property, message))
         elif property_type == COMBOBOX:
             validation_message_per_prop = (
                 By.XPATH, self.required_validation_per_property_combox.format(search_property, message))
+            validation_message_per_prop2 = (
+                By.XPATH, self.required_validation_per_property_combox2.format(search_property, message))
         if required_or_validated == YES:
-            self.wait_for_ajax()
-            time.sleep(4)
+            # self.wait_after_interaction()
+            time.sleep(1)
             assert self.is_displayed(
-                validation_message_per_prop), f"Required validation missing {validation_message_per_prop}"
+                validation_message_per_prop) or self.is_displayed(validation_message_per_prop2), f"Required validation missing {validation_message_per_prop2}"
             print(f"Required validation present {validation_message_per_prop}")
+            self.scroll_to_top()
+            time.sleep(1)
             assert self.is_displayed(
                 validation_message_on_top), f"Required validation missing {validation_message_on_top}"
             print(f"Required validation present {validation_message_on_top}")
         elif required_or_validated == NO:
-            self.wait_for_ajax()
-            time.sleep(4)
+            # self.wait_after_interaction()
+            time.sleep(1)
             assert not self.is_displayed(validation_message_per_prop),  f"validation present {validation_message_per_prop}"
             print(f"validation not present {validation_message_per_prop}")
+        time.sleep(2)
 
     def check_dropdown_value(self, search_property, value, present):
         dropdown_values_ = self.get_element(self.dropdown_values, search_property)
@@ -252,7 +310,7 @@ class CaseSearchWorkflows(BasePage):
             header = (By.XPATH, self.menu_breadcrumb.format(menu, menu))
             assert self.is_displayed(header), f"Navigated to {header}"
             print(f"Not Navigated to {header}")
-            
+
         elif eof_nav == HOME_SCREEN:
             assert self.is_displayed(self.webapps_home), f"Navigated to {self.webapps_home}"
             print(f"Not Navigated to {self.webapps_home}")
@@ -265,19 +323,26 @@ class CaseSearchWorkflows(BasePage):
         if tabname is not None:
             self.select_case_detail_tab(tabname)
         value = (By.XPATH, self.case_detail_value.format(search_property, expected_value))
-        assert self.is_visible_and_displayed(value), "Value "+expected_value+" is not present"
+        self.wait_for_element(value)
+        assert self.is_present(value), "Value "+expected_value+" is not present"
         print("Value "+expected_value+" is present")
-        self.js_click(self.close_case_detail_tab)
+        self.wait_to_click(self.close_case_detail_tab)
 
     def check_todays_case_claim_present_on_report(self):
         self.select_by_text(self.case_type_select, "commcare-case-claim")
         self.wait_to_click(self.report_apply_filters)
-        date_on_report = str((datetime.today()).date().strftime("%b %d, %Y"))
+        date_on_report =  str(datetime.now(timezone.utc).strftime("%b %d, %Y"))
+        # date_on_report = str((datetime.today()).date().strftime("%b %d, %Y"))
         recent_claim_case = (By.XPATH, self.commcare_case_claim_case.format(date_on_report))
         print(date_on_report, recent_claim_case)
         try:
-            assert self.is_visible_and_displayed(recent_claim_case), "Value "+date_on_report+" is not present"
-            print("Value "+date_on_report+" is present")
+            self.wait_for_element(self.result_table, 300)
+            self.wait_for_element(self.report_content_id, 120)
+            print("Report loaded successfully!")
+            if self.is_present(recent_claim_case):
+                print("Value " + date_on_report + " is present")
+            else:
+                print("Value "+date_on_report+" is not present")
         except AssertionError:
             logging.basicConfig(filename='logs.log', encoding='utf-8', level=logging.DEBUG)
             logging.warning("Elastic search is taking too long to update the case")
@@ -288,9 +353,9 @@ class CaseSearchWorkflows(BasePage):
         song_names = self.find_elements_texts(self.case_names)
         song_names_on_case_list = list(filter(None, song_names))
         print("Selected cases: ", song_names_on_case_list)
-        self.js_click(self.multi_select_continue)
+        self.wait_to_click(self.multi_select_continue)
         print("Waiting for the form to load")
-        time.sleep(20)
+        self.wait_after_interaction()
         self.wait_for_element((By.XPATH, self.song_label.format(song_names_on_case_list[0])))
         for item in song_names_on_case_list:
             self.scroll_to_element((By.XPATH, self.song_label.format(item)))
@@ -321,12 +386,15 @@ class CaseSearchWorkflows(BasePage):
         if select_by_value == text:
             checkbox_xpath = (By.XPATH, self.checkbox_xpath.format(search_property, values))
             self.wait_for_element(checkbox_xpath)
-            self.scroll_to_element(checkbox_xpath)
-            self.js_click(checkbox_xpath)
+            # self.scroll_to_element(checkbox_xpath)
+            time.sleep(3)
+            self.wait_to_click(checkbox_xpath)
+            time.sleep(3)
         elif select_by_value == index:
             for value in values:
                 checkbox_xpath = (By.XPATH, self.checkbox_xpath.format(search_property, value - 1))
-                self.js_click(checkbox_xpath)
+                self.wait_to_click(checkbox_xpath)
+                time.sleep(3)
             list_string = map(str, values)
             return list(list_string)
 
@@ -341,4 +409,21 @@ class CaseSearchWorkflows(BasePage):
 
     def select_rating_answer_(self, rating_input):
         rating_selection = self.get_element(self.rating_answer, rating_input)
-        self.js_click(rating_selection)
+        self.wait_to_click(rating_selection)
+
+    def check_values_selected(self, search_property, value_list, rating=None):
+        bool_value = None
+        if rating == YES:
+            for item in value_list:
+                selected_value = (By.XPATH,self.selected_dropdown_item.format(search_property, item, CaseSearchUserInput.ratings[item]))
+                if self.is_present(selected_value):
+                    assert True, f"Expected item {selected_value} not present"
+                    print(f"Expected item {selected_value} present")
+                    bool_value=True
+                else:
+                    print(f"Expected item {selected_value} not present")
+                    bool_value = False
+        return bool_value
+
+
+

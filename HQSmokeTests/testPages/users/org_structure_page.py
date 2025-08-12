@@ -1,6 +1,7 @@
 import os
 import time
 from datetime import date
+from pathlib import Path
 
 from selenium.webdriver import Keys
 
@@ -12,6 +13,34 @@ from selenium.common.exceptions import TimeoutException, StaleElementReferenceEx
 from selenium.webdriver.common.by import By
 
 """"Contains test page elements and functions related to the User's Organization structure module"""
+
+def wait_for_download_to_finish(timeout=60, file_extension=".xlsx"):
+    timeout = float(timeout)
+    download_dir = Path(PathSettings.DOWNLOAD_PATH)
+    start_time = time.time()
+    downloaded_file = None
+
+    while time.time() - start_time < timeout:
+        all_files = list(download_dir.glob("*"))
+
+        # Files that match the desired extension (e.g., .xml, .xlsx)
+        completed_files = [f for f in all_files if f.name.endswith(file_extension)]
+
+        # Chrome creates temp files ending with .crdownload while downloading
+        downloading_files = [f for f in all_files if f.name.endswith('.crdownload')]
+
+        if completed_files:
+            # Sort by newest
+            completed_files.sort(key=lambda f: f.stat().st_ctime, reverse=True)
+            newest = completed_files[0]
+
+            # Check if this file is still being downloaded
+            if not any(f.name.startswith(newest.name) for f in downloading_files):
+                downloaded_file = newest.name
+                print(f"Download complete: {downloaded_file}")
+                return downloaded_file
+        time.sleep(1)
+    raise TimeoutError(f"Download of '{file_extension}' file did not finish within {timeout} seconds.")
 
 
 def latest_download_file(type=".xlsx"):
@@ -123,10 +152,10 @@ class OrganisationStructurePage(BasePage):
     def create_location(self):
         self.wait_to_click(self.add_loc_btn_xpath)
         self.wait_to_clear_and_send_keys(self.loc_name_xpath, self.new_location_name)
-        self.click(self.create_loc_xpath)
+        self.wait_to_click(self.create_loc_xpath)
         assert self.is_present_and_displayed(self.loc_saved_success_msg), "Location not created!"
         self.wait_to_click(self.org_menu_link_text)
-        self.driver.refresh()
+        self.reload_page()
         try:
             assert self.is_present_and_displayed(self.location_created_xpath), "Location not created!"
         except StaleElementReferenceException:
@@ -135,73 +164,82 @@ class OrganisationStructurePage(BasePage):
     def edit_location(self):
         try:
             self.wait_to_click(self.org_menu_link_text)
-            self.click(self.edit_loc_button_xpath)
+            self.wait_to_click(self.edit_loc_button_xpath)
             self.wait_to_clear_and_send_keys(self.loc_name_input_id, "updated_on:" + str(date.today()))
-            self.click(self.update_loc_xpath)
-            time.sleep(2)
+            self.wait_to_click(self.update_loc_xpath)
+            
             assert self.is_visible_and_displayed(self.loc_saved_success_msg), "Location editing not successful!"
-            self.click(self.org_menu_link_text)
-            self.driver.refresh()
+            self.wait_to_click(self.org_menu_link_text)
+            self.reload_page()
             assert self.is_visible_and_displayed(self.renamed_location), "Location editing not successful!"
         except StaleElementReferenceException:
             print(StaleElementReferenceException)
 
     def edit_location_fields(self):
-        self.click(self.org_menu_link_text)
+        self.wait_to_click(self.org_menu_link_text)
         self.wait_to_click(self.edit_loc_field_btn_xpath)
         self.wait_to_click(self.add_field_btn_xpath)
         self.wait_to_clear_and_send_keys(self.loc_property_xpath, self.loc_field_name)
         self.wait_to_clear_and_send_keys(self.loc_label_xpath, self.loc_field_name+Keys.TAB)
         if self.is_present(self.choices_button_xpath):
-            self.js_click(self.choices_button_xpath)
-            time.sleep(5)
+            self.wait_to_click(self.choices_button_xpath)
+            time.sleep(2)
         self.scroll_to_element(self.add_choice_btn_xpath)
         self.wait_for_element(self.add_choice_btn_xpath)
         self.wait_to_click(self.add_choice_btn_xpath)
         self.wait_to_clear_and_send_keys(self.choice_xpath, self.loc_field_name)
-        self.click(self.save_btn_id)
+        self.wait_to_click(self.save_btn_id)
         assert self.is_displayed(self.success_msg_xpath), "Location field edit not successful!"
-        self.driver.refresh()
+        self.reload_page()
 
     def selection_location_field_for_location_created(self):
         try:
-            self.click(self.org_menu_link_text)
+            self.wait_to_click(self.org_menu_link_text)
             self.wait_to_click(self.edit_loc_button_xpath)
             self.wait_to_click(self.additional_info_drop_down)
-            self.click(self.select_value_drop_down)
-            self.click(self.update_loc_xpath)
+            self.wait_to_click(self.select_value_drop_down)
+            self.wait_to_click(self.update_loc_xpath)
             assert self.is_present_and_displayed(self.success_msg_xpath), "Location field not assigned!"
         except StaleElementReferenceException:
             print(StaleElementReferenceException)
 
     def create_org_level(self):
-        self.click(self.org_level_menu_link_text)
+        self.wait_to_click(self.org_level_menu_link_text)
         self.wait_to_click(self.new_org_level_btn_xpath)
         self.wait_to_clear_and_send_keys(self.org_level_value_xpath, self.loc_level_name)
         self.wait_to_click(self.save_btn_xpath)
 
     def download_locations(self):
-        self.click(self.org_menu_link_text)
-        self.click(self.download_loc_btn)
+        self.wait_to_click(self.org_menu_link_text)
+        self.wait_to_click(self.download_loc_btn)
         self.wait_to_click(self.download_filter)
         try:
-            self.wait_and_sleep_to_click(self.download_loc_btn)
-            time.sleep(5)
+            self.wait_for_element(self.download_loc_btn, 30)
+            print("Clicking on the Download button")
+            self.js_click(self.download_loc_btn)
+            wait_for_download_to_finish()
         except TimeoutException:
             print("Still preparing for download..")
             assert False
         # verify_downloaded_location
         newest_file = latest_download_file()
-        self.assert_downloaded_file(newest_file, "_locations"), "Download not completed!"
+        if '_locations' in newest_file:
+            self.assert_downloaded_file(newest_file, "_locations"), "Download Not Completed!"
+        else:
+            print("Not the expected file. Downloading again...")
+            self.js_click(self.download_loc_btn)
+            wait_for_download_to_finish()
+            newest_file = latest_download_file()
+            self.assert_downloaded_file(newest_file, "_locations"), "Download Not Completed!"
         print("File download successful")
 
     def upload_locations(self):
-        self.click(self.org_menu_link_text)
-        self.click(self.upload_loc_btn)
+        self.wait_to_click(self.org_menu_link_text)
+        self.wait_to_click(self.upload_loc_btn)
         newest_file = latest_download_file()
         file_that_was_downloaded = PathSettings.DOWNLOAD_PATH / newest_file
         self.send_keys(self.bulk_upload_id, str(file_that_was_downloaded))
-        time.sleep(2)
+        
         self.wait_to_click(self.upload)
         self.is_present_and_displayed(self.import_complete), "Upload not completed!"
         print("File uploaded successfully")
@@ -215,7 +253,7 @@ class OrganisationStructurePage(BasePage):
 
     def delete_test_org_level(self):
         # # Delete Org Level
-        self.js_click(self.org_level_menu_link_text)
+        self.wait_to_click(self.org_level_menu_link_text)
         time.sleep(3)
         list_org_level = self.driver.find_elements(By.XPATH, "//input[@class='loctype_name form-control']")
         print(len(list_org_level))
@@ -225,12 +263,12 @@ class OrganisationStructurePage(BasePage):
                 print(text, i)
                 if "loc_level_" in text:
                     self.scroll_to_element((By.XPATH, self.delete_loc_level.format(str(i + 1))))
-                    self.js_click((By.XPATH, self.delete_loc_level.format(str(i+1))))
-                    time.sleep(2)
+                    self.wait_to_click((By.XPATH, self.delete_loc_level.format(str(i+1))))
+                    
                     self.scroll_to_element(self.save_btn_xpath)
-                    self.js_click(self.save_btn_xpath)
-                    time.sleep(2)
-                    self.driver.refresh()
+                    self.wait_to_click(self.save_btn_xpath)
+                    
+                    self.reload_page()
                     time.sleep(7)
                     list_org_level = self.driver.find_elements(By.XPATH, "//input[@class='loctype_name form-control']")
                 else:
@@ -252,16 +290,16 @@ class OrganisationStructurePage(BasePage):
                     text = list_profile[i].get_attribute("value")
                     if "field_" in text:
                         if self.is_present((By.XPATH, self.remove_choice_button.format(str(i + 1)))):
-                            self.js_click((By.XPATH, self.remove_choice_button.format(str(i + 1))))
-                        time.sleep(5)
+                            self.wait_to_click((By.XPATH, self.remove_choice_button.format(str(i + 1))))
+                        time.sleep(2)
                         print(str(i + 1))
                         self.wait_to_click((By.XPATH, self.delete_user_field.format(str(i + 1))))
                         # self.driver.find_element(By.XPATH,
                         #                          "(//input[contains(@data-bind,'value: slug')]//following::a[@class='btn btn-danger' and @data-toggle='modal'][1])[" + str(
                         #                              i + 1) + "]").click()
-                        time.sleep(5)
-                        self.wait_to_click(self.confirm_user_field_delete)
                         time.sleep(2)
+                        self.wait_to_click(self.confirm_user_field_delete)
+                        
                         list_profile = self.driver.find_elements(By.XPATH, "//input[contains(@data-bind,'value: slug')]")
                     else:
                         print("Its not a test location field")
@@ -282,16 +320,16 @@ class OrganisationStructurePage(BasePage):
                 for i in range(len(list_profile)):
                     time.sleep(3)
                     self.scroll_to_element((By.XPATH, self.test_location_delete_button_last.format(i+1)))
-                    self.js_click((By.XPATH, self.test_location_delete_button_last.format(i+1)))
-                    time.sleep(5)
+                    self.wait_to_click((By.XPATH, self.test_location_delete_button_last.format(i+1)))
+                    time.sleep(2)
                     self.wait_for_element(self.sign_off_input)
                     self.send_keys(self.sign_off_input, "1"+ Keys.TAB)
-                    time.sleep(2)
+                    
                     self.wait_to_click(self.test_location_delete_confirm)
-                    time.sleep(2)
+                    
                     self.wait_for_element(self.success_msg_xpath)
                     self.click(self.success_msg_remove)
-                    time.sleep(2)
+                    
                     list_profile = self.find_elements(self.test_location_delete_button)
                     print("Deleted location number: ", str(i+1))
             else:
@@ -313,7 +351,7 @@ class OrganisationStructurePage(BasePage):
 
     def assert_archived_location(self):
         self.wait_to_click(self.org_menu_link_text)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.test_location, 40)
         # self.is_present_and_displayed(self.test_location, 10)
         active_loc = self.find_elements(self.test_locations)
@@ -329,11 +367,11 @@ class OrganisationStructurePage(BasePage):
         self.wait_to_click(self.archive_buttton)
         self.wait_to_click(self.archive_button_popup)
         self.is_present_and_displayed(self.archive_success_message, 10)
-        self.driver.refresh()
+        self.reload_page()
         check_archived_loc = self.is_present_and_displayed(self.test_location, 10)
         assert not check_archived_loc, "Location is still Active"
         self.wait_to_click(self.show_arhcived_locations_button)
-        time.sleep(5)
+        time.sleep(2)
         archived_loc = self.find_elements(self.test_locations)
         archive_list = []
         print(archived_loc)
@@ -358,10 +396,10 @@ class OrganisationStructurePage(BasePage):
     def assert_unarchived_location(self, settings):
         if self.is_present(self.show_arhcived_locations_button):
             self.wait_to_click(self.show_arhcived_locations_button)
-            time.sleep(5)
+            time.sleep(2)
         archived_loc = self.get_text(self.test_location)
         self.wait_to_click(self.unarchive_button)
-        self.driver.refresh()
+        self.reload_page()
         time.sleep(3)
         check_unarchived_loc = self.is_present_and_displayed(self.test_location, 10)
         assert not check_unarchived_loc, "Location is still Unarchived"
@@ -369,7 +407,7 @@ class OrganisationStructurePage(BasePage):
         home = HomePage(self.driver, settings)
         home.users_menu()
         self.wait_to_click(self.org_menu_link_text)
-        time.sleep(5)
+        time.sleep(2)
         unarchived_loc = self.find_elements(self.test_locations)
         loc_list = []
         print(unarchived_loc)
@@ -393,15 +431,15 @@ class OrganisationStructurePage(BasePage):
                         if self.is_present((By.XPATH, self.remove_choice_button.format(str(i + 1)))):
                             self.wait_for_element((By.XPATH, self.remove_choice_button.format(str(i + 1))))
                             self.scroll_to_element((By.XPATH, self.remove_choice_button.format(str(i + 1))))
-                            self.js_click((By.XPATH, self.remove_choice_button.format(str(i + 1))))
+                            self.wait_to_click((By.XPATH, self.remove_choice_button.format(str(i + 1))))
                         else:
                             print("Choice is not present")
                         # self.driver.find_element(By.XPATH,
                         #                          "(//input[contains(@data-bind,'value: slug')]//following::a[@class='btn btn-danger' and @data-toggle='modal'][1])[" + str(
                         #                              i + 1) + "]").click()
-                        time.sleep(5)
-                        self.wait_to_click(self.confirm_user_field_delete)
                         time.sleep(2)
+                        self.wait_to_click(self.confirm_user_field_delete)
+                        
                         list_profile = self.driver.find_elements(By.XPATH, "//input[contains(@data-bind,'value: slug')]")
                     else:
                         print("Its not a test user field")
@@ -414,7 +452,7 @@ class OrganisationStructurePage(BasePage):
     def save_field(self):
         if self.is_enabled(self.save_btn_id):
             self.wait_to_click(self.save_btn_id)
-            time.sleep(5)
+            time.sleep(2)
             assert self.is_present(self.loc_saved_success_msg) or self.is_present(
                 self.duplicate_field_error), "Unable to save location."
             print("Location Field Added or is already present")

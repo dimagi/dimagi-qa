@@ -25,7 +25,7 @@ def test_case_01_eof_navigations(driver, settings):
     webapps.search_button_on_case_search_page()
     webapps.select_case_and_continue(CaseSearchUserInput.song_automation_song)
     """EOF Nav - Prev Menu"""
-    time.sleep(2)
+    
     webapps.open_form(CaseSearchUserInput.play_song_form)
     webapps.submit_the_form()
     casesearch.check_eof_navigation(eof_nav=PREV_MENU,

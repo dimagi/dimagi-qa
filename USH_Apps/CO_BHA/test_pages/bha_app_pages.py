@@ -19,7 +19,7 @@ class BhaWorkflows(BasePage):
         self.client_info = " (//h2[contains(text(), 'Client Information')]/following::strong[contains(text(),'{}')]//ancestor::li[1])[1]"
         self.combobox_select_clinic = (By.XPATH, "//select[contains(@class,'select2-hidden-accessible')]")
         self.answer_option_label = "//p[text()='{}']"
-        self.question_label = "//span[text()='{}']"
+        self.question_label = "//*[text()='{}']"
         self.clinic_close_button = "//button[@aria-label='Remove item' and contains(@aria-describedby , '{}')]"
         self.case_list_display_properties = "(//tr[.//th[contains(text(),'{}')]])[1]"
         self.case_prop_value = "//th[@title='{}']/following::td[contains(text(),'{}')]"
@@ -32,7 +32,7 @@ class BhaWorkflows(BasePage):
 
     def click_on_admit_new_client(self):
         self.wait_for_element(self.admit_new_client_on_caselist)
-        self.js_click(self.admit_new_client_on_caselist)
+        self.wait_to_click(self.admit_new_client_on_caselist)
 
     def replace_one_char(self, original_string):
         index = 2
@@ -40,12 +40,12 @@ class BhaWorkflows(BasePage):
         return original_string[:index] + new_character + original_string[index + 1:]
 
     def select_radio(self, value):
-        time.sleep(4)
+        time.sleep(1)
         radio_value = self.get_element(self.radio_option_value, value)
         if self.is_present_and_displayed(radio_value, 10):
             self.scroll_to_element(radio_value)
-            self.js_click(radio_value)
-            time.sleep(4)
+            self.wait_to_click(radio_value)
+            time.sleep(1)
         else:
             print("Yes button is not present")
 
@@ -67,16 +67,16 @@ class BhaWorkflows(BasePage):
         print("Value "+search_value+" is present in "+value_on_form)
 
     def select_clinic(self, clinic_name):
-        time.sleep(4)
+        time.sleep(1)
         if self.is_displayed(self.combobox_select_clinic):
             self.scroll_to_element(self.combobox_select_clinic)
             self.select_by_text(self.combobox_select_clinic, clinic_name)
-        time.sleep(4)
+        time.sleep(1)
 
     def remove_clinic(self, clinic_name):
         close_xpath = self.get_element(self.clinic_close_button, clinic_name)
-        self.js_click(close_xpath)
-        time.sleep(4)
+        self.wait_to_click(close_xpath)
+        time.sleep(1)
 
     def check_answer_options(self, label, displayed=None):
         answer_label = self.get_element(self.answer_option_label, label)
@@ -109,7 +109,7 @@ class BhaWorkflows(BasePage):
         print(f"Property {case_property_value} is present")
 
     def view_message_details(self, alert_type):
-        self.js_click(self.get_element(self.view_latest_details_by_type, alert_type))
+        self.wait_to_click(self.get_element(self.view_latest_details_by_type, alert_type))
 
     def check_if_alert_triggered(self, content, date):
         date_locator = self.get_element(self.content, date)

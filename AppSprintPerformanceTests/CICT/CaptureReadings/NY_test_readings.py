@@ -23,11 +23,11 @@ def test_app_workflows(driver, user, application, settings, appsite):
 
     visible = HomePage(driver)
     visible.login_as_ci_ct_user(user, settings["url"])
-    time.sleep(5)
+    time.sleep(2)
     visible.break_locks_and_clear_user_data(project_space=NYUserData.project_space)
-    time.sleep(5)
+    time.sleep(2)
     visible.sync_application(username=user, application_name=application)
-    time.sleep(10)
+    time.sleep(2)
     visible.open_application(username=user, application_name=application)
 
     """CI workflows"""

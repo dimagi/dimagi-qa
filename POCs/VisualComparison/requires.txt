@@ -1,0 +1,17 @@
+## Stores information about all the libraries, modules, and packages that are used in this project.
+
+pytest>=6.2.5
+pytest-html>=3.1.1
+selenium == 4.11.2
+pytest-rerunfailures>=10.2
+pytest-xdist[psutil]
+pyotp >=2.6.0
+python-dateutil>=2.8.2
+pandas>=1.2.2
+names>=0.3.0
+requests
+py
+openpyxl
+visual-comparison
+Selenium-Screenshot
+beautifulsoup4

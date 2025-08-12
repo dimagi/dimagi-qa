@@ -13,6 +13,17 @@ from HQSmokeTests.testPages.webapps.web_apps_page import WebAppsPage
 @pytest.mark.reportManageDeployments
 @pytest.mark.reportMessaging
 def test_case_14_report_loading(driver, settings):
+    """
+        1. Navigate to HQ.
+        2. Go to Reports>View all.
+        3. Verify following types of Reports section are displayed.
+            -Monitor Workers
+            -Inspect Data
+            -Manage Deployments
+            -Messaging
+        4. Access and run each report from the sections above
+        5. Verify user is able run every report from each section and respective data should be reflected.
+    """
     report = HomePage(driver, settings)
     report.reports_menu()
     load = ReportPage(driver)
@@ -40,6 +51,20 @@ def test_case_14_report_loading(driver, settings):
 @pytest.mark.reportCaseList
 @pytest.mark.reportCaseData
 def test_case_15_16_submit_form_verify_formdata_casedata(driver, settings):
+    """
+        1. Access the webapps
+        2. Login as a mobile worker
+        3. Verify user is able to view few of the applications that has web apps access enabled.
+        4. Verify user can access any forms/modules of the application from Web Apps.
+        5. Submit few forms.
+        6. Navigate to Reports>Submit History.
+        7. Apply filters.
+        8. Verify user is able to search for the forms just submitted under Submit History & Case List
+        9. Run the Submit History report and select a form
+        10. Verify you're able to access the Form Data page
+        11. Run the Case List report and select a case
+        12. Verify you're able to access the Case Data page
+    """
     home = HomePage(driver, settings)
     driver.refresh()
     home.web_apps_menu()
@@ -49,12 +74,22 @@ def test_case_15_16_submit_form_verify_formdata_casedata(driver, settings):
     home.reports_menu()
     load = ReportPage(driver)
     load.verify_form_data_submit_history(case_name, settings['login_username'])
-    load.verify_form_data_case_list(case_name)
+    load.verify_form_data_case_list(case_name, settings['login_username'])
 
 
 @pytest.mark.report
 @pytest.mark.reportBuilder
 def test_case_18_create_case_report(driver, settings):
+    """
+        1. Navigate to HQ.
+        2. Go to Reports>View all.
+        3. Click on Create new report under 'Report Builder' section.
+        4. Enter report name.
+        5. Select a case report
+        5. Select remaining fields as you desire.
+        6. Create and save and view report
+        7. Verify you are able to create a custom report.
+    """
     report = HomePage(driver, settings)
     report.reports_menu()
     load = ReportPage(driver)
@@ -66,6 +101,11 @@ def test_case_18_create_case_report(driver, settings):
 @pytest.mark.report
 @pytest.mark.savedReport
 def test_case_19_saved_report(driver, settings):
+    """
+        1. Access any report that can be saved and emailed (The Case Activity report, for example)
+        2. Save the report
+        3. Verify the report can now be found under My Saved Reports
+    """
     report = HomePage(driver, settings)
     report.reports_menu()
     load = ReportPage(driver)
@@ -78,6 +118,11 @@ def test_case_19_saved_report(driver, settings):
 @pytest.mark.report
 @pytest.mark.scheduledReport
 def test_case_20_scheduled_report(driver, settings):
+    """
+        1. Remaining on My Saved Reports, go to the Scheduled Reports tab
+        2. Create a new Scheduled Report
+        3. Please delete the scheduled reports once you have tested what you need.
+    """
     report = HomePage(driver, settings)
     report.reports_menu()
     load = ReportPage(driver)
@@ -89,6 +134,10 @@ def test_case_20_scheduled_report(driver, settings):
 @pytest.mark.report
 @pytest.mark.deleteReport
 def test_case_delete_saved_reports(driver, settings):
+    """
+        1. Go to Reports
+        2. Delete saved reports, report case and form links
+    """
     report = HomePage(driver, settings)
     report.reports_menu()
     load = ReportPage(driver)

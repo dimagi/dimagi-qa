@@ -21,6 +21,7 @@ class GroupPage(BasePage):
         self.add_group_button = (By.XPATH, "//button[@type='submit' and @class='btn btn-primary']")
         self.group_menu_xpath = (By.XPATH, "//a[@data-title='Groups']")
         self.users_drop_down = (By.XPATH, "//span[@class='select2-selection select2-selection--multiple']")
+        self.users_drop_down_textarea = (By.XPATH, "//textarea[contains(@class,'search')]")
         self.select_user =  "//li[text()='{}']"
         self.update_button = (By.ID, "submit-id-submit")
         self.group_created_success = (By.XPATH, "//h1[text()[contains(.,'Editing Group')]]")
@@ -46,21 +47,23 @@ class GroupPage(BasePage):
         self.click_group_menu()
         self.wait_to_clear_and_send_keys(self.group_name, self.created_group)
         self.wait_to_click(self.add_group_button)
-        assert self.is_visible_and_displayed(self.group_created_success), "Group not created successfully"
+        self.wait_for_element(self.group_created_success)
         print("Group Added")
         return self.created_group
 
     def add_user_to_group(self, username, group_name):
-        self.send_keys(self.users_drop_down, username)
+        self.wait_to_click(self.users_drop_down)
+        self.wait_for_element(self.users_drop_down_textarea)
+        self.send_keys(self.users_drop_down_textarea, username)
         self.wait_to_click((By.XPATH, self.select_user.format(username)))
-        time.sleep(20)
+        time.sleep(10)
         self.wait_for_element(self.users_drop_down, 400)
         self.wait_to_click(self.update_button)
         time.sleep(15)
         assert self.is_visible_and_displayed(self.success_alert, 100), "Group settings not be saved"
         print(self.driver.current_url)
         group_id_value = self.driver.current_url.split("/")[-2]
-        time.sleep(2)
+        
         self.click_group_menu()
         assert self.is_visible_and_displayed((By.XPATH, self.created_group_path.format(group_name))), "User could not be assigned to the group"
         self.accept_pop_up()
@@ -69,13 +72,13 @@ class GroupPage(BasePage):
 
     def edit_existing_group(self, group_name):
         self.click_group_menu()
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.created_group_path.format(group_name)))
         self.accept_pop_up()
         self.wait_to_click(self.edit_settings)
         renamed_group = group_name+"_rename"
         self.wait_to_clear_and_send_keys(self.group_name_input, renamed_group)
-        self.click(self.save_button)
+        self.wait_to_click(self.save_button)
         assert self.is_visible_and_displayed(self.success_alert), "Group could not be renamed"
         print("Renamed a group")
         return renamed_group
@@ -83,12 +86,12 @@ class GroupPage(BasePage):
     def remove_user_from_group(self):
         time.sleep(3)
         try:
-            self.js_click(self.remove_user)
-            self.js_click(self.update_button)
+            self.wait_to_click(self.remove_user)
+            self.wait_to_click(self.update_button)
             time.sleep(15)
             assert self.is_visible_and_displayed(self.success_alert, 100), "User deletion from group not successful"
             print("Removed added user from group")
-            time.sleep(2)
+            
         except Exception:
             print("No user group present")
 
@@ -97,7 +100,7 @@ class GroupPage(BasePage):
             self.wait_to_click((By.XPATH, self.created_group.format(renamed_group)))
             self.wait_to_click(self.delete_group)
             self.wait_to_click(self.confirm_delete)
-            assert self.is_visible_and_displayed(self.delete_success_message), "Group deletion not successful"
+            self.wait_for_element(self.delete_success_message)
             print("Clean up added group")
         except Exception:
             print("Group deletion might not have been successful")
@@ -114,16 +117,16 @@ class GroupPage(BasePage):
         try:
             if len(group_names) > 0:
                 for i in range(len(group_names)):
-                    time.sleep(2)
+                    
                     self.scroll_to_element((By.XPATH, self.group_name_link.format(group_names[i])))
                     self.click((By.XPATH, self.group_name_link.format(group_names[i])))
                     self.wait_for_element(self.delete_group)
                     self.click(self.delete_group)
                     self.wait_for_element(self.confirm_delete)
                     self.click(self.confirm_delete)
-                    assert self.is_visible_and_displayed(self.delete_success_message), "Group deletion not successful"
+                    self.wait_for_element(self.delete_success_message)
                     print("Deleted group: "+group_names[i])
-                    time.sleep(5)
+                    time.sleep(2)
                     self.click_group_menu()
                     self.wait_for_element(self.table_body)
             else:

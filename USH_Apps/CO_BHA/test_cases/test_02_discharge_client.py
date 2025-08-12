@@ -29,7 +29,7 @@ def test_case_discharge_client_1(driver, settings):
                                              property_type=TEXT_INPUT)
     casesearch.search_against_property(search_property=BhaUserInput.reason_for_no_ssn,
                                        input_value=BhaUserInput.does_not_have_ssn,
-                                       property_type=COMBOBOX)
+                                       property_type=COMBOBOX2)
     casesearch.select_checkbox(BhaUserInput.consent, BhaUserInput.yes_small, select_by_value=text)
     webapps.search_button_on_case_search_page()
     app.click_on_admit_new_client()

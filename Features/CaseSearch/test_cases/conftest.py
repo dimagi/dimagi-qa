@@ -3,11 +3,16 @@ import os
 from configparser import ConfigParser
 from pathlib import Path
 from common_utilities.fixtures import *
+from common_utilities.selenium.base_page import BasePage
 
 """"This file provides fixture functions for driver initialization"""
 
 global driver
 
+def pytest_configure(config):
+    if os.environ.get("ENABLE_WAITS") == "true":
+        BasePage.ENABLE_WAIT_AFTER_INTERACTION = True
+        print("[INFO] ENABLE_WAIT_AFTER_INTERACTION = True from environment variable")
 
 @pytest.fixture(scope="session")
 def environment_settings_casesearch():

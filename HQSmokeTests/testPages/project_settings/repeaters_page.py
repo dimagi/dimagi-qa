@@ -55,10 +55,10 @@ class RepeatersPage(BasePage):
         self.wait_to_clear_and_send_keys(self.name_input, self.repeater_name_input)
         self.select_by_text(self.http_req_method_dropdown, UserData.http_req_methods[1])
         self.select_by_text(self.payload_format, UserData.payload_format[0])
-        time.sleep(2)
+        
         self.scroll_to_element(self.submit_button)
-        time.sleep(2)
-        self.js_click(self.submit_button)
+        
+        self.wait_to_click(self.submit_button)
         self.wait_for_element((By.XPATH, self.setup_success.format(self.repeater_name_input)))
 
     def edit_repeater(self):
@@ -70,10 +70,10 @@ class RepeatersPage(BasePage):
         self.wait_for_element(self.name_input)
         self.select_by_text(self.http_req_method_dropdown, UserData.http_req_methods[0])
         self.select_by_text(self.payload_format, UserData.payload_format[1])
-        time.sleep(2)
+        
         self.scroll_to_element(self.submit_button)
-        time.sleep(2)
-        self.js_click(self.submit_button)
+        
+        self.wait_to_click(self.submit_button)
         assert self.is_present_and_displayed(self.update_success), "Edit repeater failed"
         print("Repeater updated successfully")
 

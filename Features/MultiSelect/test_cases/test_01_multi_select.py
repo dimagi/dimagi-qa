@@ -343,6 +343,8 @@ def test_case_16_multiselect_with_case_tiles(driver, settings):
 
 
 def test_case_17_multiselect_enabled_select_parent_first(driver, settings):
+    if 'www' in settings['url']:
+        pytest.skip("Production has a linked app")
     multiselect = MultiSelectWorkflows(driver)
     menu = HomePage(driver, settings)
     menu.applications_menu(MultiSelectUserInput.multiselect_app_name)

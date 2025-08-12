@@ -1,0 +1,52 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"Badge test"
+    },
+    "FUNC_COUNT": {
+        "selections":"0", "title":"counts",
+        "commands": [
+            {
+                "index": 0,
+                "displayText": "clinic count",
+                "navigationState": "JUMP",
+                "badgeText": "1850"
+            },
+            {
+                "index": 1,
+                "displayText": "referal count",
+                "navigationState": "JUMP",
+                "badgeText": "132965"
+            },
+            {
+                "index": 2,
+                "displayText": "referal count one clinic",
+                "navigationState": "JUMP",
+                "badgeText": "2"
+            },
+            {
+                "index": 3,
+                "displayText": "referal count multiple clinics",
+                "navigationState": "JUMP",
+                "badgeText": "1035"
+            },
+            {
+                "index": 4,
+                "displayText": "referal count multiple clinics and open time",
+                "navigationState": "JUMP",
+                "badgeText": "28"
+            },
+            {
+                "index": 5,
+                "displayText": "user clinic count",
+                "navigationState": "JUMP",
+                "badgeText": "2"
+            }
+        ]
+    },
+    "FUNC_CLINIC_COUNT": {
+        "selections":["0","0"], "title":"clinic count"
+    },
+    "FUNC_CLINIC_COUNT_FORM_SUBMIT": {
+        "submitResponseMessage":"'clinic count' successfully saved!"
+    }
+}

@@ -6,6 +6,8 @@ from Features.CaseSearch.constants import *
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.webapps import WebApps
+from common_utilities.selenium.base_page import BasePage
+
 
 """"Contains all case search configurations related test cases"""
 
@@ -96,7 +98,9 @@ def test_case_04_barcode_format(driver, settings):
 def test_case_05_date_range_format(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     """Check date range format search property"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)
     # MM/DD/YYYY
@@ -173,7 +177,7 @@ def test_case_05_date_range_format(driver, settings):
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.six,
                                         expected_value=CaseSearchUserInput.date_16_08_2023
                                         )
-    driver.back()
+    base.back()
     casesearch.reload_page()
     # Date Range Search Again with Enter on keyboard
     webapps.clear_selections_on_case_search_page()
@@ -194,7 +198,7 @@ def test_case_05_date_range_format(driver, settings):
     if 'staging' in settings['url']:
         webapps.search_button_on_case_search_page()
     else:
-        webapps.search_button_on_case_search_page(enter_key=YES)
+        webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.six,
                                         expected_value=casesearch.parse_date(
                                             input_date=date,
@@ -224,6 +228,7 @@ def test_case_06_lookup_table_format(driver, settings):
 def test_case_07_address_geocoder_format(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     """Check receivers in form get autopoulated after bradcast value is provided"""
     webapps.open_menu(CaseSearchUserInput.artist_menu)
@@ -238,9 +243,9 @@ def test_case_07_address_geocoder_format(driver, settings):
     webapps.present_in_data_preview(CaseSearchUserInput.home_country_value)
     webapps.present_in_data_preview(CaseSearchUserInput.home_zipcode_value)
     """Check geocoder format search property"""
-    driver.back()
+    base.back()
     time.sleep(4)
-    driver.back()
+    base.back()
     webapps.search_all_cases()
     webapps.clear_selections_on_case_search_page()
     casesearch.assert_address_is_hidden(CaseSearchUserInput.home_street)
@@ -305,6 +310,7 @@ def test_case_09_single_date_format(driver, settings):
 def test_case_10_is_multiselect_format(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     webapps.login_as(CaseSearchUserInput.user_1)
     """Check multiselect format search property"""
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
@@ -329,10 +335,13 @@ def test_case_10_is_multiselect_format(driver, settings):
                                        input_value=CaseSearchUserInput.artist_case_arijit,
                                        property_type=COMBOBOX
                                        )
+    time.sleep(2)
+    base.wait_after_interaction()
     casesearch.search_against_property(search_property=CaseSearchUserInput.artist,
                                        input_value=CaseSearchUserInput.artist_case_beach_boys,
                                        property_type=COMBOBOX
                                        )
+    time.sleep(2)
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.two,
                                         expected_value=[CaseSearchUserInput.artist_case_arijit,
@@ -408,6 +417,7 @@ def test_case_12_allow_blank_values_geocoder(driver, settings):
 def test_case_13_allow_blank_values_others(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
     """Check allow blanks all formats"""
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)
@@ -473,6 +483,7 @@ def test_case_14_exclude_property_from_case_search(driver, settings):
 def test_case_15_sticky_search_without_default_value(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     """Check sticky search without default value"""
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.normal_menu)
@@ -482,12 +493,14 @@ def test_case_15_sticky_search_without_default_value(driver, settings):
                                        input_value=CaseSearchUserInput.four,
                                        property_type=TEXT_INPUT
                                        )
+    time.sleep(2)
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
                                        input_value=CaseSearchUserInput.three_star,
                                        property_type=COMBOBOX
                                        )
+    time.sleep(2)
     webapps.search_button_on_case_search_page()
-    driver.back()
+    base.back()
     casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.mood,
                                               default_value=CaseSearchUserInput.four,
                                               search_format=text
@@ -573,6 +586,7 @@ def test_case_18_conditionally_required_condition_property(driver, settings):
                                              property_type=COMBOBOX
                                              )
     """Check disabled"""
+    webapps.clear_selections_on_case_search_page()
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
                                        input_value=CaseSearchUserInput.three_star,
                                        property_type=COMBOBOX
@@ -741,7 +755,7 @@ def test_case_24_case_search_validations(driver, settings):
                                        input_value=CaseSearchUserInput.three,
                                        property_type=TEXT_INPUT
                                        )
-    time.sleep(2)
+    
     casesearch.search_against_property(search_property=CaseSearchUserInput.song_name,
                                        input_value=CaseSearchUserInput.value_with_space,
                                        property_type=TEXT_INPUT
@@ -819,13 +833,14 @@ def test_case_25_checkbox_selection(driver, settings):
 def test_case_26_checkbox_selection_sticky_search(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.checkbox_selection_menu)
     driver.refresh()
     casesearch.check_if_checkbox_selected(CaseSearchUserInput.mood, [3, 4])
     webapps.search_button_on_case_search_page()
-    driver.back()
+    base.back()
     casesearch.check_if_checkbox_selected(CaseSearchUserInput.mood, [3, 4])
 
 

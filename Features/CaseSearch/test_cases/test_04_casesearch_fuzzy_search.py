@@ -1,3 +1,5 @@
+import time
+
 from Features.CaseSearch.constants import *
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
@@ -95,7 +97,11 @@ def test_case_05_remove_special_characters(driver, settings):
 def test_case_06_claimed_cases_on_report(driver, settings):
     report = HomePage(driver, settings)
     load = ReportPage(driver)
+    webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_1)
+    webapps.sync_app()
+    time.sleep(100)
     report.reports_menu()
     load.case_list_report()
     casesearch.check_todays_case_claim_present_on_report()

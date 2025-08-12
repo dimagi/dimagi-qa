@@ -4,10 +4,6 @@
 name: Priority Escape Defects Tests
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
     inputs:
       environment:
@@ -52,10 +48,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.13
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.13
 
       - name: Install dependencies
         run: |
@@ -134,7 +130,7 @@ jobs:
 
             let receivers = 'qa-automation@dimagi.com'
             if (context.eventName !== "pull_request" || context.eventName !== "push") {
-              receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com, pruthvi.gottimukkula@fissionlabs.com'
+              receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com'
             }
 
             return {

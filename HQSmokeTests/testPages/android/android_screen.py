@@ -24,12 +24,12 @@ class AndroidScreen:
         self.options = UiAutomator2Options().load_capabilities({
             # Specify device and os_version for testing
             "platformName": "android",
-            "appium:os_version": "10.0",
-            "appium:deviceName": "Google Pixel 4 XL",
+            "appium:platformVersion": "15.0",
+            "appium:deviceName": "Google Pixel 9",
             "appium:automationName": "UIAutomator2",
 
             # Set URL of the application under test
-            "appium:app": "bs://f078e237c9800a05c57e9cbd8f27da71ec787d89",
+            "appium:app": "bs://17a96fd55633b2677cac2464f4b464a94119a4b0",
 
             "appium:autoGrantPermissions": "true",
             "appium:newCommandTimeout": 3600,
@@ -106,7 +106,7 @@ class AndroidScreen:
         assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Add Text "+random_text+"']").is_displayed()
         self.driver.find_element(AppiumBy.XPATH, self.text_field).send_keys(random_text)
         self.driver.find_element(AppiumBy.XPATH, self.submit_button).click()
-        time.sleep(10)
+        time.sleep(2)
         assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='1 form sent to server!']").is_displayed()
         self.driver.find_element(AppiumBy.XPATH, self.sync_button).click()
         time.sleep(3)

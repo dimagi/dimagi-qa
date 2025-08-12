@@ -64,13 +64,13 @@ class TestAppium(unittest.TestCase):
             self.driver.quit()
 
     def click(self, locator):
-        time.sleep(2)
+        
         clickable = ec.visibility_of_element_located(locator)
         element = WebDriverWait(self.driver, 30, poll_frequency=1).until(clickable, message="Couldn't find locator: " + str(locator))
         element.click()
 
     def send_text(self, locator, value):
-        time.sleep(2)
+        
         clickable = ec.visibility_of_element_located(locator)
         element = WebDriverWait(self.driver, 30, poll_frequency=1).until(clickable, message="Couldn't find locator: " + str(locator))
         element.send_keys(value)
@@ -119,14 +119,14 @@ class TestAppium(unittest.TestCase):
         return bool(is_displayed)
 
     def test_form_submission(self) -> None:
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.go_to_menu, 100)
         self.click(self.go_to_menu)
         self.click(self.password_field)
         self.send_text(self.password_field, "auto@test")
-        time.sleep(2)
+        
         self.click(self.password_verify_btn)
-        time.sleep(5)
+        time.sleep(2)
         self.click(self.my_jobs)
         time.sleep(3)
         self.click(self.payment_verification_job)
@@ -146,7 +146,7 @@ class TestAppium(unittest.TestCase):
             self.click(self.next_btn)
             self.wait_for_element(self.finish_btn)
             self.click(self.finish_btn)
-            time.sleep(2)
+            
             self.wait_for_element(self.start_btn)
             self.click(self.back_btn)
             self.wait_for_element(self.launch_app)
@@ -157,7 +157,7 @@ class TestAppium(unittest.TestCase):
                 assert not self.is_present(self.warning),  "Alert present even before limit is crossed"
                 print("Alert not present as expected")
             self.click(self.launch_app)
-            time.sleep(10)
+            time.sleep(2)
 
 if __name__ == '__main__':
     unittest.main()

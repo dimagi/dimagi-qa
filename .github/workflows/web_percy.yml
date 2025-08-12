@@ -1,0 +1,156 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Web Percy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run tests against'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+
+jobs:
+  set_matrix:
+    runs-on: ubuntu-latest
+    if: ${{ !(github.event_name == 'repository_dispatch' && github.event.client_payload.environment == 'staging') }}
+    outputs:
+      matrix: ${{ steps.set-matrix-schedule.outputs.matrix || steps.set-matrix-deploy.outputs.matrix || steps.set-matrix-manual.outputs.matrix || steps.set-matrix-default.outputs.matrix }}
+    steps:
+      - id: set-matrix-manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          
+  build:
+    needs: set_matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.environment }}
+      cancel-in-progress: true
+    name: Web Percy on '${{ matrix.environment }}'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.13
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r POCs/PercyWebApps/requires.txt
+        npm install --global @percy/cli
+
+
+    - name: Web Percy tests with pytest
+      env:
+        DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
+        DIMAGIQA_BHA_USERNAME: ${{ secrets.DIMAGIQA_BHA_USERNAME }}
+        DIMAGIQA_BHA_PASSWORD: ${{ secrets.DIMAGIQA_BHA_PASSWORD }}
+        DIMAGIQA_USH_USER_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_PROD_AUTH_KEY }}
+        DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+        DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+        DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
+        DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
+        DIMAGIQA_USER_B_PWD: ${{ secrets.DIMAGIQA_USER_B_PWD }}
+        WEB_PERCY_TOKEN: ${{ secrets.WEB_PERCY_TOKEN }}
+      run: |
+        echo "client_payload: ${{ toJson(github.event.client_payload) }}"
+        echo "matrix environment: ${{ matrix.environment }}"
+        echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
+        echo ${{env.NOW}}
+        export PERCY_TOKEN="${{ secrets.WEB_PERCY_TOKEN }}"
+        percy exec -- pytest -v --tb=short -n auto --dist=loadfile --reruns 1 --html=web_percy_${{ matrix.environment }}.html --self-contained-html --rootdir= POCs/PercyWebApps/test_cases
+
+    - name: Parse test counts
+      id: parse_counts
+      if: always()
+      run: |
+        # Extract variables from the api_test_counts.txt file
+        while IFS= read -r line; do
+          echo "::set-output name=${line%=*}::${line#*=}"
+        done < percy_test_counts_${{ matrix.environment }}.txt
+
+    - name: Archive test results
+      id: artifact-upload-step
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-result-reports-${{ matrix.environment }}-${{ github.run_id }}
+        path: /home/runner/work/dimagi-qa/dimagi-qa/web_percy_${{ matrix.environment }}.html
+        retention-days: 2
+
+    - name: Fetch artifact ID
+      run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
+
+    - name: Set email vars
+      if: ${{ success() || failure() }}
+      id: configure_email
+      uses: actions/github-script@v6
+      env:
+        JOB_STATUS: ${{ job.status }}
+        CC_ENV: ${{ matrix.environment }}
+      with:
+        script: |
+          const { promises: fs } = require('fs')
+
+          const {JOB_STATUS, NOW, CC_ENV, GITHUB_HEAD_REF} = process.env
+          const prefix = `[${CC_ENV}] BHA - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
+          const suffix = `at ${NOW}`
+
+          let subject = `${prefix} on "deploy_success" ${suffix}`
+          if (context.eventName !== "repository_dispatch") {
+            subject = `${prefix} on branch "${GITHUB_HEAD_REF}" ${suffix}`
+          }
+
+          let bodyFile = './common_utilities/mail_templates/email_pass.md'
+          if (JOB_STATUS !== 'success') {
+            bodyFile = './common_utilities/mail_templates/email_fail.md'
+          }
+
+          let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
+          let testSuite = 'Web Percy'
+          let bodyContent = await fs.readFile(bodyFile, 'utf8')
+          bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
+              .replace(/{{runNumber}}/g, context.runNumber)
+              .replace(/{{environment}}/g, CC_ENV)
+              .replace(/{{testSuite}}/g, testSuite)
+
+          let receivers = 'qa-automation@dimagi.com'
+          if (context.eventName !== "pull_request" || context.eventName !== "push") {
+            receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com'
+          }
+
+          return {
+            "subject": subject,
+            "body": bodyContent,
+            "reference": Math.random().toString(36).substr(2),  // used to prevent threading of similar emails
+            "receivers": receivers
+          }
+
+    - name: Send Result Email
+      if: ${{ failure() }}
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
+        password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
+        subject: ${{ fromJSON(steps.configure_email.outputs.result).subject }}
+        to: ${{ fromJSON(steps.configure_email.outputs.result).receivers }}
+        from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
+        html_body: ${{ fromJSON(steps.configure_email.outputs.result).body }}
+        convert_markdown: true
+        attachments: ${{ github.workspace }}/report_${{ matrix.environment }}.html
+        in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}

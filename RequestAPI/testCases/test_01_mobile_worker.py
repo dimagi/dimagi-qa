@@ -15,7 +15,7 @@ def test_case_1_mobile_worker_creation(settings):
                                                settings['login_pass'])
     test_data["mobile_user_id"] = mobile_user_id
     print(test_data["mobile_user_id"])
-    return test_data["mobile_user_id"]
+    # return test_data["mobile_user_id"]
 
 
 def test_case_2_mobile_worker_edit(settings):

@@ -30,13 +30,13 @@ class CLEPage(BasePage):
     def open_cle(self):
         self.wait_to_click(self.reports_dropdown)
         self.wait_to_click(self.cle)
-        time.sleep(5)
+        time.sleep(2)
 
     def search_query(self, query):
-        self.js_click(self.query_search)
+        self.wait_to_click(self.query_search)
         javaScript = "document.getElementsByName('search_xpath')[0].setAttribute('type', '')"
         self.driver.execute_script(javaScript)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_to_clear_and_send_keys(self.query_search, query)
 
     def capture_time(self, case_type):
@@ -88,7 +88,7 @@ class CLEPage(BasePage):
                 # self.select_by_value(self.pagination, "25")
                 self.capture_time(case_type=case_type)
                 self.sort_and_capture_time(case_type=case_type)
-                time.sleep(20)
+                time.sleep(10)
                 # self.capture_network_perf()
                 print('**************************************')
 
@@ -125,5 +125,5 @@ class CLEPage(BasePage):
             self.wait_to_click(self.apply)
             self.capture_time(case_type=case_type)
             self.sort_and_capture_time(case_type=case_type)
-            time.sleep(20)
+            time.sleep(10)
             print('**************************************')

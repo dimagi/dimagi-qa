@@ -30,7 +30,7 @@ def test_case_55_update_case(driver, settings):
     test_case_update_case["case_id"] = case_id
     test_case_update_case["case_name"] = case_name
     test_case_update_case["value"] = value
-    return test_case_update_case
+    # return test_case_update_case
 
 
 @pytest.mark.data
@@ -100,9 +100,9 @@ def test_case_55_verify_change_in_export_data(driver, settings):
     home = HomePage(driver, settings)
     home.data_menu()
     export = ExportDataPage(driver)
-    export.add_updated_case_exports()
+    export_name = export.add_updated_case_exports()
     export.verify_export_has_updated_case_data(test_case_update_case["case_id"],
                                                test_case_update_case["case_name"],
-                                               test_case_update_case["value"])
+                                               test_case_update_case["value"], export_name)
     home.data_menu()
     export.clean_up_case_data()

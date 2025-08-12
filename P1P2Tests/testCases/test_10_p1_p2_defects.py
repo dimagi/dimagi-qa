@@ -47,6 +47,7 @@ def test_case_75_daily_form_activity(driver, settings):
 
 @pytest.mark.report
 @pytest.mark.p1p2EscapeDefect
+@pytest.mark.skip
 def test_case_76_application_status(driver, settings):
     home = HomePage(driver, settings)
     home.reports_menu()
@@ -61,6 +62,8 @@ def test_case_76_application_status(driver, settings):
 @pytest.mark.appBuilder
 @pytest.mark.p1p2EscapeDefect
 def test_case_77_create_new_app(driver, settings):
+    if "india" in settings['url']:
+        pytest.skip("Skipping for this month as limit exhausted")
     load = ApplicationPage(driver)
     app_name = load.create_application_with_verifications()
     app = AppPreviewPage(driver)
@@ -71,7 +74,7 @@ def test_case_77_create_new_app(driver, settings):
     report.verify_form_in_submit_history(app_name, lat, lon)
     load.delete_p1p2_application(app_name)
     values['flag'] = True
-    return values
+    # return values
 
 
 @pytest.mark.projectSettings

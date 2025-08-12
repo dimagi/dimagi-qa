@@ -47,7 +47,7 @@ class DeduplicateCasePage(BasePage):
         else:
             self.select_by_value(self.case_property_drop_down, UserData.case_property)
         self.wait_to_click(self.save_rule_button)
-        time.sleep(10)
+        time.sleep(2)
         assert self.is_present_and_displayed(self.success_message)
         print("New Rule to find Deduplicate Cases created successfully!")
 
@@ -55,14 +55,14 @@ class DeduplicateCasePage(BasePage):
         self.open_deduplicate_case_page()
         self.wait_to_click(self.delete_rule)
         self.wait_to_click(self.delete_confirm)
-        self.driver.refresh()
-        time.sleep(5)
+        self.reload_page()
+        time.sleep(2)
         try:
             isPresent = self.is_present(self.rule_created_path)
-            time.sleep(2)
+            
         except (TimeoutException, NoSuchElementException):
             isPresent = False
-            time.sleep(2)
+            
         assert isPresent == False
         print("Rule removed successfully!")
 

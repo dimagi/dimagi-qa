@@ -1,3 +1,5 @@
+import time
+
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.webapps import WebApps
@@ -59,18 +61,25 @@ def test_case_03_search_property_settings(driver, settings):
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
                                        input_value=CaseSearchUserInput.four_star,
                                        property_type=COMBOBOX)
+    time.sleep(1)
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
                                        input_value=CaseSearchUserInput.five_star,
                                        property_type=COMBOBOX,
                                        include_blanks=YES)
+    time.sleep(2)
+    flag = casesearch.check_values_selected(search_property=CaseSearchUserInput.rating,
+                                     value_list=[CaseSearchUserInput.four_star, CaseSearchUserInput.five_star],
+                                     rating=YES)
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.four,
                                         expected_value=[CaseSearchUserInput.four,
                                                         CaseSearchUserInput.five,
                                                         CaseSearchUserInput.blank],
-                                        is_multi=YES)
+                                        is_multi=YES,
+                                        flag=flag)
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.seven,
-                                        expected_value=CaseSearchUserInput.rating_four_and_five)
+                                        expected_value=CaseSearchUserInput.rating_four_and_five,
+                                        flag=flag)
     webapps.select_first_case_on_list()
     casesearch.check_value_on_case_detail(tabname=CaseSearchUserInput.rating,
                                           search_property=CaseSearchUserInput.rating_input,

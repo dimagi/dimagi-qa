@@ -23,6 +23,7 @@ class MultiSelectWorkflows(BasePage):
         self.checkbox = "(//td[@class='module-case-list-column' and text() = '{}'][1]//preceding::input[1])[1]"
         self.dropdown_menu_value = (By.XPATH, "//*[contains(@data-bind,'moduleOptions, value')]/option")
         self.max_limit_error = (By.XPATH, "//div[contains(text(),'Too many cases')]")
+        self.close_alerts = (By.XPATH, "//div[contains(@class, 'alert-danger')]//button[contains(@class,'close')]")
         self.open_app_builder_menu = "//span[contains(text(),'{}')]"
         self.case_list_settings = (By.XPATH, "//a[@href='#case-detail-screen-config-tab']")
         """Case Tiles"""
@@ -33,8 +34,7 @@ class MultiSelectWorkflows(BasePage):
         song_names = []
         for i in range(1, case_count+1):
             row_checkbox = self.get_element(self.row_checkbox_xpath, str(i))
-            time.sleep(2)
-            self.js_click(row_checkbox)
+            self.wait_to_click(row_checkbox)
             case_name_in_table = self.get_element(self.value_in_table_format, str(i))
             selected_song_names = self.get_text(case_name_in_table)
             song_names.append(selected_song_names)
@@ -60,8 +60,9 @@ class MultiSelectWorkflows(BasePage):
         self.js_click(self.select_all_tile_checkbox)
 
     def continue_to_proceed_multiselect(self):
+        self.wait_for_element(self.multi_select_continue)
         self.js_click(self.multi_select_continue)
-        self.wait_for_ajax()
+        self.wait_after_interaction()
 
     def check_no_of_cases_on_form(self, max_size, type):
         song_names_on_form = self.find_elements_texts((By.XPATH, self.selected_case_names_on_forms.format(type)))
@@ -74,8 +75,14 @@ class MultiSelectWorkflows(BasePage):
         assert self.is_displayed(self.max_limit_error), "Max limit error not displayed"
         print("Max limit error displayed as expected")
 
+    def close_all_alerts(self):
+        list_alert = self.find_elements(self.close_alerts)
+        print("Number of alerts present: ", len(list_alert))
+        for i in reversed(list_alert):
+            self.click(i)
+
     def check_selected_cases_present_on_form(self, items_selected_on_case_list, case_type):
-        time.sleep(5)
+        time.sleep(2)
         stripped_final = None
         song_names_on_form = self.find_elements_texts((By.XPATH, self.selected_case_names_on_forms.format(str(case_type).lower())))
         if case_type == SONG:
@@ -88,7 +95,7 @@ class MultiSelectWorkflows(BasePage):
         print(f"List1 {items_selected_on_case_list} matches List2 {stripped_final}")
 
     def select_case_on_case_detail(self):
-        self.js_click(self.select_case_button)
+        self.wait_to_click(self.select_case_button)
 
     def check_if_checkbox_is_selected(self, case_name):
         checkbox = self.get_element(self.checkbox, case_name)
@@ -112,7 +119,9 @@ class MultiSelectWorkflows(BasePage):
 
     def open_menu_settings(self, menu):
         menu_xpath = self.get_element(self.open_app_builder_menu, menu)
+        self.wait_for_element(menu_xpath)
         self.js_click(menu_xpath)
+        self.wait_for_element(self.case_list_settings)
         self.js_click(self.case_list_settings)
 
 

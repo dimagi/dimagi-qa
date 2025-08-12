@@ -2,12 +2,15 @@ import os
 
 from configparser import ConfigParser
 from pathlib import Path
+
+import pytest_html
+
 from common_utilities.fixtures import *
+from datetime import datetime
 
 """"This file provides fixture functions for driver initialization"""
 
 global driver
-
 
 @pytest.fixture(scope="session")
 def environment_settings_hq():
@@ -25,7 +28,7 @@ def environment_settings_hq():
             """
     settings = {}
     for name in ["url", "login_username", "login_password", "mail_username",
-                 "mail_password", "bs_user", "bs_key", "staging_auth_key", "prod_auth_key", "india_auth_key","invited_webuser_password", "imap_password"]:
+                 "mail_password", "bs_user", "bs_key", "staging_auth_key", "prod_auth_key", "india_auth_key", "eu_auth_key", "invited_webuser_password", "imap_password"]:
 
         var = f"DIMAGIQA_{name.upper()}"
         if var in os.environ:
@@ -46,7 +49,7 @@ def settings(environment_settings_hq):
         settings["CI"] = "true"
         if any(x not in settings for x in ["url", "login_username", "login_password",
                                            "mail_username", "mail_password", "bs_user", "bs_key", "staging_auth_key",
-                                           "prod_auth_key", "india_auth_key","invited_webuser_password", "imap_password"]):
+                                           "prod_auth_key", "india_auth_key", "eu_auth_key", "invited_webuser_password", "imap_password"]):
             lines = environment_settings_hq.__doc__.splitlines()
             vars_ = "\n  ".join(line.strip() for line in lines if "DIMAGIQA_" in line)
             raise RuntimeError(
@@ -70,6 +73,7 @@ def settings(environment_settings_hq):
     else:
         settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation"
     return settings["default"]
+
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     # Collect test counts

@@ -42,6 +42,16 @@ jobs:
         if: ${{ github.event_name != 'repository_dispatch' }}
         run: |
           echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\"]}"
+      - id: invalid-deploy
+        if: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment != 'production' }}
+        run: |
+          echo "Invalid environment: ${{ github.event.client_payload.environment }}"
+          exit 1
+      - id: block-india-deploy
+        if: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == 'india' }}
+        run: |
+          echo "India environment is not allowed for deployment runs."
+          exit 1
 
   build:
     needs: set_matrix
@@ -55,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.13
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.13
 
       - name: Install dependencies
         run: |
@@ -73,6 +83,7 @@ jobs:
           DIMAGIQA_SSCS_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_SSCS_PROD_AUTH_KEY }}
           DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+          ENABLE_WAITS: 'true'
         run: |
           echo "client_payload: ${{ toJson(github.event.client_payload) }}"
           echo "matrix environment: ${{ matrix.environment }}"

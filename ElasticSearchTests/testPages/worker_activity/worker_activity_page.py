@@ -133,7 +133,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click(self.worker_activity_rep)
         self.wait_for_element(self.hide_filters_options)
         self.click(self.hide_filters_options)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.users_field, 10), "User field is still present"
         assert not self.is_visible_and_displayed(self.view_by_dropdown, 10), "View By field is still present"
         assert not self.is_visible_and_displayed(self.date_input, 10), "Date Range field is still present"
@@ -144,7 +144,7 @@ class WorkerActivityPage(BasePage):
     def show_filters(self):
         self.wait_for_element(self.show_filters_options)
         self.click(self.show_filters_options)
-        time.sleep(2)
+        
         assert self.is_present(self.users_field), "User field is not present"
         assert self.is_present(self.view_by_dropdown), "View By field is not present"
         assert self.is_present(self.date_input), "Date Range field is not present"
@@ -158,25 +158,25 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present(self.user_column), "User Column not present"
         for item in UserData.wa_column_group_names:
-            assert self.is_visible_and_displayed((By.XPATH, self.column_group_names.format(item))), "Column not present"
+            self.wait_for_element((By.XPATH, self.column_group_names.format(item)))
             print(item, " is present!")
 
         for item in UserData.wa_column_names:
-            assert self.is_visible_and_displayed(
+            self.wait_for_element(
                 (By.XPATH, self.column_names.format(item))), " Column " + item + " not present"
             print(item, " is present!")
 
@@ -194,10 +194,10 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[1])
         self.wait_to_click(self.case_type_textarea)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.case_type_list_empty, 10), "Case Type List is not empty"
         list = self.find_elements(self.case_type_list)
         print(len(list))
@@ -206,21 +206,21 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click((By.XPATH, self.case_type_list_item.format(UserData.case_pregnancy)))
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[2])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present(self.group_column), "Group Column not present"
         assert self.is_present((By.XPATH, self.result_rows_names.format(
             UserData.user_group))), "Group user " + UserData.user_group + " is not present in results."
         print("Group User " + UserData.user_group + " is present in results.")
         self.click((By.LINK_TEXT, UserData.user_group))
         self.switch_to_next_tab()
-        time.sleep(5)
+        time.sleep(2)
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.wait_for_element(self.result_table, 60)
         assert UserData.view_by[0] == self.get_selected_text(self.view_by_dropdown), "Values do not match " + \
@@ -231,7 +231,7 @@ class WorkerActivityPage(BasePage):
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
         self.driver.close()
-        time.sleep(2)
+        
         self.switch_back_to_prev_tab()
 
     def worker_activity_pagination_list(self):
@@ -241,11 +241,11 @@ class WorkerActivityPage(BasePage):
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[1])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         pages = self.find_elements(self.pagination_list)
@@ -261,7 +261,7 @@ class WorkerActivityPage(BasePage):
             time.sleep(15)
             assert self.is_present(self.next_page_button_disabled), "Next button is not disabled."
             print("Next button disabled correctly")
-            time.sleep(5)
+            time.sleep(2)
             print("Clicking on page " + first_page)
             self.wait_to_click((By.XPATH, self.page_button.format(first_page)))
             time.sleep(15)
@@ -270,7 +270,7 @@ class WorkerActivityPage(BasePage):
             for item in list1:
                 list1_names.append(item.text)
             self.wait_to_click(self.next_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list2 = self.find_elements(self.user_names_column_list)
             list2_names = list()
             for item in list2:
@@ -279,7 +279,7 @@ class WorkerActivityPage(BasePage):
             assert list1_names != list2_names, "Both Pages have same values"
             print("Next button functioning correctly.")
             self.wait_to_click(self.prev_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list3 = self.find_elements(self.user_names_column_list)
             list3_names = list()
             for item in list3:
@@ -300,7 +300,7 @@ class WorkerActivityPage(BasePage):
 
         for item in UserData.pagination:
             self.select_by_value(self.page_list_dropdown, item)
-            time.sleep(10)
+            time.sleep(2)
             list = self.find_elements(self.user_names_column_list)
             print(len(list))
             if int(info[-2]) < int(item):
@@ -359,10 +359,10 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.case_type_textarea)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.case_type_list_empty, 10), "Case Type List is not empty"
         case_list = self.find_elements(self.case_type_list)
         print(len(case_list))
@@ -371,7 +371,7 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click((By.XPATH, self.case_type_list_item.format(UserData.case_reassign)))
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(date_range)))
-        time.sleep(2)
+        
         text = self.get_attribute(self.date_input, "value")
         print(text)
         if date_range == UserData.date_range[0]:
@@ -382,12 +382,12 @@ class WorkerActivityPage(BasePage):
             date_string, start_date, end_date = self.value_date_range_30_days()
         assert text == date_string
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         date_list = self.find_elements(self.last_submission_column_list)
         date_values = list()
         for item in date_list:
@@ -418,10 +418,10 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.case_type_textarea)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.case_type_list_empty, 10), "Case Type List is not empty"
         case_list = self.find_elements(self.case_type_list)
         print(len(case_list))
@@ -432,17 +432,17 @@ class WorkerActivityPage(BasePage):
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[3])))
         date_string, start_date, end_date = self.get_custom_dates_past(0, 0, 5)
         self.select_date_from_picker(start_date, end_date)
-        time.sleep(2)
+        
         text = self.get_attribute(self.date_input, "value")
         print(text)
         assert text == date_string
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         date_list = self.find_elements(self.last_submission_column_list)
         date_values = list()
         for item in date_list:
@@ -478,18 +478,18 @@ class WorkerActivityPage(BasePage):
         end_year = str(end_date.year)
         self.wait_for_element(self.from_month)
         self.select_by_value(self.from_year, start_year)
-        time.sleep(2)
+        
         self.select_by_value(self.from_month, start_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.from_date.format(start_day)))
-        time.sleep(2)
+        
         self.wait_for_element(self.to_month)
         self.select_by_value(self.to_year, end_year)
-        time.sleep(2)
+        
         self.select_by_value(self.to_month, end_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.to_date.format(end_day)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_date)
 
     def worker_activity_save_report(self):
@@ -498,10 +498,10 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.case_type_textarea)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.case_type_list_empty, 10), "Case Type List is not empty"
         case_list = self.find_elements(self.case_type_list)
         print(len(case_list))
@@ -514,10 +514,10 @@ class WorkerActivityPage(BasePage):
         time.sleep(15)
         report_name = "Saved Worker Activity Report " + fetch_random_string()
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_case_type_data()
-        time.sleep(10)
+        time.sleep(2)
         self.verify_favorite_empty(report_name)
         self.save_report_donot_save(report_name)
         self.save_report(report_name)
@@ -531,7 +531,7 @@ class WorkerActivityPage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            assert self.is_visible_and_displayed(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -540,18 +540,18 @@ class WorkerActivityPage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
     def delete_saved_report(self, report):
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report)), 120)
         print("Report Present!")
         self.click((By.XPATH, self.delete_saved.format(report)))
         print("Deleted Saved Report")
-        time.sleep(5)
-        self.driver.refresh()
+        time.sleep(2)
+        self.reload_page()
         assert not self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 20)
         print("Deleted Report Successfully")
 
@@ -564,7 +564,7 @@ class WorkerActivityPage(BasePage):
         assert UserData.date_range[0].casefold() == text.casefold(), "Date Range does not match"
         print("Date range is matching")
         self.wait_to_click(self.cancel_report_button)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.name_field, 10), "Save Report Form not closed"
         print("Save Report Form is closed")
 
@@ -578,10 +578,10 @@ class WorkerActivityPage(BasePage):
         assert UserData.date_range[0].casefold() == text.casefold(), "Date Range does not match"
         print("Date range is matching")
         self.wait_to_click(self.save_report_button)
-        time.sleep(2)
-        self.driver.refresh()
+        
+        self.reload_page()
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report_name)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report_name)), 120)
         print("Report Saved successfully!")
 
     def verify_case_type_data(self):
@@ -595,7 +595,7 @@ class WorkerActivityPage(BasePage):
                 else:
                     self.wait_to_click(item)
                     self.switch_to_next_tab()
-                    time.sleep(10)
+                    time.sleep(2)
                     self.wait_for_element(self.case_list_table_title, 200)
                     self.scroll_to_bottom()
                     info = self.get_text(self.case_list_table_info)
@@ -604,16 +604,16 @@ class WorkerActivityPage(BasePage):
                     assert info[-2] == text, "Case created count mismatch"
                     print("Cases created count matched")
                     self.select_by_value(self.case_list_page_dropdown, '100')
-                    time.sleep(10)
+                    time.sleep(2)
                     cases = self.find_elements(self.case_list_table)
                     if len(cases) > 0:
                         for case in cases:
                             name = case.text
                             assert name == UserData.case_reassign, "Case Type mismatch"
                             print("Case Type matching")
-                    time.sleep(2)
+                    
                     self.driver.close()
-                    time.sleep(2)
+                    
                     self.switch_back_to_prev_tab()
 
     def export_worker_activity_to_excel(self):
@@ -622,18 +622,18 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.case_type_textarea)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.case_type_list_empty, 10), "Case Type List is not empty"
         self.wait_to_click((By.XPATH, self.case_type_list_item.format(UserData.case_reassign)))
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -652,7 +652,7 @@ class WorkerActivityPage(BasePage):
         print(link)
         print(web_data)
         self.driver.get(link)
-        time.sleep(10)
+        time.sleep(2)
         newest_file = latest_download_file()
         path = os.path.join(PathSettings.DOWNLOAD_PATH, newest_file)
         print(path)
@@ -687,18 +687,18 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.case_type_textarea)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.case_type_list_empty, 10), "Case Type List is not empty"
         self.wait_to_click((By.XPATH, self.case_type_list_item.format(UserData.case_reassign)))
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -728,7 +728,7 @@ class WorkerActivityPage(BasePage):
         self.wait_for_element(self.email_subject_field)
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        assert self.is_visible_and_displayed(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_wa_with_html_table(self, table_data, web_data):
@@ -749,21 +749,21 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         # self.wait_to_click(self.case_type_textarea)
-        # time.sleep(2)
+        # 
         # self.wait_to_click((By.XPATH, self.case_type_list_item.format(UserData.sub_case)))
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[2])))
         date_string, start_date, end_date = self.value_date_range_30_days()
         # date_string, start_date, end_date = self.get_custom_dates_past(0, 0, 1)
         # self.select_date_from_picker(start_date, end_date)
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         # self.verify_users_in_the_group()
@@ -790,18 +790,18 @@ class WorkerActivityPage(BasePage):
         assert self.WORKER_ACTIVITY_TITLE in self.driver.title, "This is not the Worker Activity page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         # self.wait_to_click(self.case_type_textarea)
-        # time.sleep(2)
+        # 
         # self.wait_to_click((By.XPATH, self.case_type_list_item.format(UserData.sub_case)))
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[2])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         # self.verify_users_in_the_group()

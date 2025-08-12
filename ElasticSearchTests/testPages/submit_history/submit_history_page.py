@@ -34,8 +34,8 @@ class SubmitHistoryPage(BasePage):
 
         # Mobile Worker Reports
         self.reports_menu_id = (By.ID, "ProjectReportsTab")
-        self.submit_history_rep = (By.LINK_TEXT, "Submit History")
-        self.SUBMIT_HISTORY_TITLE = "Submit History - CommCare HQ"
+        self.submit_history_rep = (By.LINK_TEXT, "Submission History")
+        self.SUBMIT_HISTORY_TITLE = "Submission History - CommCare HQ"
 
         # Report Elements
         self.apply_id = (By.ID, "apply-filters")
@@ -204,7 +204,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.submit_history_rep)
         self.wait_for_element(self.hide_filters_options)
         self.click(self.hide_filters_options)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.users_field, 10), "User field is still present"
         assert not self.is_visible_and_displayed(self.application_dropdown, 10), "Application dropdown is still present"
         assert not self.is_visible_and_displayed(self.show_adv_options,
@@ -217,7 +217,7 @@ class SubmitHistoryPage(BasePage):
     def show_filters(self):
         self.wait_for_element(self.show_filters_options)
         self.click(self.show_filters_options)
-        time.sleep(2)
+        
         assert self.is_present(self.users_field), "User field is not present"
         assert self.is_present(self.date_input), "Date Range field is not present"
         assert self.is_present(self.application_dropdown), "Application dropdown is not present"
@@ -228,7 +228,7 @@ class SubmitHistoryPage(BasePage):
 
     def verify_submit_history_page_fields_columns(self):
         self.wait_to_click(self.submit_history_rep)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.SUBMIT_HISTORY_TITLE in self.driver.title, "This is not the Submit History page."
         assert self.is_present(self.users_field), "User field is not present"
@@ -247,12 +247,12 @@ class SubmitHistoryPage(BasePage):
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, fetch_random_string())
-        time.sleep(2)
+        
         assert self.is_present(self.no_results), "No results not displayed"
         self.clear(self.users_field)
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         filter = self.get_all_dropdown_options(self.filter_dates_by)
         print(filter)
         assert filter == UserData.filter_dates_by
@@ -279,12 +279,12 @@ class SubmitHistoryPage(BasePage):
         print("Date pop up cancelled")
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
         assert self.is_present(self.report_loading), "Loading Report block is not present"
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -313,21 +313,21 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         text = self.get_attribute(self.date_input, "value")
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present(self.user_column), "Username Column not present"
         assert self.is_present(self.total_column), "Total Column not present"
         list_of_columns = self.date_generator(start_date, end_date)
@@ -335,7 +335,7 @@ class SubmitHistoryPage(BasePage):
 
     def verify_user_lookup_table(self):
         self.wait_to_click(self.users_field)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.users_list_empty, 10), "Case Type List is not empty"
         list = self.find_elements(self.users_list)
         print(len(list))
@@ -362,10 +362,10 @@ class SubmitHistoryPage(BasePage):
         print(len(count))
         for i in range(len(count)):
              count[0].click()
-             time.sleep(2)
+             
              if len(count) != 1:
                 ActionChains(self.driver).send_keys(Keys.TAB).perform()
-                time.sleep(2)
+                
              count = self.find_elements(self.remove_buttons)
 
     def verify_date_column_name_headers(self, date_list):
@@ -419,11 +419,11 @@ class SubmitHistoryPage(BasePage):
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
         assert text == date_string
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         pages = self.find_elements(self.pagination_list)
@@ -439,7 +439,7 @@ class SubmitHistoryPage(BasePage):
             time.sleep(15)
             assert self.is_present(self.next_page_button_disabled), "Next button is not disabled."
             print("Next button disabled correctly")
-            time.sleep(5)
+            time.sleep(2)
             print("Clicking on page " + first_page)
             self.wait_to_click((By.XPATH, self.page_button.format(first_page)))
             time.sleep(15)
@@ -448,7 +448,7 @@ class SubmitHistoryPage(BasePage):
             for item in list1:
                 list1_names.append(item.text)
             self.wait_to_click(self.next_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list2 = self.find_elements(self.user_names_column_list)
             list2_names = list()
             for item in list2:
@@ -460,7 +460,7 @@ class SubmitHistoryPage(BasePage):
                 assert list1_names != list2_names, "Both Pages have same values"
             print("Next button functioning correctly.")
             self.wait_to_click(self.prev_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list3 = self.find_elements(self.user_names_column_list)
             list3_names = list()
             for item in list3:
@@ -479,7 +479,7 @@ class SubmitHistoryPage(BasePage):
 
     def verify_sorted_list(self, col_name):
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         self.wait_to_click((By.XPATH, self.user_sort.format(col_name)))
         time.sleep(15)
         if "User" in col_name:
@@ -604,11 +604,11 @@ class SubmitHistoryPage(BasePage):
             text = self.get_attribute(self.date_input, "value")
             print(text)
             assert text == date_string
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         print("All date ranges are correctly updated in the date range field")
 
@@ -669,12 +669,12 @@ class SubmitHistoryPage(BasePage):
         text = self.get_attribute(self.date_input, "value")
         print(text)
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present_and_displayed(self.date_range_error), "Date Range Error not displayed"
         print("Date Range error correctly displayed")
         self.wait_to_click(self.submit_history_rep)
@@ -684,17 +684,17 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[3])))
         date_string, start_date, end_date = self.get_custom_dates_past(20, 0, 0)
         self.select_date_from_picker(start_date, end_date)
-        time.sleep(2)
+        
         text = self.get_attribute(self.date_input, "value")
         print(text)
         assert text == date_string
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         list_of_columns = self.date_generator(start_date, end_date)
         self.verify_date_column_name_headers(list_of_columns)
         print("Dates are with in range for " + UserData.date_range[3])
@@ -723,18 +723,18 @@ class SubmitHistoryPage(BasePage):
         end_year = str(end_date.year)
         self.wait_for_element(self.from_month)
         self.select_by_value(self.from_year, start_year)
-        time.sleep(2)
+        
         self.select_by_value(self.from_month, start_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.from_date.format(start_day)))
-        time.sleep(2)
+        
         self.wait_for_element(self.to_month)
         self.select_by_value(self.to_year, end_year)
-        time.sleep(2)
+        
         self.select_by_value(self.to_month, end_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.to_date.format(end_day)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_date)
 
     def submit_history_save_report(self):
@@ -745,21 +745,21 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         text = self.get_attribute(self.date_input, "value")
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
-        time.sleep(10)
+        time.sleep(2)
         report_name = "Saved Submit History Report " + fetch_random_string()
         self.verify_favorite_empty(report_name)
         self.save_report_donot_save(report_name)
@@ -767,7 +767,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.submit_history_rep)
         self.wait_for_element(self.apply_id, 100)
         self.verify_favorite_created(report)
-        time.sleep(10)
+        time.sleep(2)
         self.verify_users_in_the_group()
         print("Dates are with in range for " + UserData.date_range[0])
         self.delete_saved_report(report)
@@ -777,7 +777,7 @@ class SubmitHistoryPage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            assert self.is_visible_and_displayed(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -786,18 +786,18 @@ class SubmitHistoryPage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
     def delete_saved_report(self, report):
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report)), 120)
         print("Report Present!")
         self.click((By.XPATH, self.delete_saved.format(report)))
         print("Deleted Saved Report")
-        time.sleep(5)
-        self.driver.refresh()
+        time.sleep(2)
+        self.reload_page()
         assert not self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 20)
         print("Deleted Report Successfully")
 
@@ -815,7 +815,7 @@ class SubmitHistoryPage(BasePage):
         assert UserData.date_range[0].casefold() == text.casefold(), "Date Range does not match"
         print("Date range is matching")
         self.wait_to_click(self.cancel_report_button)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.name_field, 10), "Save Report Form not closed"
         assert not self.is_visible_and_displayed(self.description_field, 10)
         assert not self.is_visible_and_displayed(self.date_range_field_select, 10)
@@ -837,10 +837,10 @@ class SubmitHistoryPage(BasePage):
         assert UserData.date_range[0].casefold() == text.casefold(), "Date Range does not match"
         print("Date range is matching")
         self.wait_to_click(self.try_again_button)
-        time.sleep(2)
-        self.driver.refresh()
+        
+        self.reload_page()
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report_name)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report_name)), 120)
         print("Report Saved successfully!")
         print("Report name: ", report_name)
         return report_name
@@ -856,7 +856,7 @@ class SubmitHistoryPage(BasePage):
                 else:
                     self.wait_to_click(item)
                     self.switch_to_next_tab()
-                    time.sleep(10)
+                    time.sleep(2)
                     self.wait_for_element(self.case_list_table_title, 200)
                     self.scroll_to_bottom()
                     info = self.get_text(self.case_list_table_info)
@@ -865,16 +865,16 @@ class SubmitHistoryPage(BasePage):
                     assert info[-2] == text, "Case created count mismatch"
                     print("Cases created count matched")
                     self.select_by_value(self.case_list_page_dropdown, '100')
-                    time.sleep(10)
+                    time.sleep(2)
                     cases = self.find_elements(self.case_list_table)
                     if len(cases) > 0:
                         for case in cases:
                             name = case.text
                             assert name == UserData.case_reassign, "Case Type mismatch"
                             print("Case Type matching")
-                    time.sleep(2)
+                    
                     self.driver.close()
-                    time.sleep(2)
+                    
                     self.switch_back_to_prev_tab()
 
     def export_submit_history_to_excel(self):
@@ -885,15 +885,15 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.form_activity_results)
@@ -913,7 +913,7 @@ class SubmitHistoryPage(BasePage):
         print(link)
         print(web_data)
         self.driver.get(link)
-        time.sleep(10)
+        time.sleep(2)
         newest_file = latest_download_file()
         path = os.path.join(PathSettings.DOWNLOAD_PATH, newest_file)
         print(path)
@@ -943,15 +943,15 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -981,7 +981,7 @@ class SubmitHistoryPage(BasePage):
         self.wait_for_element(self.email_subject_field)
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        assert self.is_visible_and_displayed(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_dfa_with_html_table(self, table_data, web_data):
@@ -1003,24 +1003,24 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.remove_active_worker)
         assert not self.is_present(self.remove_active_worker), "Active Mobile Worker is still not removed"
         print("Active Mobile Worker is removed successfully")
-        self.driver.refresh()
+        self.reload_page()
         self.wait_for_element(self.apply_id, 100)
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[0])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[0])))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         assert not self.is_present((By.XPATH, self.result_rows_names.format(UserData.deactivated_user))), "Deactivated user " + UserData.deactivated_user + " is present in the active worker list."
         print("All Active users are present")
 
@@ -1033,24 +1033,24 @@ class SubmitHistoryPage(BasePage):
         self.wait_to_click(self.remove_deactive_worker)
         assert not self.is_present(self.remove_deactive_worker), "Deactivated Mobile Worker is still not removed"
         print("Deactivated Mobile Worker is removed successfully")
-        self.driver.refresh()
+        self.reload_page()
         self.wait_for_element(self.apply_id, 100)
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[1])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[1])))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         assert self.is_present((By.XPATH, self.result_rows_names.format(UserData.deactivated_user))), "Deactivated user " + UserData.deactivated_user + " is not present in the Deactivated worker list."
         print("All Deactivated users are present")
 
@@ -1063,14 +1063,14 @@ class SubmitHistoryPage(BasePage):
         assert self.SUBMIT_HISTORY_TITLE in self.driver.title, "This is not the Submit History page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[2])))
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -1100,16 +1100,16 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, filter)
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         date_string = self.get_attribute(self.date_input, "value")
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -1125,11 +1125,11 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[0])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[0])))
-        time.sleep(1)
+        
         self.wait_to_click(self.show_adv_options)
         assert self.is_selected(self.show_adv_options), "Show Advanced Options is not selected"
         print("Show Advanced Option is successfully selected")
-        time.sleep(2)
+        
         assert self.is_present(self.known_forms), "Known Forms option not present"
         assert self.is_present(self.unknown_forms), "Unknown Forms option not present"
         assert self.is_present(self.application_type_dropdown), "Application Type dropdown not present"
@@ -1137,7 +1137,7 @@ class SubmitHistoryPage(BasePage):
         self.unknown_forms_options(active_apps, deleted_apps)
         self.wait_to_click(self.show_adv_options)
         assert not self.is_selected(self.show_adv_options), "Show Advanced Options is still selected"
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.known_forms, 10), "Known Forms option still present"
         assert not self.is_visible_and_displayed(self.unknown_forms, 10), "Unknown Forms option still present"
         print("All Show Advanced Options are working correctly")
@@ -1151,18 +1151,18 @@ class SubmitHistoryPage(BasePage):
 
         self.verify_dropdown_options(self.application_type_dropdown, UserData.app_type_list)
         self.select_by_text(self.application_type_dropdown, UserData.app_type_list[0])
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.application_dropdown, 10), "Application dropdown is still present"
         print("Application dropdown successfully disappeared after selecting option ", UserData.app_type_list[0])
         self.select_by_text(self.application_type_dropdown, UserData.app_type_list[2])
-        time.sleep(2)
+        
         assert self.is_present(self.application_dropdown), "Application dropdown is not present"
         list_app_active = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app_active[1:]:
             assert "[Deleted Application]" in items, "Not a Deleted Application option"
         print("All Deleted Application present")
         self.select_by_text(self.application_type_dropdown, UserData.app_type_list[1])
-        time.sleep(2)
+        
         assert self.is_present(self.application_dropdown), "Application dropdown is not present"
         list_app_deleted = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app_deleted[1:]:
@@ -1182,7 +1182,7 @@ class SubmitHistoryPage(BasePage):
         else:
             assert self.is_selected(self.unknown_forms), "Unknown Forms radio button is not selected"
 
-        assert self.is_visible_and_displayed(self.unknown_form_dropdown), "Unknown forms dropdown is not present"
+        self.wait_for_element(self.unknown_form_dropdown)
         print("Application dropdown successfully disappeared after selecting option ", UserData.app_type_list[0])
         list_app = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app[1:]:
@@ -1198,33 +1198,33 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.app_login)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.app_login)))
-        time.sleep(1)
+        
         self.send_keys(self.users_field, UserData.web_user_email)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.web_user_email)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         text = self.get_attribute(self.date_input, "value")
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.app_login, UserData.web_user_email])
-        time.sleep(10)
+        time.sleep(2)
         self.scroll_to_element((By.XPATH, self.custome_remove_button.format(UserData.web_user_email)))
         self.click((By.XPATH, self.custome_remove_button.format(UserData.web_user_email)))
-        time.sleep(2)
+        
         ActionChains(self.driver).send_keys(Keys.TAB).perform()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.app_login])
         self.verify_users_used_not_in_the_group([UserData.web_user_email])
@@ -1239,21 +1239,21 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, user)
         self.wait_to_click((By.XPATH, self.users_list_item.format(user)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         text = self.get_attribute(self.date_input, "value")
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([user])
-        time.sleep(2)
+        
 
     def verify_form_links(self):
         self.wait_to_click(self.submit_history_rep)
@@ -1263,7 +1263,7 @@ class SubmitHistoryPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.web_user_email)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.web_user_email)))
-        time.sleep(1)
+        
         self.select_application_and_forms(UserData.reassign_cases_application,
                                           list(UserData.reasign_modules_forms.keys())[1],
                                           UserData.reasign_modules_forms[
@@ -1274,20 +1274,20 @@ class SubmitHistoryPage(BasePage):
         text = self.get_attribute(self.date_input, "value")
         print(text)
         date_string, start_date, end_date = self.value_date_range_last_month()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element((By.XPATH, self.user_sort.format("Completion Time")))
         self.wait_to_click((By.XPATH, self.user_sort.format("Completion Time")))
         time.sleep(15)
         self.wait_to_click(self.view_form_column_first)
         self.switch_to_next_tab()
-        time.sleep(10)
-        assert self.is_visible_and_displayed(self.form_data_table, 200), "data Table for user is not present"
+        time.sleep(2)
+        self.wait_for_element(self.form_data_table, 200)
         for items in UserData.view_form_tabs:
             assert self.is_present((By.XPATH, self.view_form_tabs.format(items))), "Tab " + items + " is not present"
         print("View Form page is successfully loaded")
@@ -1322,7 +1322,7 @@ class SubmitHistoryPage(BasePage):
         assert self.is_present(self.delete_this_form)
         self.wait_to_click(self.delete_this_form)
         self.wait_to_click(self.delete_confirm_button)
-        time.sleep(2)
+        
         if self.is_present(self.delete_case_confirm):
             self.wait_to_click(self.delete_case_confirm)
             self.wait_for_element(self.textarea_delete_popup)
@@ -1330,7 +1330,7 @@ class SubmitHistoryPage(BasePage):
             text = str(text).strip()
             self.send_keys(self.textarea_delete_popup, text)
             self.wait_to_click(self.delete_confirm_button)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.SUBMIT_HISTORY_TITLE in self.driver.title, "This is not the Submit History page."
         

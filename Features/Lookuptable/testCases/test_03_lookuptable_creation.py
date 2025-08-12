@@ -18,7 +18,6 @@ def test_case_19_create_lookup_table(driver, settings):
     home = HomePage(driver, settings)
     home.data_menu()
     value["table_id"] = data.create_lookup_table()
-    return value
 
 
 @pytest.mark.data
@@ -33,7 +32,6 @@ def test_case_28_view_lookup_table(driver, settings):
     home.data_menu()
     data.delete_lookup_table(value["table_id"])
     value["table_id"] = ""
-    return value
 
 
 @pytest.mark.data

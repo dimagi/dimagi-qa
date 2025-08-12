@@ -3,8 +3,9 @@
 flake8>=3.8.4
 pandas>=1.2.2
 pytest
-pytest-html
-py
+py>=1.10.0
+pytest-html>=3.1.1
+pytest-json-report
 selenium == 4.11.0
 openpyxl
 matplotlib >= 3.3.4

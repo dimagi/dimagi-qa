@@ -1,0 +1,7 @@
+host: https://www.commcarehq.org
+domain: alafiacomm
+app_id: 791fcbb98a0c4ffeb4aa38f20fd3544b
+build_id: e010117e07ab3f47a1fdad6da7f0bfb9
+domain_user_credential: LocustScripts/update-scripts/project-config/alafiacomm-perf/mobile_worker_it_credentials.json
+owner_id: 3913fc73f18a4681a3686abc819a0e7c
+app_config_bed_tracking_tool: LocustScripts/update-scripts/project-config/alafiacomm-perf/app_config_v2_it_test.json

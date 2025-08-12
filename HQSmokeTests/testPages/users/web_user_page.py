@@ -10,7 +10,7 @@ from selenium.webdriver.support.select import Select
 from common_utilities.selenium.base_page import BasePage
 from common_utilities.path_settings import PathSettings
 from HQSmokeTests.userInputs.user_inputs import UserData
-from HQSmokeTests.testPages.users.org_structure_page import latest_download_file
+from HQSmokeTests.testPages.users.org_structure_page import latest_download_file, wait_for_download_to_finish
 from selenium.common.exceptions import NoSuchElementException
 
 """"Contains test page elements and functions related to the User's Web Users module"""
@@ -84,12 +84,14 @@ class WebUsersPage(BasePage):
             self.wait_to_clear_and_send_keys(self.email_input, UserData.yahoo_user_name)
             self.select_by_value(self.select_project_role_id, role)
             self.wait_to_click(self.send_invite)
+        print("Waiting for sometime for the status to get updated...")
+        time.sleep(5)
 
     def assert_invitation_sent(self):
-        time.sleep(10)
+        time.sleep(2)
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
-        assert self.is_visible_and_displayed(self.verify_user), "Unable to find delivered invite."
+        self.wait_for_element(self.verify_user)
         print("Web user invitation sent successfully")
 
     def assert_invitation_received(self, mail_url, mail_username, mail_password):
@@ -102,7 +104,7 @@ class WebUsersPage(BasePage):
         self.wait_to_clear_and_send_keys(self.login_password, mail_password)
         self.wait_and_sleep_to_click(self.signin_button)
         self.wait_to_click(self.mail_icon)
-        self.click(self.latest_mail)
+        self.wait_to_click(self.latest_mail)
         self.verify_invitation_received()
 
     def verify_invitation_received(self):
@@ -140,38 +142,49 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.web_users_menu)
         self.wait_to_click(self.remove_user_invite)
         try:
-            time.sleep(2)
-            self.js_click(self.delete_confirm_invitation)
+            
+            self.wait_to_click(self.delete_confirm_invitation)
         except TimeoutException:
-            time.sleep(2)
-            self.js_click(self.delete_confirm_webuser)
+            
+            self.wait_to_click(self.delete_confirm_webuser)
         print("Invitation deleted")
 
     def download_web_users(self):
-        time.sleep(1)
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
         self.wait_to_click(self.download_worker_btn)
         self.wait_to_click(self.download_filter)
+        time.sleep(5)
         try:
-            self.wait_and_sleep_to_click(self.download_users_btn)
-            time.sleep(5)
+            self.wait_for_element(self.download_users_btn)
+            self.js_click(self.download_users_btn)
+            time.sleep(2)
+            wait_for_download_to_finish()
         except TimeoutException:
             print("TIMEOUT ERROR: Still preparing for download..Celery might be down..")
             assert False
         # verify_downloaded_workers
         newest_file = latest_download_file()
-        self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
+        print(newest_file)
+        if '_users_' in newest_file:
+            self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
+        else:
+            print("Not the expected file. Downloading again...")
+            self.js_click(self.download_users_btn)
+            time.sleep(2)
+            wait_for_download_to_finish()
+            newest_file = latest_download_file()
+            self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
         print("File download successful")
 
     def upload_web_users(self):
         self.wait_to_click(self.users_menu_id)
         self.wait_to_click(self.web_users_menu)
         try:
-            self.click(self.bulk_upload_btn)
+            self.wait_to_click(self.bulk_upload_btn)
             newest_file = latest_download_file()
             file_that_was_downloaded = PathSettings.DOWNLOAD_PATH / newest_file
-            time.sleep(5)
+            time.sleep(2)
             self.send_keys(self.choose_file, str(file_that_was_downloaded))
             self.wait_and_sleep_to_click(self.upload)
         except (TimeoutException, NoSuchElementException):
@@ -183,23 +196,24 @@ class WebUsersPage(BasePage):
         self.wait_to_click(self.web_users_menu)
         self.wait_for_element(self.search_user)
         self.wait_to_clear_and_send_keys(self.search_user, UserData.p1p2_user)
-        time.sleep(1)
+
         self.wait_to_click(self.search_user_btn)
-        time.sleep(2)
+        
         self.wait_for_element(self.user_link)
         self.wait_to_click(self.user_link)
         self.wait_for_element(self.select_project_role_id)
         self.select_by_text(self.select_project_role_id, rolename)
         self.wait_to_click(self.update_role_btn)
-        time.sleep(2)
+        
         self.scroll_to_element(self.location_field)
         if self.is_present(self.remove_location):
             self.wait_to_click(self.remove_location)
-        time.sleep(2)
+            print("removed location")
+        
         self.wait_to_click(self.location_field)
         self.send_keys(self.location_field, "Test Location")
         self.wait_to_click(self.location_value)
         self.wait_to_click(self.update_location_btn)
-        time.sleep(2)
+        
 
 

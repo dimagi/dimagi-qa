@@ -20,6 +20,7 @@ on:
         options:
           - staging
           - production
+          - eu
           - india
   schedule:
     - cron: '30 6 * * 1-5'
@@ -42,11 +43,12 @@ jobs:
       - id: set-matrix-manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          echo "::set-output name=matrix::{\"environment\":[\"${{ inputs.environment }}\"]}"
       - id: set-matrix-default
         if: ${{ github.event_name != 'repository_dispatch' }}
         run: |
-          echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\",\"india\"]}"
+          echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\", \"india\"]}"
+
   build:
     needs: set_matrix
     strategy:
@@ -59,10 +61,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
+      - name: Set up Python 3.13
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.13
 
       - name: Install dependencies
         run: |
@@ -81,6 +83,7 @@ jobs:
           DIMAGIQA_STAGING_AUTH_KEY: ${{ secrets.DIMAGIQA_STAGING_AUTH_KEY }}
           DIMAGIQA_INDIA_AUTH_KEY: ${{ secrets.DIMAGIQA_INDIA_AUTH_KEY }}
           DIMAGIQA_PROD_AUTH_KEY: ${{ secrets.DIMAGIQA_PROD_AUTH_KEY }}
+          DIMAGIQA_EU_AUTH_KEY: ${{ secrets.DIMAGIQA_EU_AUTH_KEY }}
           DIMAGIQA_INVITED_WEBUSER_PASSWORD: ${{ secrets.DIMAGIQA_INVITED_WEBUSER_PASSWORD }}
           DIMAGIQA_IMAP_PASSWORD: ${{secrets.DIMAGIQA_IMAP_PASSWORD}}
         run: |
@@ -88,7 +91,7 @@ jobs:
           echo "matrix environment: ${{ matrix.environment }}"
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
-          pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --html=report_${{ matrix.environment }}.html
+          pytest -v --rootdir= HQSmokeTests/testCases -n 4 --dist=loadfile --reruns 1 --reruns-delay 1 --html=report_${{ matrix.environment }}.html --self-contained-html --json-report --json-report-file=final_failures.json
 
       - name: Parse test counts
         id: parse_counts
@@ -111,6 +114,35 @@ jobs:
       - name: Fetch artifact ID
         run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
 
+      - name: Generate Jira Summary from HTML Report
+        if: ${{ failure() && github.event_name == 'repository_dispatch' && matrix.environment == 'production' }}
+        run: |
+          python3 -c "from common_utilities.fixtures import generate_jira_summary_from_json_report; generate_jira_summary_from_json_report('final_failures.json', 'jira_ticket_body.html')"
+
+      - name: Extract JIRA Summary HTML
+        id: extract_summary
+        if: ${{ failure() && github.event_name == 'repository_dispatch' && matrix.environment == 'production' }}
+        run: |
+          {
+            echo 'body_html<<EOF'
+            cat jira_ticket_body.html
+            echo 'EOF'
+          } | tee -a "$GITHUB_OUTPUT"
+      
+
+      - name: Send Jira Ticket Email
+        if: ${{ failure() && github.event_name == 'repository_dispatch' && matrix.environment == 'production' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+          password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+          subject: "[Smoke Test][${{ matrix.environment }}] Automated Jira Ticket - HQSmokeTest Run #${{ github.run_number }} with ${{ steps.parse_counts.outputs.FAILED }} Test Failure(s)"
+          to: support@dimagi.com, qa@dimagi.com
+          from: <${{ secrets.DIMAGIQA_MAIL_USERNAME }}>
+          html_body: ${{ steps.extract_summary.outputs.body_html }}
+          attachments: report_${{ matrix.environment }}.html
 
       - name: Set email vars
         if: ${{ failure() }}
@@ -147,7 +179,7 @@ jobs:
 
             let receivers = 'qa-automation@dimagi.com'
             if (context.eventName !== "pull_request" || context.eventName !== "push") {
-              receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com, pruthvi.gottimukkula@fissionlabs.com'
+              receivers = 'qa@dimagi.com, sameena.shaik@fissionlabs.com'
             }
 
             return {

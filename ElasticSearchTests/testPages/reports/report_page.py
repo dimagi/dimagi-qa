@@ -43,7 +43,7 @@ class ReportPage(BasePage):
         self.project_performance_rep = (By.LINK_TEXT, "Project Performance")
 
         # Inspect Data Reports
-        self.submit_history_rep = (By.LINK_TEXT, "Submit History")
+        self.submit_history_rep = (By.LINK_TEXT, "Submission History")
         self.case_list_rep = (By.LINK_TEXT, "Case List")
         self.case_list_explorer = (By.LINK_TEXT, "Case List Explorer")
 
@@ -190,13 +190,13 @@ class ReportPage(BasePage):
     def check_if_report_loaded(self):
         try:
             self.wait_to_click(self.apply_id)
-            time.sleep(10)
+            time.sleep(2)
         except (TimeoutException, NoSuchElementException):
             print("Button Disabled")
         try:
-            assert self.is_visible_and_displayed(self.report_content_id)
+            self.wait_for_element(self.report_content_id)
         except (TimeoutException, AssertionError):
-            assert self.is_visible_and_displayed(self.custom_report_content_id)
+            self.wait_for_element(self.custom_report_content_id)
         print("Report loaded successfully!")
 
     def worker_activity_report(self):
@@ -256,7 +256,7 @@ class ReportPage(BasePage):
 
     def sms_opt_out_report(self):
         self.wait_to_click(self.sms_opt_out_rep)
-        assert self.is_visible_and_displayed(self.report_content_id)
+        self.wait_for_element(self.report_content_id)
 
     def scheduled_messaging_report(self):
         self.wait_to_click(self.scheduled_messaging_rep)
@@ -270,7 +270,7 @@ class ReportPage(BasePage):
             try:
                 self.wait_to_click(self.edit_report_id)
             except TimeoutException:
-                self.driver.refresh()
+                self.reload_page()
                 self.wait_to_click(self.edit_report_id)
             self.wait_to_click(self.delete_report_xpath)
             print("Report deleted successfully!")
@@ -301,9 +301,9 @@ class ReportPage(BasePage):
         self.wait_to_click(self.save_xpath)
         self.send_keys(self.new_saved_report_name, self.report_name_saved)
         self.wait_to_click(self.save_confirm)
-        time.sleep(2)
-        self.js_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed(self.saved_report_created, 120)
+        
+        self.wait_to_click(self.saved_reports_menu_link)
+        self.wait_for_element(self.saved_report_created, 120)
         print("Report Saved successfully!")
 
 
@@ -326,7 +326,7 @@ class ReportPage(BasePage):
         self.wait_to_click((By.XPATH, self.recipient_value.format(UserData.p1p2_user)))
         selected_hour = self.get_selected_text(self.start_hour)
         self.wait_to_click(self.submit_id)
-        assert self.is_visible_and_displayed(self.success_alert)
+        self.wait_for_element(self.success_alert)
         print("Scheduled Report Created Successfully")
         return selected_hour, UserData.p1p2_user
 
@@ -346,7 +346,7 @@ class ReportPage(BasePage):
         assert user in recipient_text, "Recipient is not present"
 
     def delete_scheduled_and_saved_reports(self):
-        self.js_click(self.saved_reports_menu_link)
+        self.wait_to_click(self.saved_reports_menu_link)
         try:
             self.click(self.delete_saved)
             print("Deleted Saved Report")
@@ -363,7 +363,7 @@ class ReportPage(BasePage):
             print("No reports available")
 
     def delete_saved_reports(self):
-        self.js_click(self.saved_reports_menu_link)
+        self.wait_to_click(self.saved_reports_menu_link)
         list = self.find_elements(self.all_saved_reports)
         if len(list) > 0:
             for items in list:
@@ -386,9 +386,9 @@ class ReportPage(BasePage):
                 self.wait_to_click(self.edit_report_id)
                 self.wait_to_click(self.delete_report_xpath)
                 print("Deleted Saved Report")
+                
+                self.reload_page()
                 time.sleep(2)
-                self.driver.refresh()
-                time.sleep(5)
                 list = self.find_elements(self.report_case_links)
 
         else:
@@ -407,9 +407,9 @@ class ReportPage(BasePage):
                 self.wait_to_click(self.edit_report_id)
                 self.wait_to_click(self.delete_report_xpath)
                 print("Deleted Saved Report")
+                
+                self.reload_page()
                 time.sleep(2)
-                self.driver.refresh()
-                time.sleep(5)
                 list = self.find_elements(self.report_form_links)
 
         else:
@@ -530,9 +530,9 @@ class ReportPage(BasePage):
         date_range = self.get_todays_date_range()
         self.clear(self.date_input)
         self.send_keys(self.date_input, date_range + Keys.TAB)
-        time.sleep(2)
+        
         self.deselect_all(self.communication_type_select)
-        time.sleep(2)
+        
         self.select_by_text(self.communication_type_select, UserData.communication_type)
         self.check_if_report_loaded()
         self.scroll_to_bottom()
@@ -580,14 +580,14 @@ class ReportPage(BasePage):
         else:
             owner = UserData.appiumtest_owner_id
         self.wait_to_click(self.case_list_explorer)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.edit_column)
         self.wait_to_click(self.edit_column)
         self.wait_for_element(self.properties_table)
         self.wait_to_click(self.add_property_button)
         self.wait_to_click(self.property_name_input)
         self.send_keys(self.property_name_input, "owner_name")
-        time.sleep(1)
+        
         ActionChains(self.driver).key_down(Keys.ENTER).send_keys(Keys.TAB).perform()
         self.scroll_to_element(self.remove_case_owner)
         self.wait_to_click(self.remove_case_owner)
@@ -619,20 +619,20 @@ class ReportPage(BasePage):
 
     def configure_add_report(self):
         self.wait_to_click(self.configurable_report)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.report_dropdown, 300)
         self.wait_to_click(self.edit_report_dropdown)
         self.wait_for_element(self.report_search_input)
         self.send_keys(self.report_search_input, self.report_name_form)
         self.wait_to_click((By.XPATH, self.select_report.format(self.report_name_form)))
         # self.select_by_text(self.report_dropdown, self.report_name_form)
-        time.sleep(10)
+        time.sleep(2)
         # self.wait_for_element(self.description_input, 300)
         assert self.is_present_and_displayed(self.description_input, 300), "Edit screen is not displayed"
         self.wait_to_clear_and_send_keys(self.description_input, "editing " + self.report_name_form)
         self.scroll_to_element(self.save_button)
         self.wait_to_click(self.save_button)
-        time.sleep(10)
+        time.sleep(2)
         assert self.is_present_and_displayed(self.success_alert, 300), "Report not saved successfully"
         # self.wait_for_element(self.success_alert, 400)
 
@@ -651,24 +651,24 @@ class ReportPage(BasePage):
             print(len(count))
             for i in range(len(count)):
                 count[0].click()
-                time.sleep(2)
+                
                 if len(count) != 1:
                     ActionChains(self.driver).send_keys(Keys.TAB).perform()
-                    time.sleep(2)
+                    
                 count = self.find_elements(self.remove_buttons)
              # self.wait_to_click(self.users_field)
             self.send_keys(self.users_field, UserData.app_login)
             self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.app_login)))
-            time.sleep(2)
+            
             ActionChains(self.driver).send_keys(Keys.TAB).perform()
             self.wait_to_click(self.apply_id)
-            time.sleep(10)
+            time.sleep(2)
         except (TimeoutException, NoSuchElementException):
             print("Button Disabled")
         try:
-            assert self.is_visible_and_displayed(self.report_content_id)
+            self.wait_for_element(self.report_content_id)
         except (TimeoutException, AssertionError):
-            assert self.is_visible_and_displayed(self.custom_report_content_id)
+            self.wait_for_element(self.custom_report_content_id)
         print("Report loaded successfully!")
         self.wait_for_element(self.daily_form_activity_results)
         col = self.find_elements(self.daily_form_activity_results_cells)
@@ -686,7 +686,7 @@ class ReportPage(BasePage):
         print(link)
         print(web_data)
         self.driver.get(link)
-        time.sleep(10)
+        time.sleep(2)
         newest_file = latest_download_file()
         path = os.path.join(PathSettings.DOWNLOAD_PATH, newest_file)
         print(path)
@@ -713,23 +713,23 @@ class ReportPage(BasePage):
             print(len(count))
             for i in range(len(count)):
                 count[0].click()
-                time.sleep(2)
+                
                 if len(count) != 1:
                     ActionChains(self.driver).send_keys(Keys.TAB).perform()
-                    time.sleep(2)
+                    
                 count = self.find_elements(self.remove_buttons)
 
             # self.wait_to_click(self.users_field)
             self.send_keys(self.users_field, UserData.app_login)
             self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.app_login)))
             self.wait_to_click(self.apply_id)
-            time.sleep(10)
+            time.sleep(2)
         except (TimeoutException, NoSuchElementException):
             print("Button Disabled")
         try:
-            assert self.is_visible_and_displayed(self.report_content_id)
+            self.wait_for_element(self.report_content_id)
         except (TimeoutException, AssertionError):
-            assert self.is_visible_and_displayed(self.custom_report_content_id)
+            self.wait_for_element(self.custom_report_content_id)
         print("Report loaded successfully!")
         self.wait_for_element(self.app_status_results)
         col = self.find_elements(self.app_status_results_cells)
@@ -747,7 +747,7 @@ class ReportPage(BasePage):
         print(link)
         print(web_data)
         self.driver.get(link)
-        time.sleep(10)
+        time.sleep(2)
         newest_file = latest_download_file()
         path = os.path.join(PathSettings.DOWNLOAD_PATH, newest_file)
         print(path)

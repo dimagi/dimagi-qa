@@ -1,0 +1,51 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"Automated Testing - CCS"
+    },
+    "FUNC_SEND_REFERRALS_MENU": {
+        "selections":"1", "title": "Send Referrals"
+    },
+    "FUNC_SEND_REFERRALS_SEARCH": {
+        "selections": "1",
+        "title": "Send Referrals",
+        "submitResponseMessage": "Favoriting Clickable Icon' successfully saved!"
+    },
+    "FUNC_SEARCH_AGE": {
+         "selections": "1", "input":"age", "inputValue":"minors_adolescents"
+    },
+    "FUNC_SEARCH_ACCEPTS_COMMCARE_REFFERALS": {
+         "selections": "1", "input":"accepts_commcare_referrals", "inputValue":"yes"
+    },
+    "FUNC_SEND_REFFERALS_FORM": {
+        "selections":"1", "title":"Create Profile and Refer",
+        "questions": {
+            "FORM_QUESTION_AGE": {
+                "ix":"1,1,1", "answer":17
+            },
+            "FORM_QUESTION_GENDER": {
+                "ix":"1,1,2", "answer":1
+            },
+            "FORM_QUESTION_SEEKING_CARE_REASON": {
+                "ix":"1,1,4", "answer": "Reason 1"
+            },
+            "FORM_QUESTION_LEVEL_CARE_NEEDED": {
+                "ix":"1,1,5", "answer": "LOC 1"
+            },
+            "FORM_QUESTION_SYMPTOMS": {
+                "ix":"1,1,6", "answer": "Symptom 1"
+            },
+            "FORM_QUESTION_TYPE_OF_CARE": {
+                "ix":"1,1,7", "answer": 1
+            },
+            "FORM_QUESTION_REFERRING_FACILITY": {
+                "ix":"1,3", "answer": 1
+            },
+            "FORM_QUESTION_CONSENT": {
+                "ix":"1,7,0", "answer": [1]
+            }
+        }
+    },
+    "FUNC_CREATE_PROFILE_AND_REFER_FORM_SUBMIT": {
+        "submitResponseMessage":"'Create Profile and Refer' successfully saved!"
+    }
+}

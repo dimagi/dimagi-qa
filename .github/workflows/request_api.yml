@@ -61,10 +61,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
+    - name: Set up Python 3.13
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: 3.13
 
     - name: Install dependencies
       run: |
@@ -118,7 +118,7 @@ jobs:
         username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
         password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
         subject: ${{ github.event.client_payload.environment }} FAIL - Request API Tests[#${{github.run_number}}] on branch "${{ github.ref_name }}", ${{env.NOW}}
-        to: qa@dimagi.com, sameena.shaik@fissionlabs.com, pruthvi.gottimukkula@fissionlabs.com
+        to: qa@dimagi.com, sameena.shaik@fissionlabs.com
         from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
         html_body: file:////home/runner/work/dimagi-qa/dimagi-qa/RequestAPI/email_fail.html
         attachments: /home/runner/work/dimagi-qa/dimagi-qa/report_api_${{ matrix.environment }}.html

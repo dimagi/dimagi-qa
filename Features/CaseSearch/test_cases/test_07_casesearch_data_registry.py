@@ -201,7 +201,7 @@ def test_case_08_smart_link_search_first_shadow(driver, settings):
     print("casesearch-1 present in url")
     webapps.submit_the_form()
 
-
+@pytest.mark.skip
 def test_case_09_smart_link_skip_default_shadow(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)

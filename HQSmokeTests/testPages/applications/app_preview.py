@@ -34,6 +34,7 @@ class AppPreviewPage(BasePage):
         self.login_as_button = (
             By.XPATH, "//div[@aria-labelledby='single-app-login-as-heading']/descendant::h3[.='Log in as']")
         self.username_in_list = "//h3[./b[text() ='{}']]"
+        self.users_table = (By.XPATH, "//table[@class='table module-table']//tr[1]")
         self.webapp_login_confirmation = (By.ID, 'js-confirmation-confirm')
         self.webapp_working_as = (By.XPATH, "//div[contains(@class,'restore-as-banner')]/b")
         self.case_list_menu = "//h3[contains(text(), '{}')]"
@@ -48,7 +49,7 @@ class AppPreviewPage(BasePage):
         self.next_question_force = (By.XPATH, "//button[contains(@data-bind,'clickedNextOnRequired')]")
         self.complete_form = (By.XPATH, "//button[@data-bind='visible: atLastIndex(), click: submitForm']")
         self.success_message = (By.XPATH, "//p[contains(text(),'successfully saved')]")
-        self.home_button = (By.XPATH, "//li[contains(@class,'home')]")
+        self.home_button = (By.XPATH, "//li[contains(@class,'home')]/a")
         self.sync_button = (By.XPATH, "//div[@class='js-sync-item appicon appicon-sync']")
         self.sync_message = (By.XPATH, "//p[contains(text(),'successfully synced')]")
 
@@ -58,6 +59,7 @@ class AppPreviewPage(BasePage):
             self.wait_to_click(self.sidebar_open_app_preview)
         self.is_visible_and_displayed(self.app_preview_model)
         self.driver.switch_to.frame(self.find_element(self.iframe_app_preview))
+        self.wait_for_element(self.start)
         self.wait_to_click(self.start)
         self.is_visible_and_displayed(self.case_list)
 
@@ -65,14 +67,15 @@ class AppPreviewPage(BasePage):
         self.wait_to_click(self.case_list)
         self.wait_to_click(self.followup_form)
         self.wait_to_click(self.first_case_on_case_list)
-        time.sleep(2)
+        
         if self.is_present(self.continue_button):
             self.wait_to_click(self.continue_button)
-        time.sleep(2)
+        
         if self.is_displayed(self.next_button):
             self.wait_to_click(self.next_button)
-            self.js_click(self.complete_button)
-        self.is_visible_and_displayed(self.submit_success)
+            self.wait_to_click(self.complete_button)
+        assert self.is_visible_and_displayed(self.submit_success)
+        print("Form submitted successfully")
         self.driver.switch_to.default_content()
 
     def submit_form_with_loc(self):
@@ -82,57 +85,58 @@ class AppPreviewPage(BasePage):
         self.driver.switch_to.frame(self.find_element(self.iframe_app_preview))
         self.login_as_app_preview()
         self.wait_to_click(self.start_option)
-        time.sleep(2)
+        
         self.wait_for_element((By.XPATH, self.case_list_menu.format(UserData.case_list_name)))
         self.wait_to_click((By.XPATH, self.case_list_menu.format(UserData.case_list_name)))
-        time.sleep(2)
+        
         self.wait_for_element((By.XPATH, self.case_list_menu.format("Reg Form")))
         self.wait_to_click((By.XPATH, self.case_list_menu.format("Reg Form")))
         self.wait_for_element(self.clear_map)
         self.wait_to_click(self.clear_map)
-        time.sleep(1)
+        
         loc = random.choice(UserData.location_list)
         print(loc)
         self.scroll_to_element(self.location_field)
-        time.sleep(2)
+        
         self.send_keys(self.location_field, loc+Keys.ENTER)
-        time.sleep(2)
-        self.js_click(self.location_search)
-        time.sleep(1)
+        
+        self.wait_to_click(self.location_search)
+        
         lat = self.get_text(self.latitude)
         lon = self.get_text(self.longitude)
-        self.js_click(self.next_question)
-        time.sleep(2)
-        self.js_click(self.complete_form)
-        time.sleep(2)
+        self.wait_to_click(self.next_question)
+        
+        self.wait_to_click(self.complete_form)
+        
         self.wait_for_element(self.success_message)
         print("Form submitted")
         time.sleep(2)
-        self.wait_to_click(self.home_button)
+        self.wait_for_element(self.home_button)
+        self.js_click(self.home_button)
         time.sleep(2)
         self.wait_for_element(self.sync_button)
         self.js_click(self.sync_button)
-        time.sleep(2)
+        time.sleep(5)
         self.switch_to_default_content()
         print("Sleeping for sometime so the form data is updated")
-        time.sleep(100)
+        time.sleep(70)
         print("Latitude: ", lat, "Longitude: ", lon)
         return lat, lon
 
     def login_as_app_preview(self, username = UserData.app_login):
         self.wait_to_click(self.login_as_button)
-        time.sleep(5)
-        self.wait_for_element(self.search_worker, 100)
-        self.wait_to_clear_and_send_keys(self.search_worker, username)
-        self.wait_for_element(self.search_users_button)
-        self.js_click(self.search_users_button)
         time.sleep(2)
-        self.wait_for_element((By.XPATH, self.username_in_list.format(username)))
-        self.js_click((By.XPATH, self.username_in_list.format(username)))
+        self.wait_for_element(self.users_table, 100)
+        self.send_keys(self.search_worker, username)
+        time.sleep(1)
+        self.wait_to_click(self.search_users_button)
         time.sleep(2)
+        self.wait_for_element((By.XPATH, self.username_in_list.format(username)), 15)
+        self.wait_to_click((By.XPATH, self.username_in_list.format(username)))
+        
         self.wait_for_element(self.webapp_login_confirmation)
-        self.js_click(self.webapp_login_confirmation)
-        time.sleep(2)
+        self.click(self.webapp_login_confirmation)
+        
         logged_in_username = self.get_text(self.webapp_working_as)
         assert logged_in_username == username, "Logged in"
 

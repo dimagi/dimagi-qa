@@ -30,5 +30,5 @@ class WebAppPermissionPage(BasePage):
         else:
             self.click(self.first_radio_button)
         self.click(self.save_button)
-        assert self.is_visible_and_displayed(self.after_save)
+        self.wait_for_element(self.after_save)
         print("Webapps permissions toggled")

@@ -216,7 +216,7 @@ class ApplicationStatusPage(BasePage):
         assert "Please choose your filters above and click Apply to see report data." in text
 
     def verify_manage_deployment_section(self):
-        assert self.is_visible_and_displayed(self.manage_deployments_section), "Manage Deployments section is not present in the left panel"
+        self.wait_for_element(self.manage_deployments_section)
         print("Manage Deployments section is present in the left panel")
         elements = self.find_elements(self.manage_deployments_list)
         link_list = []
@@ -232,7 +232,7 @@ class ApplicationStatusPage(BasePage):
         self.wait_to_click(self.application_status_rep)
         self.wait_for_element(self.hide_filters_options)
         self.click(self.hide_filters_options)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.users_field, 10), "Case owner field is still present"
         assert not self.is_visible_and_displayed(self.application_dropdown, 10), "Application dropdown is still present"
         assert self.is_present(self.show_filters_options), "Show Filters Options is not present"
@@ -241,7 +241,7 @@ class ApplicationStatusPage(BasePage):
     def show_filters(self):
         self.wait_for_element(self.show_filters_options)
         self.click(self.show_filters_options)
-        time.sleep(2)
+        
         assert self.is_present(self.users_field), "Case owner field is not present"
         assert self.is_present(self.application_dropdown), "Application dropdown is not present"
         assert self.is_present(self.hide_filters_options), "Show Filters Options is not present"
@@ -249,7 +249,7 @@ class ApplicationStatusPage(BasePage):
 
     def verify_application_status_page_fields_columns(self):
         self.wait_to_click(self.application_status_rep)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.APPLICATION_STATUS_TITLE in self.driver.title, "This is not the Application Status page."
         assert self.is_present(self.users_field), "User field is not present"
@@ -266,20 +266,20 @@ class ApplicationStatusPage(BasePage):
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, fetch_random_string())
-        time.sleep(2)
+        
         assert self.is_present(self.no_results), "No results not displayed"
         self.clear(self.users_field)
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.click(self.application_field)
         self.send_keys(self.application_input, UserData.reassign_cases_application)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.reassign_cases_application)))
         self.wait_to_click(self.apply_id)
         assert self.is_present(self.report_loading), "Loading Report block is not present"
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -309,21 +309,21 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         assert self.is_present(self.user_column), "Username Column not present"
 
 
     def verify_user_lookup_table(self):
         list1 = ['group', 'location', 'User', 'Workers', 'demo_user', 'admin', 'Loading']
         self.wait_to_click(self.users_field)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.users_list_empty, 10), "Case Type List is not empty"
         users = self.find_elements(self.users_list)
         list2 = []
@@ -343,10 +343,10 @@ class ApplicationStatusPage(BasePage):
         print(len(count))
         for i in range(len(count)):
              count[0].click()
-             time.sleep(2)
+             
              if len(count) != 1:
                 ActionChains(self.driver).send_keys(Keys.TAB).perform()
-                time.sleep(2)
+                
              count = self.find_elements(self.remove_buttons)
 
     def verify_users_in_the_group(self):
@@ -389,11 +389,11 @@ class ApplicationStatusPage(BasePage):
         # self.clear(self.users_field)
         # self.send_keys(self.users_field, UserData.user_group)
         # self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         pages = self.find_elements(self.pagination_list)
@@ -409,7 +409,7 @@ class ApplicationStatusPage(BasePage):
             time.sleep(15)
             assert self.is_present(self.next_page_button_disabled), "Next button is not disabled."
             print("Next button disabled correctly")
-            time.sleep(5)
+            time.sleep(2)
             print("Clicking on page " + first_page)
             self.wait_to_click((By.XPATH, self.page_button.format(first_page)))
             time.sleep(15)
@@ -418,7 +418,7 @@ class ApplicationStatusPage(BasePage):
             for item in list1:
                 list1_names.append(item.text)
             self.wait_to_click(self.next_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list2 = self.find_elements(self.name_column_list)
             list2_names = list()
             for item in list2:
@@ -430,7 +430,7 @@ class ApplicationStatusPage(BasePage):
                 assert list1_names != list2_names, "Both Pages have same values"
             print("Next button functioning correctly.")
             self.wait_to_click(self.prev_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list3 = self.find_elements(self.name_column_list)
             list3_names = list()
             for item in list3:
@@ -449,7 +449,7 @@ class ApplicationStatusPage(BasePage):
 
     def verify_sorted_list(self, col_name):
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         self.wait_to_click((By.XPATH, self.user_sort.format(col_name)))
         time.sleep(15)
         if "Username" in col_name:
@@ -590,11 +590,11 @@ class ApplicationStatusPage(BasePage):
             text = self.get_attribute(self.date_input, "value")
             print(text)
             assert text == date_string
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         print("All date ranges are correctly updated in the date range field")
 
@@ -613,29 +613,29 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[0])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[0])))
-        time.sleep(1)
+        
         self.send_keys(self.users_field, UserData.daily_form_groups[1])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[1])))
         self.click(self.application_field)
         self.send_keys(self.application_input, UserData.reassign_cases_application)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.reassign_cases_application)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
-        time.sleep(10)
+        time.sleep(2)
         report_name = "Saved Application Status Report " + fetch_random_string()
         self.verify_favorite_empty(report_name)
         self.save_report_donot_save(report_name)
         report = self.save_report(report_name)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_to_click(self.application_status_rep)
         self.wait_for_element(self.apply_id, 100)
         self.verify_favorite_created(report)
-        time.sleep(10)
+        time.sleep(2)
         self.verify_users_in_the_group()
         assert UserData.reassign_cases_application in self.get_selected_text(self.application_dropdown)
         print("Saved filters are selected")
@@ -646,7 +646,7 @@ class ApplicationStatusPage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            assert self.is_visible_and_displayed(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -655,18 +655,18 @@ class ApplicationStatusPage(BasePage):
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
         assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
     def delete_saved_report(self, report):
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report)), 120)
         print("Report Present!")
         self.click((By.XPATH, self.delete_saved.format(report)))
         print("Deleted Saved Report")
-        time.sleep(5)
-        self.driver.refresh()
+        time.sleep(2)
+        self.reload_page()
         assert not self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 20)
         print("Deleted Report Successfully")
 
@@ -683,7 +683,7 @@ class ApplicationStatusPage(BasePage):
         print(text)
         assert report_name in text, "Report Name is visible in the Title"
         self.wait_to_click(self.cancel_report_button)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.name_field, 10), "Save Report Form not closed"
         assert not self.is_visible_and_displayed(self.description_field, 10)
         assert not self.is_visible_and_displayed(self.cancel_report_button, 10)
@@ -704,10 +704,10 @@ class ApplicationStatusPage(BasePage):
         print(text)
         assert report_name in text, "Report Name is visible in the Title"
         self.wait_to_click(self.try_again_button)
-        time.sleep(2)
-        self.driver.refresh()
+        
+        self.reload_page()
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report_name)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report_name)), 120)
         print("Report Saved successfully!")
         print("Report name: ", report_name)
         return report_name
@@ -723,7 +723,7 @@ class ApplicationStatusPage(BasePage):
                 else:
                     self.wait_to_click(item)
                     self.switch_to_next_tab()
-                    time.sleep(10)
+                    time.sleep(2)
                     self.wait_for_element(self.application_status_table_title, 200)
                     self.scroll_to_bottom()
                     info = self.get_text(self.application_status_table_info)
@@ -732,16 +732,16 @@ class ApplicationStatusPage(BasePage):
                     assert info[-2] == text, "Case created count mismatch"
                     print("Cases created count matched")
                     self.select_by_value(self.application_status_page_dropdown, '100')
-                    time.sleep(10)
+                    time.sleep(2)
                     cases = self.find_elements(self.application_status_table)
                     if len(cases) > 0:
                         for case in cases:
                             name = case.text
                             assert name == UserData.case_reassign, "Case Type mismatch"
                             print("Case Type matching")
-                    time.sleep(2)
+                    
                     self.driver.close()
-                    time.sleep(2)
+                    
                     self.switch_back_to_prev_tab()
 
     def export_application_status_to_excel(self):
@@ -752,15 +752,15 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.form_activity_results)
@@ -780,7 +780,7 @@ class ApplicationStatusPage(BasePage):
         print(link)
         print(web_data)
         self.driver.get(link)
-        time.sleep(10)
+        time.sleep(2)
         newest_file = latest_download_file()
         path = os.path.join(PathSettings.DOWNLOAD_PATH, newest_file)
         print(path)
@@ -812,15 +812,15 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -850,7 +850,7 @@ class ApplicationStatusPage(BasePage):
         self.wait_for_element(self.email_subject_field)
         self.wait_to_clear_and_send_keys(self.email_subject_field, subject)
         self.wait_to_click(self.send_email_btn)
-        assert self.is_visible_and_displayed(self.email_success_message), "Email report not sent successfully"
+        self.wait_for_element(self.email_success_message)
         print("Email report sent successfully")
 
     def compare_status_with_html_table(self, table_data, web_data):
@@ -873,24 +873,24 @@ class ApplicationStatusPage(BasePage):
         self.wait_to_click(self.remove_active_worker)
         assert not self.is_present(self.remove_active_worker), "Active Mobile Worker is still not removed"
         print("Active Mobile Worker is removed successfully")
-        self.driver.refresh()
+        self.reload_page()
         self.wait_for_element(self.apply_id, 100)
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[0])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[0])))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         assert not self.is_present((By.XPATH, self.result_rows_names.format(UserData.deactivated_user))), "Deactivated user " + UserData.deactivated_user + " is present in the active worker list."
         print("All Active users are present")
 
@@ -903,24 +903,24 @@ class ApplicationStatusPage(BasePage):
         self.wait_to_click(self.remove_deactive_worker)
         assert not self.is_present(self.remove_deactive_worker), "Deactivated Mobile Worker is still not removed"
         print("Deactivated Mobile Worker is removed successfully")
-        self.driver.refresh()
+        self.reload_page()
         self.wait_for_element(self.apply_id, 100)
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[1])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[1])))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, UserData.filter_dates_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         assert self.is_present((By.XPATH, self.result_rows_names.format(UserData.deactivated_user))), "Deactivated user " + UserData.deactivated_user + " is not present in the Deactivated worker list."
         print("All Deactivated users are present")
 
@@ -933,14 +933,14 @@ class ApplicationStatusPage(BasePage):
         assert self.APPLICATION_STATUS_TITLE in self.driver.title, "This is not the Application Status page."
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.user_from_list.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.view_by_dropdown, UserData.view_by[0])
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[2])))
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -970,16 +970,16 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.select_by_text(self.filter_dates_by, filter)
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[0])))
         date_string = self.get_attribute(self.date_input, "value")
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         self.verify_users_in_the_group()
@@ -995,11 +995,11 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.daily_form_groups[0])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.daily_form_groups[0])))
-        time.sleep(1)
+        
         self.wait_to_click(self.show_adv_options)
         assert self.is_selected(self.show_adv_options), "Show Advanced Options is not selected"
         print("Show Advanced Option is successfully selected")
-        time.sleep(2)
+        
         assert self.is_present(self.known_forms), "Known Forms option not present"
         assert self.is_present(self.unknown_forms), "Unknown Forms option not present"
         assert self.is_present(self.application_type_dropdown), "Application Type dropdown not present"
@@ -1007,7 +1007,7 @@ class ApplicationStatusPage(BasePage):
         self.unknown_forms_options(active_apps, deleted_apps)
         self.wait_to_click(self.show_adv_options)
         assert not self.is_selected(self.show_adv_options), "Show Advanced Options is still selected"
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.known_forms, 10), "Known Forms option still present"
         assert not self.is_visible_and_displayed(self.unknown_forms, 10), "Unknown Forms option still present"
         print("All Show Advanced Options are working correctly")
@@ -1021,18 +1021,18 @@ class ApplicationStatusPage(BasePage):
 
         self.verify_dropdown_options(self.application_type_dropdown, UserData.app_type_list)
         self.select_by_text(self.application_type_dropdown, UserData.app_type_list[0])
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.application_dropdown, 10), "Application dropdown is still present"
         print("Application dropdown successfully disappeared after selecting option ", UserData.app_type_list[0])
         self.select_by_text(self.application_type_dropdown, UserData.app_type_list[2])
-        time.sleep(2)
+        
         assert self.is_present(self.application_dropdown), "Application dropdown is not present"
         list_app_active = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app_active[1:]:
             assert "[Deleted Application]" in items, "Not a Deleted Application option"
         print("All Deleted Application present")
         self.select_by_text(self.application_type_dropdown, UserData.app_type_list[1])
-        time.sleep(2)
+        
         assert self.is_present(self.application_dropdown), "Application dropdown is not present"
         list_app_deleted = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app_deleted[1:]:
@@ -1052,7 +1052,7 @@ class ApplicationStatusPage(BasePage):
         else:
             assert self.is_selected(self.unknown_forms), "Unknown Forms radio button is not selected"
 
-        assert self.is_visible_and_displayed(self.unknown_form_dropdown), "Unknown forms dropdown is not present"
+        self.wait_for_element(self.unknown_form_dropdown)
         print("Application dropdown successfully disappeared after selecting option ", UserData.app_type_list[0])
         list_app = self.get_all_dropdown_options(self.application_dropdown)
         for items in list_app[1:]:
@@ -1068,26 +1068,26 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.deactivated_user)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.deactivated_user)))
-        time.sleep(1)
+        
         self.send_keys(self.users_field, UserData.app_login)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.app_login)))
-        time.sleep(1)
+        
         self.select_by_text(self.application_dropdown, UserData.case_commcare)
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.app_login, UserData.deactivated_user])
-        time.sleep(10)
+        time.sleep(2)
         self.scroll_to_element((By.XPATH, self.custome_remove_button.format(UserData.deactivated_user)))
         self.click((By.XPATH, self.custome_remove_button.format(UserData.deactivated_user)))
         ActionChains(self.driver).send_keys(Keys.TAB).perform()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.app_login])
         self.verify_users_used_not_in_the_group([UserData.deactivated_user])
@@ -1100,26 +1100,26 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.send_keys(self.users_field, UserData.deactivated_user)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.deactivated_user)))
-        time.sleep(1)
+        
         self.select_by_text(self.application_dropdown, UserData.case_commcare)
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.automation_group_users[0], UserData.automation_group_users[1], UserData.deactivated_user])
-        time.sleep(10)
+        time.sleep(2)
         self.scroll_to_element((By.XPATH, self.custome_remove_button.format(UserData.deactivated_user)))
         self.click((By.XPATH, self.custome_remove_button.format(UserData.deactivated_user)))
         ActionChains(self.driver).send_keys(Keys.TAB).perform()
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.automation_group_users[0], UserData.automation_group_users[1]])
         self.verify_users_used_not_in_the_group([UserData.deactivated_user])
@@ -1132,27 +1132,27 @@ class ApplicationStatusPage(BasePage):
         self.wait_to_click(self.case_type_field)
         self.wait_for_element(self.case_type_input)
         self.send_keys(self.case_type_input, fetch_random_string())
-        time.sleep(2)
+        
         assert self.is_present(self.no_results), "No results not displayed"
         self.clear(self.case_type_input)
         self.send_keys(self.case_type_input, UserData.case_pregnancy)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.case_pregnancy)))
-        time.sleep(2)
+        
         assert UserData.case_pregnancy in self.get_selected_text(self.application_dropdown), "Case type is not selected"
         self.wait_to_click(self.open_close_field)
         self.wait_for_element(self.open_close_input)
         self.send_keys(self.open_close_input, fetch_random_string())
-        time.sleep(2)
+        
         assert self.is_present(self.no_results), "No results not displayed"
         self.clear(self.open_close_input)
         self.send_keys(self.open_close_input, UserData.open_close_options[1])
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.open_close_options[1])))
-        time.sleep(2)
+        
         assert UserData.open_close_options[1] in self.get_selected_text(self.open_close_dropdown), "Open Close option is not selected"
         self.verify_user_lookup_table()
         self.remove_default_users()
         self.send_keys(self.users_field, fetch_random_string())
-        time.sleep(2)
+        
         assert self.is_present(self.no_results), "No results not displayed"
         self.clear(self.users_field)
         self.send_keys(self.users_field, UserData.user_group)
@@ -1168,17 +1168,17 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.web_user_email)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.web_user_email)))
-        time.sleep(1)
+        
         self.select_by_text(self.application_dropdown, UserData.case_reassign)
         self.select_by_text(self.open_close_dropdown, option)
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.web_user_email])
-        time.sleep(10)
+        time.sleep(2)
         status_list = self.find_elements(self.status_column_list)
         application_status = self.find_elements(self.case_type_column_list)
         for items in application_status:
@@ -1203,26 +1203,26 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.web_user_email)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.web_user_email)))
-        time.sleep(1)
+        
         self.select_by_text(self.application_dropdown, UserData.case_case)
         self.select_by_text(self.open_close_dropdown, UserData.open_close_options[1])
         # self.wait_to_clear_and_send_keys(self.search_input, "name*")
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.web_user_email])
-        time.sleep(10)
+        time.sleep(2)
         url1 = self.get_attribute(self.name_form_column_first, "href")
         self.wait_to_click(self.name_form_column_first)
-        time.sleep(5)
+        time.sleep(2)
         self.switch_to_next_tab()
         assert self.CASE_DATA_TITLE in self.driver.title, "This is not the Case Data page."
-        assert self.is_visible_and_displayed(self.case_property_tab)
-        assert self.is_visible_and_displayed(self.case_history_tab)
-        assert self.is_visible_and_displayed(self.download_case_history)
-        assert self.is_visible_and_displayed(self.close_case)
+        self.wait_for_element(self.case_property_tab)
+        self.wait_for_element(self.case_history_tab)
+        self.wait_for_element(self.download_case_history)
+        self.wait_for_element(self.close_case)
         data_dict = dict()
         for items in UserData.case_data_property:
             data_dict[items] = self.get_text((By.XPATH, self.case_data_property_values.format(items)))
@@ -1235,7 +1235,7 @@ class ApplicationStatusPage(BasePage):
         data_dict['url'] = url1
         print("Final dictionary", data_dict)
         self.wait_to_click(self.download_case_history)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_to_click(self.close_case)
         self.wait_for_element((By.XPATH, self.close_success_msg.format(data_dict['Name'])), 100)
         self.driver.close()
@@ -1263,47 +1263,47 @@ class ApplicationStatusPage(BasePage):
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.web_user_email)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.web_user_email)))
-        time.sleep(1)
+        
         self.wait_to_clear_and_send_keys(self.search_input, data_dict['Case ID'])
         # check in Closed Application Status
         self.select_by_text(self.open_close_dropdown, UserData.open_close_options[2])
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_used_in_the_group([UserData.web_user_email])
-        time.sleep(10)
+        time.sleep(2)
         assert "closed" in self.get_text(self.status_column_first)
         assert data_dict['url'] == self.get_attribute(self.name_form_column_first, "href")
         print("Case closed successfully")
         # check in Open Application Status
         self.select_by_text(self.open_close_dropdown, UserData.open_close_options[1])
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
-        assert self.is_visible_and_displayed(self.empty_table)
+        self.wait_for_element(self.empty_table)
         print("Case not present in Open Application Status")
 
     def export_app_status_email(self):
         self.wait_to_click(self.application_status_rep)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.APPLICATION_STATUS_TITLE in self.driver.title, "This is not the Application Status page."
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.click(self.application_field)
         self.send_keys(self.application_input, UserData.reassign_cases_application)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.reassign_cases_application)))
         self.wait_to_click(self.apply_id)
         assert self.is_present(self.report_loading), "Loading Report block is not present"
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.wait_for_element(self.form_activity_results)
         col = self.find_elements(self.form_activity_results_cells)
@@ -1321,21 +1321,21 @@ class ApplicationStatusPage(BasePage):
 
     def export_app_status_to_excel(self):
         self.wait_to_click(self.application_status_rep)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.APPLICATION_STATUS_TITLE in self.driver.title, "This is not the Application Status page."
         self.remove_default_users()
         self.send_keys(self.users_field, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(1)
+        
         self.click(self.application_field)
         self.send_keys(self.application_input, UserData.reassign_cases_application)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.reassign_cases_application)))
         self.wait_to_click(self.apply_id)
         assert self.is_present(self.report_loading), "Loading Report block is not present"
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.verify_users_in_the_group()
         self.wait_for_element(self.form_activity_results)

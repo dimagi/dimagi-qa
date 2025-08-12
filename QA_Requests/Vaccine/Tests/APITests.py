@@ -20,7 +20,7 @@ def post_form_API(data, url): ## API post method for form submission
             print(requests.exceptions.RequestException)
             print("Retrying")
             r.close()
-            time.sleep(10)
+            time.sleep(2)
             r = requests.post(
                 url=url,
                 headers=TestData.myHeader,

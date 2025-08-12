@@ -22,11 +22,11 @@ def test_app_workflows_1(driver, user, application, settings, appsite):
     """General workflows"""
     visible = HomePage(driver)
     visible.login_as_ci_ct_user(user, settings["url"])
-    time.sleep(5)
+    time.sleep(2)
     visible.break_locks_and_clear_user_data(project_space=COUserData.project_space)
-    time.sleep(5)
+    time.sleep(2)
     visible.sync_application(username=user, application_name=application)
-    time.sleep(10)
+    time.sleep(2)
     visible.open_application(username=user, application_name=application)
 
     """CI workflows"""
@@ -75,11 +75,11 @@ def test_app_workflows_2(driver, user, application, settings, appsite):
     """General workflows"""
     visible = HomePage(driver)
     visible.login_as_ci_ct_user(user, settings["url"])
-    time.sleep(5)
+    time.sleep(2)
     visible.break_locks_and_clear_user_data(project_space=COUserData.project_space)
-    time.sleep(5)
+    time.sleep(2)
     visible.sync_application(username=user, application_name=application)
-    time.sleep(10)
+    time.sleep(2)
     visible.open_application(username=user, application_name=application)
 
     """CM workflows"""
@@ -128,11 +128,11 @@ def test_app_workflows_3(driver, user, application, settings, appsite):
     """General workflows"""
     visible = HomePage(driver)
     visible.login_as_ci_ct_user(user, settings["url"])
-    time.sleep(5)
+    time.sleep(2)
     visible.break_locks_and_clear_user_data(project_space=COUserData.project_space)
-    time.sleep(5)
+    time.sleep(2)
     visible.sync_application(username=user, application_name=application)
-    time.sleep(10)
+    time.sleep(2)
     visible.open_application(username=user, application_name=application)
 
     """CI workflows"""

@@ -1,0 +1,95 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title":"AlafiaComm v2 RC - For QA test"
+    },
+    "FUNC_GES_MEN": {
+        "selections":"0", "title":"Gestion Menage"
+    },
+    "FUNC_ADD_HOUSEHOLD": {
+        "selections": ["0", "action 0"], "title": "Ajouter Menage"
+    },
+    "FUNC_HOUSEHOLD_FORM": {
+        "selections": ["0", "action 0"], "title": "Ajouter Menage",
+        "questions": {
+            "QUESTION_LOC": {
+                "ix":"3,2","answer":[24.206889622398023,25.83550155767534]
+            },
+            "QUESTION_FIRST_NAME": {
+                "ix": "4,2", "answer": "First name"
+            },
+            "QUESTION_LAST_NAME": {
+                "ix": "4,3", "answer": "LAST NAME"
+            },
+            "QUESTION_GENDER": {
+                "ix": "4,4", "answer": 1
+            },
+            "QUESTION_PIN_YES": {
+                "ix": "4,7", "answer": 1
+            },
+            "QUESTION_AGE_YES": {
+                "ix": "4,8,0", "answer": 2
+            },
+            "QUESTION_AGE_YEARS": {
+                "ix": "4,8,2", "answer": 30
+            },
+            "QUESTION_STATUS": {
+                 "ix": "4,8,3", "answer": 2
+            },
+            "QUESTION_HOME": {
+                 "ix": "5,0", "answer": "Home 1"
+            },
+            "QUESTION_LATRINES": {
+                "ix": "5,1", "answer": 1
+            },
+            "QUESTION_HAND_WASH": {
+                 "ix": "5,3", "answer": 1
+            },
+            "QUESTION_CLEAN_ENV": {
+                "ix": "5,4", "answer": 1
+            },
+            "QUESTION_DRINKING_WATER": {
+                "ix": "5,5", "answer": 1
+            },
+            "QUESTION_MECHANICAL_PROTECTION": {
+                "ix": "5,6", "answer": 1
+            },
+            "QUESTION_LLINS": {
+                "ix": "5,7,0", "answer": 2
+            },
+            "QUESTION_MOSQUITOES": {
+                "ix": "5,7,1", "answer": 2
+            }
+        }
+    },
+    "FUNC_ANSWER_HOUSEHOLD": {
+        "answers":{"3,0":"OK",
+        "3,2":[53.74871079689897,28.125699783533644],
+        "4,0":"OK",
+        "4,2":"Fn",
+        "4,3":"Ln",
+        "4,4":2,
+        "4,5":null,
+        "4,6":null,
+        "4,7":1,
+        "4,8,0":2,
+        "4,8,2":30,
+        "4,8,3":2,
+        "4,8,4":2,
+        "5,0":"1234qq",
+        "5,1":1,
+        "5,3":1,
+        "5,4":1,
+        "5,5":1,
+        "5,6":1,
+        "5,7,0":2,
+        "5,7,1":2,
+        "6,0":"OK",
+        "6,6":"OK"}
+    },
+    "FUNC_SEARCH_HOUSEHOLD": {
+        "search_text": "Fn Ln" ,"selections":["0"], "title":"Gestion Menage"
+    },
+    "FUNC_HOUSEHOLD_FORM_SUBMIT": {
+        "submitResponseMessage": "'Ajouter Menage' successfully saved!"
+    }
+}

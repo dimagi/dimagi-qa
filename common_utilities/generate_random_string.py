@@ -27,6 +27,10 @@ def fetch_random_boolean():
     return random.choice([True, False])
 
 
+def fetch_random_digit_with_range(start, end):
+    return str(random.randint(start, end))
+
+
 def fetch_string_with_special_chars(length):
     return ''.join(
         random.choices(
@@ -34,3 +38,4 @@ def fetch_string_with_special_chars(length):
             k=length
         )
     )
+

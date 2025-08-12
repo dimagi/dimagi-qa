@@ -1,0 +1,4 @@
+host: https://www.commcarehq.org/
+domain: commcare-superset
+domain_user_credential: LocustScripts/update-scripts/project-config/co-carecoordination-perf/web_users_credentials_cca_api.json
+owner_id: ddbf905262bed0abb6012e901f410e40

@@ -198,7 +198,7 @@ class SMSUsagePage(BasePage):
         self.wait_to_click(self.sms_usage_rep)
         self.wait_for_element(self.hide_filters_options)
         self.click(self.hide_filters_options)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.group_dropdown, 10), "Group dropdown is still present"
         assert not self.is_visible_and_displayed(self.date_input, 10), "Date Range field is still present"
         assert not self.is_visible_and_displayed(self.favorite_button,
@@ -211,7 +211,7 @@ class SMSUsagePage(BasePage):
     def show_filters(self):
         self.wait_for_element(self.show_filters_options)
         self.click(self.show_filters_options)
-        time.sleep(2)
+        
         assert self.is_present(self.date_input), "Date Range field is not present"
         assert self.is_present(self.group_dropdown), "Application dropdown is not present"
         assert self.is_present(self.favorite_button), "Favorite button is not present"
@@ -220,7 +220,7 @@ class SMSUsagePage(BasePage):
         print("All filters are shown!")
 
     def verify_messaging_section(self):
-        assert self.is_visible_and_displayed(
+        self.wait_for_element(
             self.messaging_section), "Messaging section is not present in the left panel"
         print("Messaging section is present in the left panel")
         elements = self.find_elements(self.messaging_list)
@@ -237,7 +237,7 @@ class SMSUsagePage(BasePage):
 
     def verify_sms_usage_page_fields_columns(self):
         self.wait_to_click(self.sms_usage_rep)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.sms_usage_TITLE in self.driver.title, "This is not the SMS Usage page."
         assert self.is_present(self.date_input), "Date Range field is not present"
@@ -270,18 +270,18 @@ class SMSUsagePage(BasePage):
         print("Date pop up cancelled")
         self.wait_to_click(self.date_input)
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[2])))
-        time.sleep(2)
+        
         text = self.get_attribute(self.date_input, "value")
         date_string, start_date, end_date = self.value_date_range_30_days()
         assert date_string == text
         selected = self.get_selected_text(self.group_dropdown)
         assert selected == UserData.sms_usage_group_default[0], "Default selected value is incorrect "+selected
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
         # assert self.is_present(self.report_loading), "Loading Report block is not present"
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_bottom()
         time.sleep(100)
@@ -318,10 +318,10 @@ class SMSUsagePage(BasePage):
         print(len(count))
         for i in range(len(count)):
              count[0].click()
-             time.sleep(2)
+             
              if len(count) != 1:
                 ActionChains(self.driver).send_keys(Keys.TAB).perform()
-                time.sleep(2)
+                
              count = self.find_elements(self.remove_buttons)
 
     def verify_date_column_name_headers(self, date_list):
@@ -370,15 +370,15 @@ class SMSUsagePage(BasePage):
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
         assert text == date_string
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         self.select_by_value(self.page_list_dropdown, UserData.pagination[0])
-        time.sleep(10)
+        time.sleep(2)
         pages = self.find_elements(self.pagination_list)
         pages_count = len(pages) - 2
         print("Total Pages: ", pages_count)
@@ -392,7 +392,7 @@ class SMSUsagePage(BasePage):
             time.sleep(15)
             assert self.is_present(self.next_page_button_disabled), "Next button is not disabled."
             print("Next button disabled correctly")
-            time.sleep(5)
+            time.sleep(2)
             print("Clicking on page " + first_page)
             self.wait_to_click((By.XPATH, self.page_button.format(first_page)))
             time.sleep(15)
@@ -401,7 +401,7 @@ class SMSUsagePage(BasePage):
             for item in list1:
                 list1_names.append(item.text)
             self.wait_to_click(self.next_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list2 = self.find_elements(self.user_names_column_list)
             list2_names = list()
             for item in list2:
@@ -413,7 +413,7 @@ class SMSUsagePage(BasePage):
                 assert list1_names != list2_names, "Both Pages have same values"
             print("Next button functioning correctly.")
             self.wait_to_click(self.prev_page_button)
-            time.sleep(5)
+            time.sleep(2)
             list3 = self.find_elements(self.user_names_column_list)
             list3_names = list()
             for item in list3:
@@ -432,7 +432,7 @@ class SMSUsagePage(BasePage):
 
     def verify_sorted_list(self, col_name):
         self.select_by_value(self.page_list_dropdown, UserData.pagination[3])
-        time.sleep(10)
+        time.sleep(2)
         self.wait_to_click((By.XPATH, self.user_sort.format(col_name)))
         time.sleep(15)
         if "User Name" in col_name:
@@ -520,7 +520,7 @@ class SMSUsagePage(BasePage):
     def sms_usage_search(self, date_range=UserData.date_range[0]):
         date_string = start_date = end_date = ''
         self.wait_to_click(self.sms_usage_rep)
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.apply_id, 100)
         assert self.sms_usage_TITLE in self.driver.title, "This is not the SMS Usage page."
         self.wait_to_click(self.date_input)
@@ -534,18 +534,18 @@ class SMSUsagePage(BasePage):
         elif date_range == UserData.date_range[2]:
             date_string, start_date, end_date = self.value_date_range_30_days()
         assert text == date_string
-        time.sleep(2)
+        
         self.click(self.group_field)
         self.send_keys(self.group_input, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         self.verify_users_in_the_group()
         print("Log Submission Dates are with range for " + date_range)
 
@@ -577,21 +577,21 @@ class SMSUsagePage(BasePage):
         self.wait_to_click((By.XPATH, self.date_range_type.format(UserData.date_range[3])))
         date_string, start_date, end_date = self.get_custom_dates_past(20, 0, 0)
         self.select_date_from_picker(start_date, end_date)
-        time.sleep(2)
+        
         text = self.get_attribute(self.date_input, "value")
         print(text)
         assert text == date_string
         self.click(self.group_field)
         self.send_keys(self.group_input, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
-        time.sleep(5)
+        time.sleep(2)
         self.verify_users_in_the_group()
         print("Log Submission Dates are with range for " + UserData.date_range[3])
 
@@ -619,18 +619,18 @@ class SMSUsagePage(BasePage):
         end_year = str(end_date.year)
         self.wait_for_element(self.from_month)
         self.select_by_value(self.from_year, start_year)
-        time.sleep(2)
+        
         self.select_by_value(self.from_month, start_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.from_date.format(start_day)))
-        time.sleep(2)
+        
         self.wait_for_element(self.to_month)
         self.select_by_value(self.to_year, end_year)
-        time.sleep(2)
+        
         self.select_by_value(self.to_month, end_month)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.to_date.format(end_day)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_date)
 
     def sms_usage_save_report(self):
@@ -643,19 +643,19 @@ class SMSUsagePage(BasePage):
         print(text)
         date_string, start_date, end_date = self.value_date_range_7_days()
         assert text == date_string
-        time.sleep(2)
+        
         self.click(self.group_field)
         self.send_keys(self.group_input, UserData.user_group)
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         self.verify_users_in_the_group()
-        time.sleep(10)
+        time.sleep(2)
         report_name = "Saved SMS Usage Report " + fetch_random_string()
         self.verify_favorite_empty(report_name)
         self.save_report_donot_save(report_name)
@@ -663,7 +663,7 @@ class SMSUsagePage(BasePage):
         self.wait_to_click(self.sms_usage_rep)
         self.wait_for_element(self.apply_id, 100)
         self.verify_favorite_created(report)
-        time.sleep(10)
+        time.sleep(2)
         text = self.get_attribute(self.date_input, "value")
         assert text == date_string
         print("Dates are with in range for " + UserData.date_range[0])
@@ -675,7 +675,7 @@ class SMSUsagePage(BasePage):
     def verify_favorite_empty(self, report=None):
         self.wait_to_click(self.favorite_button)
         if report == None:
-            assert self.is_visible_and_displayed(self.empty_fav_list), "Favorites Already Present"
+            self.wait_for_element(self.empty_fav_list)
         else:
             assert not self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report)),
                                                      30), "Favorite is already Present"
@@ -683,24 +683,24 @@ class SMSUsagePage(BasePage):
 
     def verify_favorite_created(self, report):
         self.wait_to_click(self.favorite_button)
-        assert not self.is_visible_and_displayed(self.empty_fav_list, 10), "Favorites Already Present"
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_fav.format(report))), "Favorite Not Present"
+        assert not self.is_visible_and_displayed(self.empty_fav_list, 10)
+        self.wait_for_element((By.XPATH, self.saved_fav.format(report)))
         print("Favorites added.")
         self.wait_to_click((By.XPATH, self.saved_fav.format(report)))
 
     def delete_saved_report(self, report):
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report)), 120)
         print("Report Present!")
         self.click((By.XPATH, self.delete_saved.format(report)))
         print("Deleted Saved Report")
-        time.sleep(5)
-        self.driver.refresh()
+        time.sleep(2)
+        self.reload_page()
         assert not self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report)), 20)
         print("Deleted Report Successfully")
 
     def save_report_donot_save(self, report_name):
-        time.sleep(5)
+        time.sleep(2)
         self.wait_for_element(self.save_config_button)
         self.wait_to_click(self.save_config_button)
         self.wait_to_clear_and_send_keys(self.name_field, report_name)
@@ -718,7 +718,7 @@ class SMSUsagePage(BasePage):
         print(text)
         assert report_name in text, "Report Name is visible in the Title"
         self.wait_to_click(self.cancel_report_button)
-        time.sleep(2)
+        
         assert not self.is_visible_and_displayed(self.name_field, 10), "Save Report Form not closed"
         assert not self.is_visible_and_displayed(self.description_field, 10)
         assert not self.is_visible_and_displayed(self.date_range_field_select, 10)
@@ -727,7 +727,7 @@ class SMSUsagePage(BasePage):
         print("Save Report Form is closed")
 
     def save_report(self, report_name):
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.save_config_button)
         self.wait_to_click(self.save_config_button)
         text = self.get_selected_text(self.date_range_field_select)
@@ -745,10 +745,10 @@ class SMSUsagePage(BasePage):
         print(text)
         assert report_name in text, "Report Name is visible in the Title"
         self.wait_to_click(self.try_again_button)
-        time.sleep(2)
-        self.driver.refresh()
+        
+        self.reload_page()
         self.wait_to_click(self.saved_reports_menu_link)
-        assert self.is_visible_and_displayed((By.XPATH, self.saved_report_created.format(report_name)), 120)
+        self.wait_for_element((By.XPATH, self.saved_report_created.format(report_name)), 120)
         print("Report Saved successfully!")
         print("Report name: ", report_name)
         return report_name
@@ -759,7 +759,7 @@ class SMSUsagePage(BasePage):
         assert self.sms_usage_TITLE in self.driver.title, "This is not the SMS Usage page."
         self.click(self.group_field)
         self.send_keys(self.group_input, UserData.deleted_group)
-        time.sleep(2)
+        
         assert self.is_present(self.no_results), "No results not displayed"
         print("Deleted Group is not present in the Group list")
 
@@ -769,17 +769,17 @@ class SMSUsagePage(BasePage):
         assert self.sms_usage_TITLE in self.driver.title, "This is not the SMS Usage page."
         self.click(self.group_field)
         self.send_keys(self.group_input, UserData.user_group)
-        time.sleep(2)
+        
         self.wait_to_click((By.XPATH, self.users_list_item.format(UserData.user_group)))
-        time.sleep(2)
+        
         self.wait_to_click(self.apply_id)
-        time.sleep(10)
+        time.sleep(2)
         self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        self.wait_for_element(self.report_content_id, 120)
         print("Report loaded successfully!")
         self.scroll_to_element(self.result_table)
         self.verify_users_in_the_group()
-        time.sleep(10)
+        time.sleep(2)
         for items in UserData.automation_group_users:
             self.wait_to_click((By.PARTIAL_LINK_TEXT, items))
             time.sleep(15)
@@ -787,8 +787,8 @@ class SMSUsagePage(BasePage):
             self.wait_for_element(self.username)
             assert self.get_text(self.username) == items, "Username not matching: "+items+" and "+self.get_text(self.username)
             print("Username matching: "+items+" and "+self.get_text(self.username))
-            time.sleep(2)
+            
             self.driver.back()
-            time.sleep(5)
+            time.sleep(2)
 
 

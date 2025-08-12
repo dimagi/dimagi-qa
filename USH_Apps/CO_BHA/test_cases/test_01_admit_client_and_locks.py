@@ -51,7 +51,7 @@ def test_case_01_admit_case_1(driver, settings):
     webapps.submit_the_form()
     value["first_name"] = first_name
     value["last_name"] = last_name
-    return value
+    # return value
 
 def test_case_02_admit_case_2(driver, settings):
     if value["first_name"] == None and value["last_name"] == None:
@@ -125,7 +125,7 @@ def test_case_03_lock_in_1_1(driver, settings):
                                              input_value=BhaUserInput.date_1950_05_01,
                                              property_type=TEXT_INPUT)
     full_name = value["first_name"] + " " + value["last_name"]
-    webapps.search_button_on_case_search_page()
+    webapps.search_button_on_case_search_page(case_list='yes')
     webapps.select_case(full_name)
     webapps.open_form(BhaUserInput.update_lock_status_request)
     app.select_radio(BhaUserInput.lock_in)

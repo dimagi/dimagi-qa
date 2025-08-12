@@ -1,0 +1,87 @@
+{
+    "FUNC_HOME_SCREEN": {
+        "title": "Alafiacomm V2 IT"
+    },
+    "FUNC_REAF_MEN": {
+        "selections": ["1"],
+        "title": "Réaffecter Ménage - ONCHO"
+    },
+    "FUNC_REASSIGN_HOUSEHOLD_FORM": {
+        "selections": ["1"],
+        "title": "Réaffecter Ménage - ONCHO",
+        "questions": {
+            "QUESTION_MOVE_HOUSEHOLD": {
+                "ix": "1",
+                "answer": 1
+            },
+            "QUESTION_INITIAL_DISTRICT": {
+                "ix": "2,0",
+                "answer": 1
+            },
+            "QUESTION_INITIAL_HEALTH_TRAINING": {
+                "ix": "2,1",
+                "answer": 1
+            },
+            "QUESTION_INITIAL_VILLAGE": {
+                "ix": "2,2",
+                "answer": 1
+            },
+            "QUESTION_INITIAL_RC": {
+                "ix": "2,3",
+                "answer": 1
+            },
+            "QUESTION_SELECT_HOUSEHOLD": {
+                "ix": "2,5,0",
+                "answer": [
+                    1,
+                    2
+                ]
+            },
+            "QUESTION_FINAL_DISTRICT": {
+                "ix": "4,0",
+                "answer": 1
+            },
+            "QUESTION_FINAL_HEALTH_TRAINING": {
+                "ix": "4,1",
+                "answer": 1
+            },
+            "QUESTION_FINAL_VILLAGE": {
+                "ix": "4,2",
+                "answer": 1
+            },
+            "QUESTION_FINAL_RC": {
+                "ix": "4,3",
+                "answer": 1
+            },
+            "QUESTION_CONFIRM": {
+                "ix": "5,3",
+                "answer": 1
+            }
+        }
+    },
+    "FUNC_ANSWER_HOUSEHOLD": {
+        "answers": {"1": 1,
+                "2,0": 1,
+                "2,1": 1,
+                "2,2": 1,
+                "2,3": 2,
+                "2,4": "OK",
+                "2,5,0": [
+                    1,
+                    2
+                ],
+                "3,1": "OK",
+                "4,0": 1,
+                "4,1": 1,
+                "4,2": 1,
+                "4,3": 1,
+                "4,4": "OK",
+                "5,1": "OK",
+                "5,2": "OK",
+                "5,3": 1
+        }
+    },
+    "FUNC_HOUSEHOLD_FORM_SUBMIT": {
+        "submitResponseMessage": "'Réaffecter Ménage - ONCHO' successfully saved!"
+    }
+}

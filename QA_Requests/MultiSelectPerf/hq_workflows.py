@@ -47,35 +47,35 @@ class AppCreationPage(BasePage):
     def pass_prop_to_case_list(self, url, start_range, stop_range):
         self.driver.get(url)
         for i in range(start_range, stop_range):
-            self.js_click(self.here)
-            time.sleep(2)
+            self.wait_to_click(self.here)
+            
             self.click(self.add_questions)
-            time.sleep(2)
-            self.js_click(self.hidden_value)
+            
+            self.wait_to_click(self.hidden_value)
             prop_name = 'prop{}p'.format(i)
             self.xpath_value = "instance('casedb')/casedb/case[@case_id = current()/../@id]/" + prop_name
             print(self.xpath_value)
             self.wait_to_clear_and_send_keys(self.calc_cond, self.xpath_value)
             self.wait_to_clear_and_send_keys(self.ques_id, prop_name)
-            self.js_click(self.form_name_save_button)
+            self.wait_to_click(self.form_name_save_button)
             prop_name_full = "#form/here_are_your_cases/item/" + prop_name
             label = "prop_name " + prop_name_full
-            time.sleep(2)
+            
             self.click(self.add_questions)
-            time.sleep(2)
-            self.js_click(self.label_value)
+            
+            self.wait_to_click(self.label_value)
             self.wait_to_clear_and_send_keys(self.display_text, label)
-            self.js_click(self.form_name_save_button)
+            self.wait_to_click(self.form_name_save_button)
 
     @timer
     def sync_user(self):
         self.driver.get("https://www.commcarehq.org/a/casesearch/cloudcare/apps/v2/#apps")
         self.wait_to_click(self.sync_app)
-        assert self.is_visible_and_displayed(self.sync_success, timeout=500)
+        self.wait_for_element(self.sync_success, timeout=500)
 
     def open_app(self):
         self.driver.get("https://www.commcarehq.org/a/casesearch/cloudcare/apps/v2/#apps")
-        self.js_click(self.app_500k)
+        self.wait_to_click(self.app_500k)
         self.is_visible_and_displayed(self.into_the_app, timeout=200)
 
     @timer
@@ -83,17 +83,17 @@ class AppCreationPage(BasePage):
         self.caselist_menu = (By.XPATH, self.menu_name.format(caselist))
         self.case_list_header = (By.XPATH, self.menu_name_header.format(caselist))
         self.wait_to_click(self.caselist_menu)
-        assert self.is_visible_and_displayed(self.case_list_header)
+        self.wait_for_element(self.case_list_header)
 
     def search_all_cases(self):
         try:
-            self.js_click(self.search_all_cases_button)
+            self.wait_to_click(self.search_all_cases_button)
         except TimeoutException:
             pass
 
     @timer
     def search_all_cases_on_case_search_page(self):
-        self.js_click(self.submit_on_case_search_page)
+        self.wait_to_click(self.submit_on_case_search_page)
         self.is_visible_and_displayed(self.case_list)
 
     def change_page_number(self, page_number):
@@ -101,7 +101,7 @@ class AppCreationPage(BasePage):
 
     @timer
     def switch_bw_pages(self):
-        self.js_click(self.page2)
+        self.wait_to_click(self.page2)
         self.wait_for_ajax()
 
     # Goes to base page
@@ -116,20 +116,20 @@ class AppCreationPage(BasePage):
 
     @timer
     def omni_results(self):
-        self.js_click(self.omni_search_button)
+        self.wait_to_click(self.omni_search_button)
         self.wait_for_ajax()
 
     def multi_select_cases(self):
-        self.js_click(self.search_again_button)
-        self.js_click(self.submit_on_case_search_page)
-        self.js_click(self.select_all_checkbox)
+        self.wait_to_click(self.search_again_button)
+        self.wait_to_click(self.submit_on_case_search_page)
+        self.wait_to_click(self.select_all_checkbox)
 
     @timer
     def open_and_load_form(self):
-        self.js_click(self.continue_button)
+        self.wait_to_click(self.continue_button)
         self.is_visible_and_displayed(self.form_name, timeout=500)
 
     @timer
     def submit_the_form(self):
-        self.js_click(self.form_submit)
+        self.wait_to_click(self.form_submit)
         self.is_visible_and_displayed(self.form_submission_successful, timeout=500)
