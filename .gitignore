@@ -277,6 +277,17 @@ LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_work
 /POCs/PercyWebApps/settings.cfg
 /POCs/VisualComparison/settings.cfg
 
+
+#Ignoring compliled files of DataDictionary
+Features/DataDictionary/settings.cfg
+Features/DataDictionary/report.html
+Features/DataDictionary/test_cases/report.html
+
+#Ignoring compliled files of DataDictionary
+Features/Powerbi_integration_exports/settings.cfg
+Features/Powerbi_integration_exports/report.html
+Features/Powerbi_integration_exports/test_cases/report.html
+
 USH_Apps/WeeklyBHACleanup/testCases/report.html
 USH_Apps/WeeklyBHACleanup/report.html
 USH_Apps/WeeklyBHACleanup/report_*
