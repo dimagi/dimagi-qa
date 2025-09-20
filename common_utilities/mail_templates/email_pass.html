@@ -1,0 +1,19 @@
+<html>
+  <body>
+    <p>Hello!</p>
+    <p>All the tests in <b>{{testSuite}}</b> run has PASSED on <b>{{environment}}</b>!</p>
+
+    <p><a href="{{actionRunLink}}">View test run #{{runNumber}}</a></p>
+
+    <h3>Pie Chart</h3>
+    <img src="data:image/png;base64,{{pie_b64}}" alt="Pie Chart" style="max-width:600px;"/>
+
+    <h3>Bar Chart</h3>
+    <img src="data:image/png;base64,{{bar_b64}}" alt="Bar Chart" style="max-width:600px;"/>
+
+    <p><i>Note: For best UI experience, open this email in a modern client.</i></p>
+
+    <p>Regards,<br/>Dimagi QA Team</p>
+  </body>
+</html>
+
