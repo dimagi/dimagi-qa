@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">report.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">report.html</h1>
+    <p>Report generated on 01-Oct-2025 at 12:06:37 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">18 tests took 00:18:14.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" disabled/>
+            <span class="failed">0 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">18 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled/>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled/>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+        <div style='text-align:center; margin-top:20px;'><h3>Test Summary</h3><img src='data:image/png;base64,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jBkzxsrPBoCuxCIQAK527rnnytNPP23mJy1evFi+9rWvmUD429/+1nZpAOBZ9AACcLWoqCizR1lWVpZceumlcuaZZ8qsWbPM15qamuTXv/616RnU1YyjR4+WV155Zf+fLSkpkenTp0tqaqr5+sCBA02YVJ988okJkm33w1y6dKn5f1u2bOlwOPhnP/uZLFu2bH+vpP4/3UpDewazs7NNrb1795Y777zTkX8bADhW9AAC8IyVK1fK559/Ljk5OebXGv6ef/55efzxx024mz17ttxwww0m8J1yyiny05/+VFavXi3vvvuupKSkyIYNG6S6uvqYfvY111xjfv7MmTPlgw8+MP8vISFBXn31VXn44Yfl5ZdfluHDh5t9NjUkAoCbEQABuNrbb78tsbGx0tDQILW1tRIaGip/+tOfzOe/+tWvTBg78cQTze/t16+fzJ07V5544gkTAPPy8mTs2LEyYcIE8/U+ffoccx3ag6h1hIeHmx7JFvoz9NfaM6nzFLUncNKkSV3wNweAwGEIGICrnXbaaWZodsGCBWb+39e//nW54oorTG+ePsXgrLPOMsGs5fXss8/Kxo0bzZ/9zne+Y3rmdOGGLh7R3sOudtVVV5leRQ2ft956q7z++usmrAKAm9EDCMDVunfvLgMGDDCfP/XUU2ae39///ncZMWKE+X/vvPOOZGRktPszOhdPnXfeeZKbmyszZsww8wbPOOMMueOOO+R3v/ud6UlUOoevxbFshKtzE9euXWt6IvVn3H777fLggw/Kp59+anoEAcCN6AEE4Bka2u677z75yU9+IsOGDTNBT4dgNSC2fWkoa6HzAbXnUOcKPvLII/Lkk0/u//9q+/bt+3+v9jR2JjIy0jxOsaPh4YsuukgeffRRs7hk3rx5smLFii78mwNA16IHEICn6JDr3Xffbeb5/ehHP5If/OAHZjXwlClTpKysTD777DOJj483oe/++++X8ePHm8UZOmdQ5xMOHTrUfJ+WoKgreH/5y1/KunXr5KGHHur0Z+scws2bN5ugmJmZKXFxcfLSSy+ZUDh58mTzSC0NmhoIWxaqAIAbEQABeIouwvjud78rDzzwgAlj2pOnq4E3bdpkntoxbtw400vY0mN37733mm1dNJRNnTrVzAlUOjyr4U3nCY4aNUomTpwov/jFL0zAPBSde/jaa6+ZeYm6fYxuKaM/8ze/+Y3cddddJgiOHDlS3nrrLUlOTnbs3wQAjlZIc9sJMAh6+gQFvWjqvmnR0dG2ywEAWMZ1wZ+YAwgAAOAzBEAAAACfIQACAAD4DAEQAADAZwiAAAAAPkMABAAA8BkCIAAAgM8QAAEAAHyGAAgAAOAzBEAgAG6++Wa59NJLbZeB4/DMM8+Yx7y10GcGjxkz5ri+pz6SLiQkxDxLGPboe/DGG290+sznRx55RNzg1FNPlf/6r/+yXQaCEAEQnglU2mjrS5/vOmDAAPn5z38uDQ0NEixmz54tF110kfTu3fuQF6jKykrzHNzMzEzzbNthw4bJ448/bqVerx03bV8bNmw47J+95pprZN26deIGeXl5csEFF0hMTIz07NlT7r777qA69rvSjh07zPOds7OzJSoqStLT0+Wcc86Rzz777Ii/x6JFi+S2224Tr9InvN5///3Sq1cv006ceeaZsn79ettlwWXCbRcA9/jWB3c49rOeOPPPR/1nzj33XHn66aeltrZWZsyYIXfccYdERETIvffeK8Fgz549Mnr0aLnlllvk8ssv7/D33HXXXfLRRx/J888/b3op3n//fbn99ttNaLz44osdr7n0yssc/XmJr7x+zMdNW6mpqYf9c3rh1JdtjY2NJvxpkPn8889l+/btctNNN5lj/1e/+pXj9dQvC3H050WMPrrH1V9xxRVSV1cn//jHP6Rfv35SVFQkH374oezateuIv8eRHB9u9sADD8ijjz5q/g30+b4//elPTQhevXo1z/rFfvQAwjNa7uZzcnLMHb7e1f7nP/8xX/v9738vI0eOlO7du0tWVpYJRdpb1iI3N9f0riUlJZnfM3z4cBMiVUlJiUyfPt00+nrBHzhwYLvAkJ+fL1dffbUZDuzRo4dccsklZiiv7QVag5l+PTk5We655x5zB360zjvvPPnFL34hl1126FClAeBrX/uaGRbSAKi9FBoaFy5ceNQ/z2/HTdtXWFjYYY+ZA4eAO/K3v/1Nhg4dai6qQ4YMkccee6zd1/V9GTt2rPn6hAkT5Msvvzzq+jXk64VbQ78OQetx8n//93/y5z//2QQdtCotLZU5c+bIb3/7WznttNNMWzFp0iRzk9jZDdL//M//mN6y5cuXdzgErL3Gf/nLX8y/vbYRGixfeeWVg4b2X375ZTnppJPM+z1ixAj59NNP2/2clStXmu8RGxsraWlpcuONN8rOnTvb3QRquNevaz0PPfTQUf8baNujtf/kJz8xbdWoUaPk2WeflW3btnU67A3/IQDCs7QhbrkAhoaGmjveVatWmbte7SXTINZCewu151CHWVesWGEuENrIKr071gvsu+++K2vWrDENfUpKivlafX29uXOOi4szFxYdRtI/p71KLT9bG2kNC0899ZTMnTtXdu/eLa+/3r6nSr+uF4jjpRcXDb0FBQWmof/444/NMOXZZ5993N/bbw53zBzOCy+8YIbZfvnLX5rjRnvj9FjS76U0TF544YVmmH7x4sVmDuGPfvSjg76Phg392qHMmzfPBFUNDC30mCwvLze1o5Wem/rSoKPn++HoOfS9733PBCQ9vzUsHYq+t9q7uGzZMnPDeO2115r3vS0dmv/hD39ogv6JJ55objpbeh41nJ5++unmhuCLL76QmTNnmt5Jvbls++c1NL755psm+H/yySeyZMmSdj9DjxU9Zg5l8+bNUlhYaG6QWyQkJMjkyZPNsQS0YAgYnqONtg7pvPfee6bxVm0nSWvjqD1p3/72t/f3yOgcKm289UKq9A6+hX5NG2XtoWn58y3++c9/SlNTk+npaQlw2juoPUPaOGvw0rtt7WFoGbbVOXlaW1vaAA8ePPi4/+5//OMfTa+fzgEMDw83Ieavf/2rTJs27bi/d7B6++2394d9pT0w//73vw97zByO9hpp+G9533WoTW8knnjiCdNL++KLL5pj5+9//7vpEdJe561bt5re67b69++//4ajI3oxbxv+VMuv9WtopeeE3mzdeuut5jwcN26cnHLKKSasHRjudA7lDTfcYMKa3rhlZGR0+r2vuuoq+eY3v2k+1x7YWbNmmfOx7fGi83O1nVF6I6khT99/vbH405/+ZNqZtsP2etOovc96E6fTOPT3ak/vGWecYb6uNxN6rrelx4oeM4fSckx0dMxwvKAtAiA8dyHXXjm9sF5//fX7e04++OAD+fWvfy1fffWV6RnRxr2mpkaqqqrMxPk777zTXHj1rlrvjLWRbrkg6P/XX+udtgY6Xb2rPW1K7/Z1wYD2ALal33vjxo1SVlZm5mTp3XXbi5CGybbDwDqs29nQ7pHSC878+fNNL6AOb2mPpvZu6sWj7R0/WulQoF6MW+iQ75EcM53RoTp9/7/xjW+YsNFCv4eGfaW9Q3qMtZ1zpb1CB9KbGXQdPZd1zqT26Om5oj37OidOb+J0UVCLH/zgB2Z6gP6ezgL4od47/fWBq7nb/p6WdqCll1DbEu2xb3sz0kKPperqajOq0LYt0SknB944asjUF3C8GAKGpy7k2uDqajZtLPXuWC/mOv9Gh9r0Yvvqq6+a4TadH6Vahmn1zn3Tpk1mzo0OAWvDrGGqpUdI5wjqBUHnyejdd8tQnQ7jjR8/3vzcti+9Y9cA6iT9O993331m7poOLenfVy8Eulr1d7/7naO1eIkeI7pqvOWlc6uO5JjpTMtcQe19bXtc6BwvDRRdSecs6lBhWy2/1q/hYBq6zzrrLDNsq/NmNfhpj21b+nWdSnFgb32g6DGj5+2BbYm2Z13Zg99yTHR0zHC8oC0CIDx3IdftHfTuuoVevLVHUIfjTjjhBBk0aJAJcgfSoRYd4nvttdfMPB29eLfQBSA6bKfDLzqk++STT5r/r0NI2kDr1httQ4S+tKdHXxooFixY0K4XSGvqatrzqS8d9m1LFzTo3x9H7kiPmUPR4TTtddWbigOPCx0KVro4RBcVaK9ii2MJh9qrpDctxcXF+/+fDj/Gx8eb+YU4PP130l7btnRRiA7T682hLt44nAPfO/21vseH+j0t7UDL79G2ROds6nSDA48Zbdt0WFdXdrdtS3SB2tFuRaTHnwa9tj3L2sOt37ejHmj4FwEQnqcNqAYj7dHTC/Jzzz130N54Ot9L7/R1grQO9epQTEvDrBP5ddK1DvVqA61DzS1f08neOjykq+l0SEn/vM790yFlnc+lvv/978tvfvMbM/FchxN1NalO+G5LF4XoKtHD9RC09Aoo/Vn6uc5RVHrB1/lMOlFca9Cv63wnncDeFcPLfnIkx8zh/OxnPzNDyLqQRC/SGtJ0fqj20CrtIdZ5ozpErHMDddV5Rz212uOs88MORaclaIDR3msdRtTjWFd46tC/DmGilS640IUWeiOn4VvPEZ3vqUPAeg4fSM8bfe+//vWvt1vV2xH9PjpnT99r7U3UFd4HDsVqL7Ke69oO6PujAU63dVL6a10gdt1115l9BnXYV99L/dm6k4AODeuUAj2/dUGS9iZrz+WBN3x6rLTMEeyIHnPa3umcVp0qoselrizWGxY2p0dbzAGE5+k2KHrR1ZW9uhhDh1P0wqyNXgttYLUB1tCmQUpX8T788MPma7qxtP45HRbUlcVTp07d3yOgc8F0nt2Pf/xjM9m/oqLCTBbXBli/j9LeRJ0HqD2I2lhrg68XFp0f2EI/X7t2bad/D10ZqMPcLXRrGaXfV4Oe0rq0Vg2mejHReYC6ClV7NtG1x8zhaM+RHh8PPviguWhrL44uMmpZXKIX9Lfeesu8Nzr5X0Oc/ryWRQItNAi03QrkQNrDqzclOldVe3D05+gxoRuhoz39N9c5dHpu67+rhnzt+dcQrtMnOnLllVea3mAN2Hr+HmoPTg38ev7pDZ72+r/00ksH9cDqjaC+9MZNbzI0gLXML9QAprsIaFuioV5XKev5q21RS8jTY6llqFjnHWvb0rYdUXqs6N+tM7roRHs8dcGY3oxOmTLFLEhhD0C0FdJ8LBuWwbN0OErvinWYgMYAAA5Pe9W0Z+9QPWh686htqq4oPt7HBdrAdcGfGAIGAADwGQIgAACAzzAHEACAThxuppSu7GU2FbyGHkAAAACfIQACAAD4DAHQpxiuAAAorgf+RAD0Gd1pXunzTgEAaLketFwf4A8sAvEZ3VQ2MTFx/2OldCNb3eMKAOC/nj8Nf3o90OuCXh/gH2wE7UP6lhcWFh70uDIAgP9o+NPnB9MZ4C8EQB/Tx6Ppo5IAAP6kw770/PkTARAAAMBnWAQCAADgMwRAAAAAnyEAAgAA+AwBEAAAwGcIgAAAAD5DAAQAAPAZAiAAAIDPEAABAAB8hgAIAADgMwRAAAAAnyEAAgAA+AwBEAAAQPzl/wOA2OtSmI854QAAAABJRU5ErkJggg==' style='max-width:500px;'/></div>
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="tags">Tags</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.13.5&#34;, &#34;Platform&#34;: &#34;Windows-11-10.0.26100-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.4.1&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;Faker&#34;: &#34;37.6.0&#34;, &#34;html&#34;: &#34;4.1.1&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;, &#34;order&#34;: &#34;1.3.0&#34;, &#34;rerunfailures&#34;: &#34;15.1&#34;, &#34;xdist&#34;: &#34;3.8.0&#34;}}, &#34;tests&#34;: {&#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_01_odata_feed_ui&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_01_odata_feed_ui&#34;, &#34;duration&#34;: &#34;00:01:00&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;lookup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_01_odata_feed_ui&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:01:00&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nChrome version: 140.0.7339.208\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/login/\nnotification dismissed\nbanner accepted\n\n----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_02_odata_feed_select_type&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_02_odata_feed_select_type&#34;, &#34;duration&#34;: &#34;00:00:20&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_02_odata_feed_select_type&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:20&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nAdd OData Feed button is disabled\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_03_odata_feed_select_form&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_03_odata_feed_select_form&#34;, &#34;duration&#34;: &#34;00:00:22&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_03_odata_feed_select_form&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:22&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_04_odata_feed_select_application&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_04_odata_feed_select_application&#34;, &#34;duration&#34;: &#34;00:00:35&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_04_odata_feed_select_application&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:35&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n[&amp;#x27;App1\\nBasic Tests\\nBasic Tests [Linked]\\nCase Tiles\\nData_Dictionary\\nFormplayer Tests\\nLookuptable_tests\\nMultimedia\\nNew test XSS\\nQA-5050\\nReassign Cases\\nSMS Tests\\nTest Application - One question per screen\\nTest Application -Formplayer Automation\\nVillage Health&amp;#x27;]\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_05_odata_feed_select_menu&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_05_odata_feed_select_menu&#34;, &#34;duration&#34;: &#34;00:00:57&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_05_odata_feed_select_menu&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:57&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n[&amp;#x27;App1\\nBasic Tests\\nBasic Tests [Linked]\\nCase Tiles\\nData_Dictionary\\nFormplayer Tests\\nLookuptable_tests\\nMultimedia\\nNew test XSS\\nQA-5050\\nReassign Cases\\nSMS Tests\\nTest Application - One question per screen\\nTest Application -Formplayer Automation\\nVillage Health&amp;#x27;]\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n[]\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_06_odata_feed_6_cancel_selection&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_06_odata_feed_6_cancel_selection&#34;, &#34;duration&#34;: &#34;00:00:31&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_06_odata_feed_6_cancel_selection&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:31&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_07_save_and_delete_odata_feed_form&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_07_save_and_delete_odata_feed_form&#34;, &#34;duration&#34;: &#34;00:00:50&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_07_save_and_delete_odata_feed_form&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:50&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_08_save_odata_feed_form&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_08_save_odata_feed_form&#34;, &#34;duration&#34;: &#34;00:00:31&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_08_save_odata_feed_form&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:31&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_09__odata_feed_show_advance_question&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_09__odata_feed_show_advance_question&#34;, &#34;duration&#34;: &#34;00:00:34&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_09__odata_feed_show_advance_question&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:34&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nshow advance and show delete questions buttons are displayed\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_10_save_and_delete_odata_feed_case&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_10_save_and_delete_odata_feed_case&#34;, &#34;duration&#34;: &#34;00:01:20&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_10_save_and_delete_odata_feed_case&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:01:20&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\ncase type field displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_case_feed/create?export_tag=%22case%22&amp;amp;app_id=\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_case_feed/create?export_tag=%22case%22&amp;amp;app_id=\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_case_feed/create?export_tag=%22case%22&amp;amp;app_id=\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_11_save_and_copy_odata_feed&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_11_save_and_copy_odata_feed&#34;, &#34;duration&#34;: &#34;00:01:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_11_save_and_copy_odata_feed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:01:04&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_case_feed/edit/157afc5b3d57881332d63e5b3351f65c/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_case_feed/edit/157afc5b3d57881332d63e5b3351f65c/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_case_feed/edit/157afc5b3d57881332d63e5b3351f65c/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_12_add_description_to_odata_feed&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_12_add_description_to_odata_feed&#34;, &#34;duration&#34;: &#34;00:00:47&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_12_add_description_to_odata_feed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:47&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\ndisabled button present\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nclicked on saved button\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_13_bulk_create_bulk_delete_odata_feed&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_13_bulk_create_bulk_delete_odata_feed&#34;, &#34;duration&#34;: &#34;00:04:54&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_13_bulk_create_bulk_delete_odata_feed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:04:54&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\ncreate multiple odata feeds completed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\npagination working fine\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_14_delete_questions_on_odata_feed_page&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_14_delete_questions_on_odata_feed_page&#34;, &#34;duration&#34;: &#34;00:00:32&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_14_delete_questions_on_odata_feed_page&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:32&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nDeleted questions become included in the question list for form feeds\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_15_deidentified_odata_feed&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_15_deidentified_odata_feed&#34;, &#34;duration&#34;: &#34;00:00:36&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_15_deidentified_odata_feed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:36&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodatafeed marked as de-identified\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_16_view_created_odata_feed&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_16_view_created_odata_feed&#34;, &#34;duration&#34;: &#34;00:01:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_16_view_created_odata_feed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:01:13&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/B6A89DD6-D50B-40EC-A1B4-CC24AF732DCB%22&amp;amp;app_id=373f7c9fdc12f63145c226317177cba1\ndisabled button present\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nclicked on saved button\n(&amp;#x27;xpath&amp;#x27;, &amp;quot;//div[contains(@data-bind,&amp;#x27;text-body-secondary&amp;#x27;)][.//span[text()=&amp;#x27;powerbi_odatafeed1&amp;#x27;]]//following-sibling::div[contains(@data-bind,&amp;#x27;showLink&amp;#x27;)]//button&amp;quot;)\n====https://staging.commcarehq.org/a/qa-automation/api/odata/forms/v1/992d94bb82b4e228cf088d1aa7f93a7c/feed\n--------https://automation.user.commcarehq@gmail.com:pass@123@staging.commcarehq.org/a/qa-automation/api/odata/forms/v1/992d94bb82b4e228cf088d1aa7f93a7c/feed\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_17_odata_feed_edit_filters&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_17_odata_feed_edit_filters&#34;, &#34;duration&#34;: &#34;00:00:53&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_17_odata_feed_edit_filters&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:53&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nApp type, application,Menu , form are displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nForm submission message displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/06D181E0-E1AA-4B3F-953E-9641B58A68C0%22&amp;amp;app_id=8a17795f17f04b8fba38e013cb0fa05b\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/06D181E0-E1AA-4B3F-953E-9641B58A68C0%22&amp;amp;app_id=8a17795f17f04b8fba38e013cb0fa05b\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/06D181E0-E1AA-4B3F-953E-9641B58A68C0%22&amp;amp;app_id=8a17795f17f04b8fba38e013cb0fa05b\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_form_feed/create?export_tag=%22http://openrosa.org/formdesigner/06D181E0-E1AA-4B3F-953E-9641B58A68C0%22&amp;amp;app_id=8a17795f17f04b8fba38e013cb0fa05b\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nData range values (&amp;#x27;xpath&amp;#x27;, &amp;quot;//*[@id=&amp;#x27;id_date_range&amp;#x27;]&amp;quot;)\n&#34;}], &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_18_odata_feed_include_parent&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Features/Powerbi_integration_exports/testCases/test.py::test_case_18_odata_feed_include_parent&#34;, &#34;duration&#34;: &#34;00:01:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td&gt;&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Features/Powerbi_integration_exports/testCases/test.py::test_case_18_odata_feed_include_parent&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:01:16&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nurl:  https://staging.commcarehq.org/a/qa-automation\n[DEBUG] Window size: {&amp;#x27;width&amp;#x27;: 1554, &amp;#x27;height&amp;#x27;: 882}\n[DEBUG] Window rect: {&amp;#x27;height&amp;#x27;: 882, &amp;#x27;width&amp;#x27;: 1554, &amp;#x27;x&amp;#x27;: 0, &amp;#x27;y&amp;#x27;: 0}\n[DEBUG] Pixel ratio (JS): 1.25\n[DEBUG] Viewport (JS): [1540, 736]\nno alert\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/dashboard/project/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/form/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\ncase type field displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed settings page displayed\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_case_feed/create?export_tag=%22sub_case_one%22&amp;amp;app_id=\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_case_feed/create?export_tag=%22sub_case_one%22&amp;amp;app_id=\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/new/odata_case_feed/create?export_tag=%22sub_case_one%22&amp;amp;app_id=\nCurrent URL : https://staging.commcarehq.org/a/qa-automation/data/export/custom/odata_feed/\nodata feed is created\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;report.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>

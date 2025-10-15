@@ -33,7 +33,7 @@ class ReportPage(BasePage):
 
         # Mobile Worker Reports
         self.reports_menu_id = (By.ID, "ProjectReportsTab")
-        self.worker_activity_rep = (By.LINK_TEXT, "User Activity")
+        self.worker_activity_rep = (By.LINK_TEXT, "Worker Activity")
         self.daily_form_activity_rep = (By.LINK_TEXT, "Daily Form Activity")
         self.submissions_by_form_rep = (By.LINK_TEXT, "Submissions By Form")
         self.form_completion_rep = (By.LINK_TEXT, "Form Completion Time")
@@ -91,16 +91,12 @@ class ReportPage(BasePage):
         self.saved_report_description = (By.NAME, "description")
         self.save_confirm = (By.XPATH, '//div[@class = "btn btn-primary"]')
         self.saved_reports_menu_link = (By.LINK_TEXT, 'My Saved Reports')
-        self.saved_report_created = "//a[text()='{}']"
+        self.saved_report_created = (By.XPATH, "//a[text()='" + self.report_name_saved + "']")
         self.delete_saved = (By.XPATH,
                              "(//a[text()='" + self.report_name_saved + "']//following::button[@class='btn btn-danger add-spinner-on-click'])[1]")
         self.delete_saved_report_link = "(//a[text()='{}']//following::button[@class='btn btn-danger add-spinner-on-click'])[1]"
         self.all_saved_reports = (
         By.XPATH, "//td[a[contains(.,'Saved')]]//following-sibling::td/button[contains(@data-bind,'delete')]")
-
-        self.favorite_button = (By.XPATH, "//button[contains(.,'Favorites')]")
-        self.empty_fav_list = (By.XPATH, '//a[.="You don\'t have any favorites"]')
-        self.saved_fav = "//a[contains(.,'{}')][contains(@data-bind,'text: name')]"
 
         # Scheduled Reports
         self.scheduled_reports_menu_xpath = (By.XPATH, "//a[@href='#scheduled-reports']")
@@ -190,6 +186,12 @@ class ReportPage(BasePage):
         # App Status
         self.app_status_results = (By.XPATH, "//table[@class='table table-striped datatable dataTable no-footer']/tbody/tr")
         self.app_status_results_cells = (By.XPATH, "//table[@class='table table-striped datatable dataTable no-footer']/tbody/tr/td")
+
+        #Find_Data_By_Id
+        self.properties ="//a[normalize-space()='{}']"
+        self.form_properties = "//a[normalize-space()='Form Properties']"
+        self.id_values= "//dt[@title='{}']//following-sibling::dd[1]"
+
 
 
     def check_if_report_loaded(self):
@@ -316,10 +318,11 @@ class ReportPage(BasePage):
         self.wait_for_element(self.save_confirm)
         self.js_click(self.save_confirm)
         time.sleep(2)
-
-        self.reload_page()
-        self.wait_to_click(self.saved_reports_menu_link)
-        self.wait_for_element((By.XPATH, self.saved_report_created.format(self.report_name_saved)), 120)
+        self.wait_for_element(self.saved_reports_menu_link, 100)
+        self.click(self.saved_reports_menu_link)
+        time.sleep(10)
+        self.wait_for_element(self.scheduled_reports_menu_xpath, 200)
+        assert self.is_present_and_displayed(self.saved_report_created, 220)
         print("Report Saved successfully!")
 
     def create_scheduled_report_button(self):
@@ -462,7 +465,7 @@ class ReportPage(BasePage):
             print("No rows are present in the web table")
             return False
 
-    def verify_form_data_submit_history(self, case_name, username):
+    def verify_form_data_submit_history(self, case_name, username, type_value):
         print("Sleeping for sometime for the case to get registered.")
         time.sleep(90)
         self.wait_to_click(self.submit_history_rep)
@@ -490,8 +493,23 @@ class ReportPage(BasePage):
         time.sleep(3)
         self.page_source_contains(case_name)
         assert True, "Case name is present in Submit history"
+        self.wait_to_click((By.XPATH, self.properties.format('Case Changes')))
+        value_id = self.get_text((By.XPATH, self.id_values.format('@case_id')))
+        new_value = str(value_id).strip()
+        user_id = self.get_text((By.XPATH, self.id_values.format('@user_id')))
+        user_id_value = str(user_id).strip()
+        self.wait_to_click((By.XPATH, self.properties.format('Form Metadata')))
+        form_id = self.get_text((By.XPATH, self.id_values.format('instanceID')))
+        form_id_value = str(form_id).strip()
+        #self.wait_to_click((By.XPATH, self.properties.format('Form Properties')))
         # self.driver.close()
         # self.switch_back_to_prev_tab()
+        if type_value == 'case':
+            return new_value
+        elif type_value == 'user':
+            return user_id_value
+        elif type_value == 'form':
+            return form_id_value
         self.driver.back()
 
     def verify_form_data_case_list(self, case_name, username):
