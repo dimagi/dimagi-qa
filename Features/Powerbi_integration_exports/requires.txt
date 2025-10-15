@@ -2,14 +2,16 @@
 
 
 pandas>=1.2.2
-pytest
-pytest-html
+pytest>=6.2.5
+pytest-html>=3.1.1
 selenium == 4.11.2
-openpyxl
-pytest-rerunfailures
-pytest-xdist
+openpyxl>=3.0.6
+pytest-rerunfailures>=10.2
+pytest-xdist>=2.4.0
 pytest-xdist[psutil]
 pyotp >=2.6.0
 pytest-order
 py
 beautifulsoup4
+pytest-metadata
+matplotlib

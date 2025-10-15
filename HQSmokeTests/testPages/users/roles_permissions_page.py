@@ -41,6 +41,9 @@ class RolesPermissionPage(BasePage):
         self.confirm_role_delete = (By.XPATH, "//div[@class='btn btn-danger']")
         self.full_org_access_checkbox = (By.XPATH, "//label[contains(.,'Full Organization Access')]//following-sibling::div//input")
         self.access_all_reports_checkbox = (By.XPATH, "//input[@id='access-all-reports-checkbox']")
+        self.edit_data = (By.XPATH, "//input[@id='edit-data-checkbox']")
+        self.view_data_dictionary = (By.XPATH, "//input[@id='view-data-dict-checkbox']")
+        self.edit_data_dictionary = (By.XPATH, "//input[@id='edit-data-dict-checkbox']")
 
 
     def roles_menu_click(self):
@@ -114,8 +117,7 @@ class RolesPermissionPage(BasePage):
 
     def add_non_admin_role(self):
         self.wait_to_click(self.add_new_role)
-        self.wait_for_element(self.role_name)
-        self.send_keys(self.role_name, self.role_non_admin_created)
+        self.wait_to_clear_and_send_keys(self.role_name, self.role_non_admin_created)
         
         self.wait_to_click(self.edit_mobile_worker_checkbox)
         self.scroll_to_element(self.access_all_reports_checkbox)
@@ -141,5 +143,25 @@ class RolesPermissionPage(BasePage):
         self.wait_to_click(self.save_button)
         
         assert self.is_present_and_displayed(self.role_non_admin), "Role not added successfully!"
-        print("Role added successfully")
+        return self.role_non_admin_created
+
+    def add_non_admin_role_dd(self, value):
+        self.wait_to_click(self.add_new_role)
+        self.wait_to_clear_and_send_keys(self.role_name, self.role_non_admin_created)
+        time.sleep(1)
+        self.click(self.edit_data,5)
+        self.click(self.view_data_dictionary)
+        if value == 1:
+            print("only view access selected")
+        elif value ==2:
+            time.sleep(5)
+            self.click(self.edit_data_dictionary)
+        else:
+            self.click(self.view_data_dictionary)
+            self.click(self.edit_data_dictionary)
+            self.click(self.edit_data_dictionary)
+        self.scroll_to_element(self.save_button)
+        time.sleep(0.5)
+        self.click(self.save_button)
+        time.sleep(2)
         return self.role_non_admin_created

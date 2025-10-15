@@ -238,6 +238,17 @@ Features/Lookuptable/settings.cfg
 Features/Lookuptable/report.html
 Features/Lookuptable/testCases/report.html
 
+#Ignoring compliled files of DataDictionary
+Features/DataDictionary/testCases/report.html
+Features/DataDictionary/testCases/slack_charts
+Features/DataDictionary/test_cases/report.html
+
+#Ignoring compliled files of Powerbi_integration_exports
+Features/Powerbi_integration_exports/settings.cfg
+Features/Powerbi_integration_exports/report.html
+Features/Powerbi_integration_exports/test_cases/report.html
+Features/Powerbi_integration_exports/testCases/slack_charts
+
 #Ignoring compliled files of QA_Requests
 QA_Requests/BHAStressTest/settings.cfg
 QA_Requests/BHAStressTest/user_inputs/*.csv
@@ -276,6 +287,8 @@ LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_work
 /POCs/AppPercyMobile/settings.cfg
 /POCs/PercyWebApps/settings.cfg
 /POCs/VisualComparison/settings.cfg
+
+
 
 USH_Apps/WeeklyBHACleanup/testCases/report.html
 USH_Apps/WeeklyBHACleanup/report.html
