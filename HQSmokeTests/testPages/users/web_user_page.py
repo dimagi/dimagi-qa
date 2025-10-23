@@ -192,28 +192,24 @@ class WebUsersPage(BasePage):
         assert self.is_present_and_displayed(self.import_complete, 150), "Upload Not Completed! Taking Longer to process.."
         print("File uploaded successfully")
 
-    def edit_user_permission(self, rolename):
+    def edit_user_permission(self, role_name):
         self.wait_to_click(self.web_users_menu)
         self.wait_for_element(self.search_user)
         self.wait_to_clear_and_send_keys(self.search_user, UserData.p1p2_user)
-
         self.wait_to_click(self.search_user_btn)
-        
-        self.wait_for_element(self.user_link)
-        self.wait_to_click(self.user_link)
+        self.wait_for_element(self.user_link,5)
+        self.wait_to_click(self.user_link,5)
         self.wait_for_element(self.select_project_role_id)
-        self.select_by_text(self.select_project_role_id, rolename)
+        self.select_by_text(self.select_project_role_id, role_name)
         self.wait_to_click(self.update_role_btn)
-        
         self.scroll_to_element(self.location_field)
         if self.is_present(self.remove_location):
             self.wait_to_click(self.remove_location)
             print("removed location")
-        
         self.wait_to_click(self.location_field)
         self.send_keys(self.location_field, "Test Location")
         self.wait_to_click(self.location_value)
-        self.wait_to_click(self.update_location_btn)
+        self.wait_to_click(self.update_location_btn,5)
         
 
     def change_user_role(self, username, role):
