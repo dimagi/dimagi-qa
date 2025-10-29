@@ -83,7 +83,7 @@ jobs:
           # Extract variables from the api_test_counts.txt file
           while IFS= read -r line; do
             echo "::set-output name=${line%=*}::${line#*=}"
-          done < data_dictionary_test_counts_${{ matrix.environment }}.txt
+          done < data_dictionary_tests_counts_${{ matrix.environment }}.txt
 
       - name: Archive test results
         id: artifact-upload-step
