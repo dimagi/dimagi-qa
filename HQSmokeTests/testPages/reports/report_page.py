@@ -249,11 +249,17 @@ class ReportPage(BasePage):
         self.export_to_excel = (By.XPATH, "//a[@id='export-report-excel']")
         self.export_success = (By.XPATH,
                                "//span[.='Your requested Excel report will be sent to the email address defined in your account settings.']")
-        self.download_report_link = (By.XPATH, "//div[contains(@class,'success')]//a[.='Download Report']")
 
         # App Status
         self.app_status_results = (By.XPATH, "//table[@class='table table-striped datatable dataTable no-footer']/tbody/tr")
         self.app_status_results_cells = (By.XPATH, "//table[@class='table table-striped datatable dataTable no-footer']/tbody/tr/td")
+
+        #Find_Data_By_Id
+        self.properties ="//a[normalize-space()='{}']"
+        self.form_properties = "//a[normalize-space()='Form Properties']"
+        self.id_values= "//dt[@title='{}']//following-sibling::dd[1]"
+
+
         self.panel_body_text = (By.XPATH, "//div[@id='report-content']//div[contains(@class,'card-body')]")
         self.last_submit_column_list = (By.XPATH, "//table[@id='report_table_app_status']//tbody//td[3]")
         self.last_submit_column_first = (By.XPATH, "(//table[@id='report_table_app_status']//tbody//td[3])[1]")
@@ -536,7 +542,7 @@ class ReportPage(BasePage):
             print("No rows are present in the web table")
             return False
 
-    def verify_form_data_submit_history(self, case_name, username):
+    def verify_form_data_submit_history(self, case_name, username,type_value=None,app_config=None):
         print("Sleeping for sometime for the case to get registered.")
         time.sleep(90)
         self.wait_to_click(self.submit_history_rep)
@@ -546,9 +552,9 @@ class ReportPage(BasePage):
         self.wait_to_click(self.users_box)
         self.send_keys(self.search_user, username)
         self.wait_to_click((By.XPATH, self.app_user_select.format(username)))
-        self.select_by_text(self.application_select, UserData.reassign_cases_application)
-        self.select_by_text(self.module_select, UserData.case_list_name)
-        self.select_by_text(self.form_select, UserData.form_name)
+        self.select_by_text(self.application_select, app_config['app_name'])
+        self.select_by_text(self.module_select, app_config['case_list_name'])
+        self.select_by_text(self.form_select, app_config['form_name'])
         date_range = self.get_todays_date_range()
         self.clear(self.date_input)
         self.send_keys(self.date_input, date_range + Keys.TAB)
@@ -561,11 +567,24 @@ class ReportPage(BasePage):
         print("View Form Link: ", form_link)
         # self.switch_to_new_tab()
         self.driver.get(form_link)
+        if type_value == 'case':
+            self.wait_to_click((By.XPATH, self.properties.format('Case Changes')))
+            value_id = self.get_text((By.XPATH, self.id_values.format('@case_id')))
+            new_value = str(value_id).strip()
+            return new_value
+        elif type_value == 'user':
+            user_id = self.get_text((By.XPATH, self.id_values.format('@user_id')))
+            user_id_value = str(user_id).strip()
+            return user_id_value
+        elif type_value == 'form':
+            self.wait_to_click((By.XPATH, self.properties.format('Form Metadata')))
+            form_id = self.get_text((By.XPATH, self.id_values.format('instanceID')))
+            form_id_value = str(form_id).strip()
+            return form_id_value
         time.sleep(3)
+        self.wait_to_click((By.XPATH, self.properties.format('Form Properties')))
         self.page_source_contains(case_name)
         assert True, "Case name is present in Submit history"
-        # self.driver.close()
-        # self.switch_back_to_prev_tab()
         self.driver.back()
 
     def verify_form_data_case_list(self, case_name, username):
@@ -687,7 +706,6 @@ class ReportPage(BasePage):
             owner = UserData.appiumtest_owner_id_prod
         else:
             owner = UserData.appiumtest_owner_id
-        self.wait_for_element(self.case_list_explorer, 300)
         self.wait_to_click(self.case_list_explorer)
         time.sleep(20)
         self.wait_for_element(self.edit_column, 220)

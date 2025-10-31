@@ -63,7 +63,7 @@ def test_case_56_archive_unarchive_location(driver, settings):
 
 @pytest.mark.user
 @pytest.mark.organisationStructure
-def test_case_08_edit_location_fields(driver, settings):
+def test_case_08_edit_location_fields(driver, settings, rerun_count):
     """
         1. Remaining on the Organization Structure, click 'Edit Location Fields'
         2. Add a new Location Field
@@ -72,9 +72,9 @@ def test_case_08_edit_location_fields(driver, settings):
     menu = HomePage(driver, settings)
     menu.users_menu()
     edit = OrganisationStructurePage(driver)
-    edit.edit_location_fields()
+    loc_field_name = edit.edit_location_fields(rerun_count)
     print("Location field created")
-    edit.selection_location_field_for_location_created()
+    edit.selection_location_field_for_location_created(loc_field_name)
     print("Selected location field created, for the location")
 
 

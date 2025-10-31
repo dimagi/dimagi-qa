@@ -2,7 +2,7 @@ import pytest
 
 from HQSmokeTests.testPages.applications.app_preview import AppPreviewPage
 from HQSmokeTests.testPages.applications.application_page import ApplicationPage
-from HQSmokeTests.testPages.android.android_screen import AndroidScreen
+from HQSmokeTests.testPages.android.android_screen_old import AndroidScreen
 from HQSmokeTests.testPages.home.home_page import HomePage
 from HQSmokeTests.testPages.reports.report_page import ReportPage
 from HQSmokeTests.userInputs.user_inputs import UserData
