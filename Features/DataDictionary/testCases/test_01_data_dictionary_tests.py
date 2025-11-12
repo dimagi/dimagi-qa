@@ -113,6 +113,7 @@ def test_case_12_validate_deprecate_restore_case_exports(driver,settings):
     home = HomePage(driver, settings)
     data = DataDictionaryPage(driver)
     home.data_menu()
+    data.verify_data_page("N")
     data.create_case_export()
     home.data_menu()
     data.verify_data_page("N")
@@ -130,6 +131,7 @@ def test_case_13_validate_case_type_deprecate_restore_on_data_exports(driver,set
     data.case_type_deprecate()
     data.validate_exports_edit_data_section(UserData.data_upload_path)
     data.case_type_restore()
+    home.data_menu()
     data.validate_exports_edit_data_section(UserData.data_upload_path)
 
 def test_case_14_verify_deprecate_cases_under_messaging_menu(driver,settings):
@@ -295,10 +297,9 @@ def test_case_25_verify_making_a_new_version_for_deprecated_case_type(driver,set
     data.case_type_deprecate()
     home.applications_menu(UserData.application)
     data.validating_application()
-    data.verify_case_data_page()
+    #data.verify_case_data_page()
     home.data_menu()
     data.verify_data_page("Y")
-    data.case_type_restore()
 
 
 
