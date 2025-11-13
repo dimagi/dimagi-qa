@@ -17,10 +17,10 @@ class UserData:
     case_properties = 'property'+ str(fetch_random_string())
     name_group = 'group'+ str(fetch_random_string())
     case_type = 'case_dd'
-    case_data_link = 'https://staging.commcarehq.org/a/qa-automation/reports/case_data/d57fa5c7fb184d219e7fe155dabdbb6a/'
+    #case_data_link = 'https://staging.commcarehq.org/a/qa-automation/reports/case_data/d57fa5c7fb184d219e7fe155dabdbb6a/'
     english_value ='English'
     plain1 ='Plain'
-    randomvalue1 = 'dyfuyvh'
+    randomvalue1 = 'English'
     date1 = 'Date'
     number ='Number'
     updated_input = 'English'
