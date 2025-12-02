@@ -79,9 +79,9 @@ class DataDictionaryPage(BasePage):
         self.applications_menu_id = (By.ID, "ApplicationsTab")
         self.case_list_warning = (By.XPATH, "//*[@id='case_type_deprecated_warning']")
         self.app_description = (By.XPATH,"//*[@placeholder='Enter app description here']")
-        self.edit_icon = (By.XPATH, "//span[@class='placeholder text-muted' and contains(text(),'Enter app description here')]")
+        self.edit_icon = (By.XPATH, "//div[contains(@class,'edit-description')]//i[contains(@class,'pencil')]")
         self.save_description = (By.XPATH,
-                                 "//textarea[@placeholder='Enter app description here']/following::button[contains(@class,'btn-primary')][1]")
+                                 "//div[.//textarea[@placeholder='Enter app description here']]/following-sibling::div[@class='form-group']/button[contains(@data-bind,'click: save')]/i")
         self.case_data_page_warning = (By.XPATH, "//*[@class='alert alert-warning']")
         self.registration_form = (By.XPATH, "//span[normalize-space()='Registration Form']")
         self.settings_icon = (By.XPATH, "//span[normalize-space()='Registration Form']/parent::a/following-sibling::a")
@@ -306,6 +306,9 @@ class DataDictionaryPage(BasePage):
     def verify_exports(self):
         self.wait_to_click(self.export_case_data_link, 10)
         self.wait_for_element(self.add_export_button, 200)
+        self.wait_to_click(self.add_export_button)
+        time.sleep(15)
+        self.wait_for_element(self.case_type_dropdown, 200)
         dropdown = self.get_all_dropdown_options(self.case_type_dropdown)
         if 'dd_case' in dropdown:
             print("Active case types are displayed in the case exports.")
@@ -380,7 +383,8 @@ class DataDictionaryPage(BasePage):
             print("deprecated case types are not displayed in the deduplicate page.")
         self.wait_to_click(self.import_cases_menu, 50)
         time.sleep(5)
-        filepath = str(UserData.user_input_base_dir + "\\" + filepath)
+        filepath = os.path.abspath(os.path.join(UserData.user_input_base_dir, filepath))
+        # filepath = str(UserData.user_input_base_dir + "\\" + filepath)
         print("File Path: ", filepath)
         self.wait_for_element(self.choose_file_text_field)
         self.send_keys(self.choose_file_text_field, filepath)
