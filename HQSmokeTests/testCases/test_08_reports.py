@@ -3,6 +3,7 @@ import pytest
 from HQSmokeTests.testPages.home.home_page import HomePage
 from HQSmokeTests.testPages.reports.report_page import ReportPage
 from HQSmokeTests.testPages.webapps.web_apps_page import WebAppsPage
+from HQSmokeTests.userInputs.user_inputs import UserData
 
 """"Contains test cases related to the Data module"""
 
@@ -73,7 +74,7 @@ def test_case_15_16_submit_form_verify_formdata_casedata(driver, settings):
     case_name = webapps.submit_case_form()
     home.reports_menu()
     load = ReportPage(driver)
-    load.verify_form_data_submit_history(case_name, settings['login_username'])
+    load.verify_form_data_submit_history(case_name, settings['login_username'], app_config=UserData.reassign_cases)
     load.verify_form_data_case_list(case_name, settings['login_username'])
 
 

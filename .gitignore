@@ -245,11 +245,18 @@ Features/DataDictionary/testCases/report.html
 Features/DataDictionary/testCases/slack_charts
 Features/DataDictionary/test_cases/report.html
 
+
 #Ignoring compliled files of Powerbi_integration_exports
 Features/Powerbi_integration_exports/settings.cfg
 Features/Powerbi_integration_exports/report.html
 Features/Powerbi_integration_exports/test_cases/report.html
 Features/Powerbi_integration_exports/testCases/slack_charts
+
+#Ignoring compliled files of Find by Data id
+Features/FindDataById/testCases/test_cases/report.html
+Features/FindDataById/testCases/testCases/slack_charts
+Features/FindDataById/test_cases/report.html
+Features/FindDataById/settings.cfg
 
 #Ignoring compliled files of QA_Requests
 QA_Requests/BHAStressTest/settings.cfg

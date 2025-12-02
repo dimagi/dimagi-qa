@@ -112,3 +112,9 @@ class UserData:
 
     private_export_yes = "Smoke Shared Form Export"
     private_export_no = "Smoke Shared Private Form Export"
+
+    reassign_cases = {
+        "app_name": "Reassign Cases",
+        "case_list_name": "Case List",
+        "form_name": "Registration Form"
+        }

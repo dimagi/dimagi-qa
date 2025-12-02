@@ -266,6 +266,11 @@ class ReportPage(BasePage):
         self.result_table = (By.XPATH, "(//div[@id='report-content']//table//tbody//td[1])[1]")
         self.users_list_item = "//ul[@role='listbox']/li[contains(.,'{}')]"
 
+        # Find_Data_By_Id
+        self.properties = "//a[normalize-space()='{}']"
+        self.form_properties = "//a[normalize-space()='Form Properties']"
+        self.id_values = "//dt[@title='{}']//following-sibling::dd[1]"
+
     def check_if_report_loaded(self):
         try:
             self.wait_to_click(self.apply_id)
@@ -536,7 +541,7 @@ class ReportPage(BasePage):
             print("No rows are present in the web table")
             return False
 
-    def verify_form_data_submit_history(self, case_name, username):
+    def verify_form_data_submit_history(self, case_name, username,type_value=None, app_config=None):
         print("Sleeping for sometime for the case to get registered.")
         time.sleep(90)
         self.wait_to_click(self.submit_history_rep)
@@ -546,9 +551,9 @@ class ReportPage(BasePage):
         self.wait_to_click(self.users_box)
         self.send_keys(self.search_user, username)
         self.wait_to_click((By.XPATH, self.app_user_select.format(username)))
-        self.select_by_text(self.application_select, UserData.reassign_cases_application)
-        self.select_by_text(self.module_select, UserData.case_list_name)
-        self.select_by_text(self.form_select, UserData.form_name)
+        self.select_by_text(self.application_select, app_config['app_name'])
+        self.select_by_text(self.module_select, app_config['case_list_name'])
+        self.select_by_text(self.form_select, app_config['form_name'])
         date_range = self.get_todays_date_range()
         self.clear(self.date_input)
         self.send_keys(self.date_input, date_range + Keys.TAB)
@@ -561,12 +566,29 @@ class ReportPage(BasePage):
         print("View Form Link: ", form_link)
         # self.switch_to_new_tab()
         self.driver.get(form_link)
+        new_value = None
+        if type_value == 'case':
+            self.wait_to_click((By.XPATH, self.properties.format('Case Changes')))
+            value_id = self.get_text((By.XPATH, self.id_values.format('@case_id')))
+            new_value = str(value_id).strip()
+            # return new_value
+        elif type_value == 'user':
+            user_id = self.get_text((By.XPATH, self.id_values.format('@user_id')))
+            new_value = str(user_id).strip()
+            # return user_id_value
+        elif type_value == 'form':
+            self.wait_to_click((By.XPATH, self.properties.format('Form Metadata')))
+            form_id = self.get_text((By.XPATH, self.id_values.format('instanceID')))
+            new_value = str(form_id).strip()
+            # return form_id_value
         time.sleep(3)
+        self.wait_to_click((By.XPATH, self.properties.format('Form Properties')))
         self.page_source_contains(case_name)
         assert True, "Case name is present in Submit history"
-        # self.driver.close()
-        # self.switch_back_to_prev_tab()
         self.driver.back()
+        if type_value:
+            return new_value
+        return None
 
     def verify_form_data_case_list(self, case_name, username):
         self.wait_to_click(self.case_list_rep)
