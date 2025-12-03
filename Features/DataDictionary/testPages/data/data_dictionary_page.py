@@ -265,8 +265,10 @@ class DataDictionaryPage(BasePage):
 
     def validating_application(self):
         self.wait_to_click(self.edit_icon)
-        self.wait_to_clear_and_send_keys(self.app_description, UserData.application_description)
+        random_text = fetch_random_string()
+        self.wait_to_clear_and_send_keys(self.app_description, f"{UserData.application_description} {random_text}")
         self.wait_to_click(self.save_description)
+        self.accept_pop_up()
         self.wait_to_click(self.make_new_version_button)
         time.sleep(10)
         assert self.is_present_and_displayed(self.case_type_warning) ,"Property not deprecated"
@@ -326,7 +328,8 @@ class DataDictionaryPage(BasePage):
             print("deprecated case types are not displayed in the daily saved exports.")
         self.wait_to_click(self.export_excel_dash_int)
         self.wait_to_click(self.add_export_button)
-        time.sleep(5)
+        time.sleep(15)
+        self.wait_for_element(self.model_type, 200)
         self.wait_to_click(self.model_type)
         self.select_by_value(self.model_type, UserData.model_value)
         dropdown = self.get_all_dropdown_options(self.case_type_dropdown)
@@ -336,6 +339,8 @@ class DataDictionaryPage(BasePage):
             print("deprecated case types are not displayed in the excel dashboard exports.")
         self.wait_to_click(self.powerBI_tab_int)
         self.wait_to_click(self.add_export_button)
+        time.sleep(15)
+        self.wait_for_element(self.model_type, 200)
         self.wait_to_click(self.model_type)
         self.select_by_value(self.model_type, UserData.model_value)
         dropdown = self.get_all_dropdown_options(self.case_type_dropdown)
@@ -347,6 +352,8 @@ class DataDictionaryPage(BasePage):
     def create_case_export(self):
         self.wait_to_click(self.export_case_data_link, 10)
         self.wait_to_click(self.add_export_button, 200)
+        time.sleep(15)
+        self.wait_for_element(self.case_type_dropdown, 200)
         self.wait_to_click(self.case_type_dropdown)
         self.select_by_value(self.case_type_dropdown, UserData.case_type)
         self.wait_to_click(self.add_export_conf)
@@ -355,7 +362,7 @@ class DataDictionaryPage(BasePage):
 
     def validate_exports(self):
         self.wait_to_click(self.export_case_data_link, 10)
-        self.is_present_and_displayed(self.warning_label)
+        self.is_present_and_displayed(self.warning_label, 100)
         print("deprecated case type label displayed on the already created export")
 
     def validate_exports_edit_data_section(self, filepath):
