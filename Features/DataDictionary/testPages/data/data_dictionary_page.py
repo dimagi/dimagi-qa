@@ -327,6 +327,8 @@ class DataDictionaryPage(BasePage):
         else:
             print("deprecated case types are not displayed in the daily saved exports.")
         self.wait_to_click(self.export_excel_dash_int)
+        time.sleep(5)
+        self.wait_for_element(self.add_export_button, 100)
         self.wait_to_click(self.add_export_button)
         time.sleep(15)
         self.wait_for_element(self.model_type, 200)
@@ -338,6 +340,8 @@ class DataDictionaryPage(BasePage):
         else:
             print("deprecated case types are not displayed in the excel dashboard exports.")
         self.wait_to_click(self.powerBI_tab_int)
+        time.sleep(5)
+        self.wait_for_element(self.add_export_button, 100)
         self.wait_to_click(self.add_export_button)
         time.sleep(15)
         self.wait_for_element(self.model_type, 200)
@@ -351,7 +355,9 @@ class DataDictionaryPage(BasePage):
 
     def create_case_export(self):
         self.wait_to_click(self.export_case_data_link, 10)
-        self.wait_to_click(self.add_export_button, 200)
+        time.sleep(5)
+        self.wait_for_element(self.add_export_button, 100)
+        self.wait_to_click(self.add_export_button)
         time.sleep(15)
         self.wait_for_element(self.case_type_dropdown, 200)
         self.wait_to_click(self.case_type_dropdown)
