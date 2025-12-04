@@ -203,7 +203,10 @@ class WebUsersPage(BasePage):
         self.wait_for_element(self.select_project_role_id)
         self.select_by_text(self.select_project_role_id, role_name)
         self.wait_to_click(self.update_role_btn,5)
+        time.sleep(5)
+        self.wait_for_element(self.location_field)
         self.scroll_to_element(self.location_field)
+        time.sleep(3)
         if self.is_present(self.remove_location):
             self.wait_to_click(self.remove_location)
             print("removed location")

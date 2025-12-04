@@ -3,6 +3,7 @@ import time
 from time import sleep
 
 from matplotlib.widgets import EllipseSelector
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from ElasticSearchTests.testCases.conftest import settings
@@ -181,9 +182,14 @@ class DataDictionaryPage(BasePage):
 
     def add_new_case_property(self):
         self.wait_to_click(self.case_type_value, 5)
+        try:
+            self.delete_added_case_property()
+        except:
+            print("No property present")
         self.wait_to_click(self.add_property)
-        self.send_keys(self.add_property, UserData.case_properties)
+        self.send_keys(self.add_property, UserData.case_properties+Keys.TAB)
         time.sleep(2)
+        self.wait_for_element(self.add_property_button)
         self.wait_to_click(self.add_property_button)
         self.wait_to_click(self.save)
         value_text = self.wait_to_get_value(self.property_value)
@@ -221,6 +227,8 @@ class DataDictionaryPage(BasePage):
         self.wait_to_click(self.delete_case_property)
         self.wait_to_click(self.delete_property_confirm)
         self.wait_to_click(self.save)
+        time.sleep(10)
+        self.reload_page()
         time.sleep(5)
         assert self.is_present_and_displayed(self.property_description_field),"Property is not deleted"
 
@@ -309,7 +317,7 @@ class DataDictionaryPage(BasePage):
         self.wait_to_click(self.export_case_data_link, 10)
         self.wait_for_element(self.add_export_button, 200)
         self.wait_to_click(self.add_export_button)
-        time.sleep(15)
+        time.sleep(50)
         self.wait_for_element(self.case_type_dropdown, 200)
         dropdown = self.get_all_dropdown_options(self.case_type_dropdown)
         if 'dd_case' in dropdown:
@@ -330,9 +338,9 @@ class DataDictionaryPage(BasePage):
         time.sleep(5)
         self.wait_for_element(self.add_export_button, 100)
         self.wait_to_click(self.add_export_button)
-        time.sleep(15)
+        time.sleep(50)
         self.wait_for_element(self.model_type, 200)
-        self.wait_to_click(self.model_type)
+        self.wait_to_click(self.model_type, 200)
         self.select_by_value(self.model_type, UserData.model_value)
         dropdown = self.get_all_dropdown_options(self.case_type_dropdown)
         if 'dd_case' in dropdown:
@@ -343,7 +351,7 @@ class DataDictionaryPage(BasePage):
         time.sleep(5)
         self.wait_for_element(self.add_export_button, 100)
         self.wait_to_click(self.add_export_button)
-        time.sleep(15)
+        time.sleep(50)
         self.wait_for_element(self.model_type, 200)
         self.wait_to_click(self.model_type)
         self.select_by_value(self.model_type, UserData.model_value)
@@ -358,7 +366,7 @@ class DataDictionaryPage(BasePage):
         time.sleep(5)
         self.wait_for_element(self.add_export_button, 100)
         self.wait_to_click(self.add_export_button)
-        time.sleep(15)
+        time.sleep(50)
         self.wait_for_element(self.case_type_dropdown, 200)
         self.wait_to_click(self.case_type_dropdown)
         self.select_by_value(self.case_type_dropdown, UserData.case_type)
