@@ -19,13 +19,13 @@ class PowerBiPage(BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
-        self.power_bi = (By.XPATH, "//*[@id='hq-sidebar']/nav/ul[1]/li[7]/a")
+        self.power_bi = (By.XPATH, "//ul[contains(@class, 'nav-hq-sidebar')]//a[contains(normalize-space(), 'PowerBi/Tableau Integration')]")
         self.add_odata_feed = (By.XPATH, "//*[@id='create-export']/p/a")
         self.disabled = (By.XPATH,"//*[@data-bind='visible: showSubmit, disable: disableSubmit']")
         self.feed_type = (By.XPATH,"//select[@id='id_model_type']")
         self.feed_type_visible = (By.XPATH,"//*[@data-bind='visible: modelType()']")
         self.case_type = (By.XPATH,"//*[@for='id_case_type']")
-        self.cancel_button = (By.XPATH,"//*[@id='createExportOptionsModal']/div/form/div/div[7]/button[1]")
+        self.cancel_button = (By.XPATH,"//button[@data-bind='disabled: isSubmitting']")
         self.applications = (By.XPATH,"//select[contains(@name,'application')]")
         self.app_dropdown = (By.XPATH,"//input[contains(@aria-controls,'id_application-results')]")
         self.users_list_item = "//ul[@role='listbox']/li[contains(.,'{}')]"
@@ -37,7 +37,7 @@ class PowerBiPage(BasePage):
         self.case = (By.XPATH,"//span[@aria-controls='select2-id_case_type-container']")
         self.case_select = (By.XPATH,"//input[@aria-controls='select2-id_case_type-results']")
         self.save = (By.XPATH,"//button[@type='submit'][contains(@data-bind,'click: save')]")
-        self.settings = (By.XPATH, "//*[@id='customize-export']/header/div/div/h3")
+        self.settings = (By.XPATH, "//div[@class='span12']//h3[contains(normalize-space(), 'OData Feed Settings')]")
         self.success = (By.XPATH,"//*[@class='alert alert-margin-top fade in alert-success']")
         self.odata_feed_name = (By.XPATH,"//input[@id='export-name']")
         self.powerBI_tab_int = (By.LINK_TEXT, "PowerBi/Tableau Integration")
@@ -50,31 +50,25 @@ class PowerBiPage(BasePage):
         self.copy_edit_button = (By.XPATH,"(//*[@data-bind='if: isOData()'])[1]")
         self.description = (By.XPATH,("//*[@id='export-description']"))
         self.disabled_button =(By.XPATH,("//td[5][./input[@disabled]]//preceding-sibling::td//input[@type='checkbox' and @disabled='disabled']"))
-        self.copy_odata_feed = (By.XPATH,("//*[@id='export-list']/div[2]/div[1]/div[2]/table/tbody/tr/td[2]/div/span/a"))
-        self.link = (By.XPATH,("//*[@id='export-list']/div[2]/div[1]/div[2]/table/tbody/tr/td[2]/div/input"))
-        self.delete = (By.XPATH,("(//a[@data-bs-toggle='modal'])[9]"))
-        self.delete_button = (By.XPATH,("//*[@id='export-list']/div[2]/div[1]/div[2]/table/tbody/tr/td[5]/div/a"))
-        self.edit_filter = (By.XPATH,("//*[@id='export-list']/div[2]/div[1]/div[2]/table/tbody/tr/td[3]/a[2]"))
+        self.delete = (By.XPATH,("//div[contains(@class,'card')][.//div[normalize-space(text())='My OData Feeds']]//a[contains(@class,'btn-outline-danger')]"))
+        self.delete_button = (By.XPATH,("(//button[@data-bind='click: deleteExport'])[1]"))
+        self.edit_filter = (By.XPATH,("//div[div[@data-bind='text: header' and normalize-space()='My OData Feeds']]//a[contains(@href, '#setFeedFiltersModal')and//i[contains(@class,'fa-filter')]]"))
         self.daterange =(By.XPATH,("//*[@id='id_date_range']"))
-        self.save_filter = (By.XPATH,("//*[@id='setFeedFiltersModal']/div/form/div/div[3]/button[2]"))
-        self.pagination = (By.XPATH,("//*[@id='export-list']/div[2]/div[1]/div[2]/pagination/div/div/div[2]/nav/ul/li[3]/a"))
+        self.save_filter = (By.XPATH,("//form[@name='feedFiltersForm']//button[contains(@class, 'btn-primary') and @type='submit']"))
+        self.pagination = (By.XPATH,("//div[normalize-space()='My OData Feeds']//following-sibling::div//li[@class='page-item']/a[@aria-label='Next']"))
+        self.page_Per_dropdown= (By.XPATH,"(//select[@class='form-select'])[1]")
         self.delete_question = (By.XPATH,("//span[@data-bind='visible: !table.showDeleted()']"))
-        self.process = (By.XPATH, "//*[@id='export-process-deleted-applications']/div/div/div[3]/button[2]")
-        self.refresh_page = (By.XPATH, "//*[@id='export-process-deleted-applications']/div/div/div[3]/button[2]")
         self.hide_delete_question = (By.XPATH,"//*[@data-bind='visible: table.showDeleted()']")
-        self.allow_sensitive = (By.XPATH, "//*[@id='customize-export']/form/fieldset[3]/button")
+        self.allow_sensitive = (By.XPATH, "//button[contains(@class, 'btn-outline-primary') and contains(@data-bind, 'click: showDeidColumn')]")
         self.de_identified_text = (By.XPATH,"//*[@id='is_deidentified']")
         self.label = (By.XPATH,"(//label[@data-bind='visible: isDeid()'][normalize-space()='De-Identified'])[1]")
         self.check_data = (By.XPATH, "//*[contains(text(), '@odata.context')]")
-        self.copy_odata_link = (By.XPATH,"//*[@id='export-list']/div[2]/div[1]/div[2]/table/tbody/tr/td[2]/div[2]/button" )
-        self.copy_odata_link_form = (By.XPATH,"(//*[contains(@class,'form-control input-sm')])[1]")
-        self.copy_odata_link_btn_form = (
-            By.XPATH,
-            "//div[contains(@data-bind,'text-body-secondary')][.//span[text()='"+ UserData.name +"']]//following-sibling::div[contains(@data-bind,'showLink')]//button")
-        self.repeat_checkbox = (By.XPATH,"//*[@id='customize-export']/form/fieldset[2]/div[2]/legend/span[1]/input")
-        self.parent_checkbox = (By.XPATH,"//*[@id='customize-export']/form/fieldset[2]/div[3]/legend/span[1]/input")
-        self.case_id_duplicate =(By.XPATH,"//body[1]/div[1]/div[3]/div[1]/div[2]/div[2]/form[1]/fieldset[2]/div[1]/div[1]/table[1]/tbody[1]/tr[9]/td[1]/input[1]")
-        self.repeat_checkbox_new =(By.XPATH,"//*[@id='customize-export']/form/fieldset[2]/div[4]/legend/span[1]/input")
+        self.copy_odata_link_btn_form =(By.XPATH,"//div[contains(@data-bind,'text-body-secondary')][.//span[text()='"+ UserData.name +"']]//following-sibling::div[contains(@data-bind,'showLink')]//button")
+        self.copy_odata_link_form = (By.XPATH, "//*[contains(@data-bind,'hasEmailedExport')][.//span[text()='"+ UserData.name +"']]/following-sibling::div[@class='input-group']/input[contains(@data-bind,'showLink')]")
+        self.repeat_checkbox = (By.XPATH,"//span[contains(text(),'Repeat: repeat_with_lookup.item')]/parent::span/preceding-sibling::span//input[@type='checkbox']")
+        self.parent_checkbox = (By.XPATH,"//legend[.//span[normalize-space()='Parent Cases']]//input[@type='checkbox']")
+        self.case_id_duplicate = (By.XPATH,"//div[@data-bind='slideVisible: table.selected' and not(contains(@style,'none'))]//td[./span[not(@data-original-title) and text()='caseid']]//preceding-sibling::td/input[@type='checkbox' and not(@diabled)]")
+        self.repeat_checkbox_new =(By.XPATH,"//span[contains(text(),'Repeat: inner_repeat')]/parent::span/preceding-sibling::span//input[@type='checkbox']")
 
     def power_bi_page_ui(self,flag):
         self.wait_to_click(self.power_bi,2)
@@ -138,7 +132,8 @@ class PowerBiPage(BasePage):
         print ("odata feed settings page displayed")
         self.wait_to_click(self.odata_feed_name)
         self.wait_to_clear_and_send_keys(self.odata_feed_name,UserData.name+Keys.TAB)
-        self.wait_to_click(self.case_id_duplicate)
+        #if export_type == "case":
+            #self.wait_to_click(self.case_id_duplicate)
         self.scroll_to_bottom()
         self.is_present_and_displayed(self.save,10)
 
@@ -212,19 +207,20 @@ class PowerBiPage(BasePage):
         self.wait_to_click(self.delete_button)
 
     def edit_filters(self):
-        self.wait_to_click(self.edit_filter,2)
+        self.wait_to_click(self.edit_filter, 2)
         self.wait_to_click(self.daterange, 5)
         ss = Select(self.find_element(self.daterange))
         # Select option by visible text
         ss.select_by_visible_text('Last year')
-        self.wait_to_click(self.save_filter,10)
+        self.wait_to_click(self.save_filter, 10)
         self.wait_to_click(self.edit_filter)
         print("Data range values", self.daterange)
 
 
     def create_multiple_odata_feed(self,no_of_feeds):
+        self.wait_to_click(self.power_bi, 2)
         for i in range(1,no_of_feeds):
-            self.power_bi_page_ui(10)
+            self.power_bi_page_ui('N')
             self.select_form()
             self.form_feed(UserData.reassign_cases_application,UserData.reassign_menu,UserData.reassign_form)
             self.adding_odata_feed()
@@ -235,6 +231,7 @@ class PowerBiPage(BasePage):
     def validate_go_to_page(self):
         self.wait_to_click(self.pagination,10)
         print("pagination working fine")
+
 
     def delete_questions(self):
         self.wait_to_click(self.delete_question)
@@ -258,11 +255,11 @@ class PowerBiPage(BasePage):
         self.assert_odata_feed_data()
 
     def get_url_paste_browser(self, username, password, item):
-        global odata_feed_link1
+        global odata_feed_link
         if item == 'forms':
-            odata_feed_link1 = self.wait_to_get_value(self.copy_odata_link_form)
-        print("===="+odata_feed_link1)
-        final_URL_case = f"https://{username}:{password}@{odata_feed_link1[8:]}"
+            odata_feed_link = self.wait_to_get_value(self.copy_odata_link_form)
+        print("===="+odata_feed_link)
+        final_URL_case = f"https://{username}:{password}@{odata_feed_link[8:]}"
         print("--------"+final_URL_case)
         time.sleep(10)
         self.driver.get(final_URL_case)
