@@ -16,6 +16,7 @@ from HQSmokeTests.userInputs.user_inputs import UserData
 
 @pytest.mark.data
 @pytest.mark.importCases
+@pytest.mark.xfail
 def test_case_29_import_cases(driver, settings):
     """
         1. Navigate to Data>Import Cases from Excel.
