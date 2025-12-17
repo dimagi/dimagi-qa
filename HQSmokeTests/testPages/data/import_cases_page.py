@@ -1,3 +1,4 @@
+import datetime
 import os
 import time
 
@@ -16,10 +17,12 @@ class ImportCasesPage(BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
-        self.file_new_name = "reassign_cases_" + str(fetch_random_string()) + ".xlsx"
+        self.file_new_name = "reassign_cases" + str(fetch_random_string()) + ".xlsx"
         self.sheet_name = "reassign_cases_" + str(fetch_random_string())
 
+        self.name_cell = "B2"
         self.village_name_cell = "C2"
+        self.lmp_cell = "D2"
         self.to_be_edited_file = os.path.abspath(os.path.join(UserData.USER_INPUT_BASE_DIR, "test_data/reassign_cases.xlsx"))
         self.renamed_file = os.path.abspath(os.path.join(UserData.USER_INPUT_BASE_DIR, "test_data/" + self.file_new_name))
 
@@ -41,7 +44,7 @@ class ImportCasesPage(BasePage):
         self.wait_to_click(self.import_cases_menu)
         time.sleep(2)
         if filename is None:
-            self.edit_spreadsheet(self.to_be_edited_file, self.village_name_cell, self.renamed_file, self.sheet_name)
+            self.edit_spreadsheet(self.to_be_edited_file, self.name_cell, self.village_name_cell, self.lmp_cell, self.renamed_file, self.sheet_name, date=True)
             print(str(self.renamed_file))
             filename = self.renamed_file
         self.wait_for_element(self.choose_file)
@@ -94,17 +97,24 @@ class ImportCasesPage(BasePage):
         time.sleep(2)
         self.scroll_to_bottom()
         self.scroll_to_element(self.confirm_import)
-        self.js_click(self.confirm_import)
+        time.sleep(2)
+        self.wait_to_click(self.confirm_import)
         print("Imported case!")
         if flag is None:
             self.wait_for_element((By.XPATH, self.success.format(self.file_new_name)),400)
         else:
             self.validate_data_dictionary_warning(list_warning)
 
-    def edit_spreadsheet(self, edited_file, cell, renamed_file, sheet_name):
+    def edit_spreadsheet(self, edited_file, name_cell, cell, date_cell, renamed_file, sheet_name, date=None):
         workbook = load_workbook(filename=edited_file)
         sheet = workbook.active
-        sheet[cell] = fetch_random_string()
+        if date is not None:
+            today = datetime.datetime.now().date()
+            sheet[date_cell] = today
+            # Apply Excel display format: DD-MM-YYYY
+            sheet[date_cell].number_format = "DD-MM-YYYY"
+        sheet[name_cell] = fetch_random_string()
+        sheet[cell] = f"text_{fetch_random_string()}"
         sheet.title = sheet_name
         workbook.save(filename=renamed_file)
 

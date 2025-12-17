@@ -33,9 +33,9 @@ class RolesPermissionPage(BasePage):
         self.save_button = (By.XPATH, "//button[@class='btn btn-primary disable-on-submit']")
         self.role_created = (By.XPATH, "//span[text()='" + str(self.role_name_created) + "']")
         self.edit_created_role = (By.XPATH, "//th[.//span[.='" + str(
-            self.role_name_created) + "']]/following-sibling::td//*[@class='fa fa-edit']")
+            self.role_name_created) + "']]/following-sibling::td//*[contains(@class,'edit')]")
         self.delete_role = (By.XPATH, "//th[.//span[.='" + str(
-            self.role_name_created) + "']]/following-sibling::td//i[@class='fa fa-trash']")
+            self.role_name_created) + "']]/following-sibling::td//i[contains(@class,'trash')']")
         self.edit_mobile_worker_checkbox = (By.XPATH, "//input[@id='edit-commcare-users-checkbox']//following-sibling::label/span")
         self.report_for_p1p2 = (By.XPATH, "//div[contains(@data-bind,'reportPermission')]//label/span[.='"+UserData.report_for_p1p2+"']")
         self.manage_shared_exports = (By.XPATH, "//input[@id='edit-shared-exports-checkbox']")
@@ -74,6 +74,7 @@ class RolesPermissionPage(BasePage):
         assert self.is_present_and_displayed(self.role_created), "Role not added successfully!"
 
     def edit_role(self):
+        self.wait_for_element(self.edit_created_role, 60)
         self.wait_to_click(self.edit_created_role)
         self.wait_to_clear_and_send_keys(self.role_name, self.role_rename_created)
         self.js_click(self.edit_mobile_worker_checkbox)
@@ -97,7 +98,7 @@ class RolesPermissionPage(BasePage):
                     text = list_profile[i].text
                     print(text)
                     self.driver.find_element(By.XPATH,
-                                             "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[@class='btn btn-danger'])[" + str(
+                                             "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')])[" + str(
                                                  i + 1) + "]").click()
                     self.wait_to_click(self.confirm_role_delete)
 
@@ -118,7 +119,7 @@ class RolesPermissionPage(BasePage):
                    text = list_profile[i].text
                    print(text)
                    self.driver.find_element(By.XPATH,
-                                                 "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[@class='btn btn-danger'])[" + str(
+                                                 "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')])[" + str(
                                                      i + 1) + "]").click()
                    self.wait_to_click(self.confirm_role_delete)
 

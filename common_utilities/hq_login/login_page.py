@@ -23,7 +23,7 @@ class LoginPage(BasePage):
         self.view_latest_updates = (By.XPATH, "//*[.='View latest updates']")
         self.settings = (By.XPATH, "//a[@data-action='Click Gear Icon']")
         self.sign_out = (By.XPATH, "//*[contains(.,'Sign Out')][./i[contains(@class,'signout')]]")
-
+        self.agree = (By.XPATH, "//button[contains(.,'I Agree')]")
         # import socket
         # if "eu" in url:
         #     print(socket.gethostbyname("eu.commcarehq.org"))
@@ -105,3 +105,8 @@ class LoginPage(BasePage):
         if self.is_displayed(self.otp_token_id):
             self.enter_otp(generate_auth_token(user_secret))
         self.assert_logged_in()
+        try:
+            self.wait_to_click(self.agree)
+            print("Agreed to Agreement")
+        except:
+            print("Agreement is not present")
