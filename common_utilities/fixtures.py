@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 import pytest
@@ -6,6 +7,7 @@ from py.xml import html
 from selenium import webdriver
 from common_utilities.path_settings import PathSettings
 from common_utilities.hq_login.login_page import LoginPage
+from selenium.common.exceptions import TimeoutException, WebDriverException, InvalidSessionIdException
 import base64
 import json
 from pathlib import Path
@@ -120,8 +122,23 @@ def pytest_html_results_table_row(report, cells):
     cells.pop()
 
 
-def _capture_screenshot(driver):
-    return base64.b64encode(driver.get_screenshot_as_png()).decode('utf-8')
+def _capture_screenshot(driver, retries=2, wait_seconds=1.5):
+    if not driver or getattr(driver, "session_id", None) in (None, ""):
+        return None
+
+    for attempt in range(retries + 1):
+        try:
+            png = driver.get_screenshot_as_png()
+            if not png:
+                return None
+            return base64.b64encode(png).decode("utf-8")
+        except (TimeoutException, InvalidSessionIdException, WebDriverException):
+            if attempt < retries:
+                time.sleep(wait_seconds)
+                continue
+            return None
+        except Exception:
+            return None
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item):
@@ -131,22 +148,37 @@ def pytest_runtest_makereport(item):
     tags = ", ".join([m.name for m in item.iter_markers() if m.name != 'run'])
     extra = getattr(report, 'extra', [])
 
-    if report.when == "call" or report.when == "teardown":
-        xfail = hasattr(report, 'wasxfail')
-        if (report.skipped and xfail) or (report.failed and not xfail):
-            print("reports skipped or failed")
-            file_name = report.nodeid.replace("::", "_") + ".png"
-            screen_img = _capture_screenshot(item.funcargs["driver"])
-            if file_name:
-                html = (
+    # if report.when == "call" or report.when == "teardown":
+    #     xfail = hasattr(report, 'wasxfail')
+    #     if (report.skipped and xfail) or (report.failed and not xfail):
+    #         print("reports skipped or failed")
+    #         file_name = report.nodeid.replace("::", "_") + ".png"
+    #         screen_img = _capture_screenshot(item.funcargs["driver"])
+    #         if file_name:
+    #             html = (
+    #                 '<div><img src="data:image/png;base64,%s" alt="screenshot" '
+    #                 'style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>'
+    #                 % screen_img
+    #             )
+    #             extra.append(pytest_html.extras.html(html))
+    #     report.extra = extra
+    #     report.tags = tags
+    if report.when == "call" and report.failed:
+        file_name = report.nodeid.replace("::", "_") + ".png"
+
+        driver = item.funcargs.get("driver")  # ✅ safe access
+        screen_img = _capture_screenshot(driver)  # ✅ safe capture (may return None)
+
+        if screen_img:  # ✅ only attach if we got one
+            html = (
                     '<div><img src="data:image/png;base64,%s" alt="screenshot" '
                     'style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>'
                     % screen_img
-                )
-                extra.append(pytest_html.extras.html(html))
-        report.extra = extra
-        report.tags = tags
+            )
+            extra.append(pytest_html.extras.html(html))
 
+    report.extra = extra
+    report.tags = tags
 
 
 # def pytest_sessionfinish(session, exitstatus):
