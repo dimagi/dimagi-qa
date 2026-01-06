@@ -33,7 +33,7 @@ def environment_settings_lookup():
         env = os.environ.get("DIMAGIQA_ENV") or "staging"
         subdomain = "www" if env == "production" else env
         # updates the url with the project domain while testing in CI
-        project = "a/qa-automation-prod" if env == "production" else "a/qa-automation"
+        project = "a/data-dictionary" if env == "production" else "a/qa-automation"
         settings["url"] = f"https://{subdomain}.commcarehq.org/{project}"
     return settings
 
@@ -64,7 +64,7 @@ def settings(environment_settings_lookup):
     settings.read(path)
     # updates the url with the project domain while testing in local
     if settings["default"]["url"] == "https://www.commcarehq.org/":
-        settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation-prod"
+        settings["default"]["url"] = f"{settings['default']['url']}a/data-dictionary"
     else:
         settings["default"]["url"] = f"{settings['default']['url']}a/qa-automation"
     return settings["default"]
