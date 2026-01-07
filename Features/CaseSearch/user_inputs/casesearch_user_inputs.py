@@ -66,6 +66,7 @@ class CaseSearchUserInput:
     song_automation_song = "Automation-Song-"
     song_automation_song_no_space = "AutomationSongNoSpace"
     song_automation_song_1 = "Automation-Song-1"
+    song_automation_song_2 = "Automation-Song-2"
     song_automation_song_24 = "Automation-Song-24"
     song_automation_song_10 = "Automation-Song-6"
     song_automation_song_22 = "Automation-Song-22"
