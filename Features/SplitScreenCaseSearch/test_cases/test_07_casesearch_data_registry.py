@@ -92,7 +92,7 @@ def test_case_04_load_external_linked_domain_case_into_caselist_search_first(dri
     webapps.open_form(CaseSearchUserInput.play_song_form)
     webapps.submit_the_form()
 
-
+@pytest.mark.xfail(reason="https://dimagi.atlassian.net/browse/SUPPORT-26367")
 def test_case_05_load_external_same_domain_into_caselist_search_first(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)

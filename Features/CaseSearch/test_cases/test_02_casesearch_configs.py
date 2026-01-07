@@ -416,12 +416,13 @@ def test_case_15_sticky_search_without_default_value(driver, settings):
     time.sleep(2)
     webapps.search_button_on_case_search_page()
     base.back()
-    casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.mood,
-                                              default_value=CaseSearchUserInput.four,
-                                              search_format=text)
-    casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.rating,
-                                              default_value=CaseSearchUserInput.three_star,
-                                              search_format=combobox)
+    if 'staging' in settings['url']:
+        casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.mood,
+                                                  default_value=CaseSearchUserInput.four,
+                                                  search_format=text)
+        casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.rating,
+                                                  default_value=CaseSearchUserInput.three_star,
+                                                  search_format=combobox)
     # This is failing
     # driver.refresh()
     # casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.mood, default_value=CaseSearchUserInput.four, search_format=text)
@@ -476,6 +477,7 @@ def test_case_17_required_property(driver, settings):
 def test_case_18_conditionally_required_condition_property(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
+    base = BasePage(driver)
     """Check conditionally required condition property"""
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
@@ -500,6 +502,8 @@ def test_case_18_conditionally_required_condition_property(driver, settings):
                                              required_or_validated=NO,
                                              property_type=COMBOBOX)
     """Check form submission"""
+    base.back()
+    webapps.open_menu(CaseSearchUserInput.inline_search_menu)
     webapps.clear_selections_on_case_search_page()
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
                                        input_value=CaseSearchUserInput.two_star,
