@@ -1,5 +1,5 @@
 import time
-
+import pytest
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.webapps import WebApps
@@ -7,7 +7,7 @@ from Features.CaseSearch.constants import *
 
 """"Contains all inline search related test cases"""
 
-
+@pytest.mark.xfail(reason="https://dimagi.atlassian.net/browse/SUPPORT-26367")
 def test_case_01_check_search_input_on_caselist_casedetail_form(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
@@ -30,7 +30,7 @@ def test_case_01_check_search_input_on_caselist_casedetail_form(driver, settings
     casesearch.check_value_on_form(CaseSearchUserInput.five)
     webapps.submit_the_form()
 
-
+@pytest.mark.xfail(reason="https://dimagi.atlassian.net/browse/SUPPORT-26367")
 def test_case_02_navigation_via_breadcrumbs(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
@@ -85,7 +85,7 @@ def test_case_03_search_property_settings(driver, settings):
                                           search_property=CaseSearchUserInput.rating_input,
                                           expected_value=CaseSearchUserInput.rating_four_and_five)
 
-
+@pytest.mark.xfail(reason="https://dimagi.atlassian.net/browse/SUPPORT-26367")
 def test_case_04_load_from_external_domain(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)

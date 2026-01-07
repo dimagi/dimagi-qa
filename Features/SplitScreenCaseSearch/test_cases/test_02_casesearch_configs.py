@@ -565,7 +565,7 @@ def test_case_17_required_property(driver, settings):
                                              property_type=TEXT_INPUT
                                              )
 
-
+@pytest.mark.xfail(reason="https://dimagi.atlassian.net/browse/SUPPORT-26367")
 def test_case_18_conditionally_required_condition_property(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
