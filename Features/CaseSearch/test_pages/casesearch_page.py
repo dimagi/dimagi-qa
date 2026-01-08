@@ -36,7 +36,7 @@ class CaseSearchWorkflows(BasePage):
         self.required_validation_on_top = "//div[contains(@class,'alert-danger')]//following::*[contains(text(),'{}')]"
         self.required_validation_per_property_text = self.search_against_text_property_format + "//following::div[contains (text(),'{}')][1]"
         self.required_validation_per_property_combox = self.search_property_name_combobox + "//following::div[contains (text(),'{}')][1]"
-        self.required_validation_per_property_combox2 = self.search_property_name_combobox +"//parent::div//parent::td[contains(@class,'required')]"
+        self.required_validation_per_property_combox2 = self.search_property_name_combobox +"//parent::div//parent::*[contains(@class,'required')]"
         self.city_value_home = "//span[contains(@class,'webapp-markdown-output')][contains(text(), '{}')]"
         self.city_value_work = "//span[contains(@class,'webapp-markdown-output')][contains(text()[2], '{}')]"
         self.search_screen_title = "//h2[contains(text(), '{}')]"

@@ -187,15 +187,17 @@ def test_case_07_multi_case_types_and_related_cases(driver, settings):
                                        property_type=TEXT_INPUT
                                        )
     webapps.search_button_on_case_search_page()
+    webapps.change_page_number("100")
     # Checks case type show
     webapps.omni_search(CaseSearchUserInput.show_case_show1)
     webapps.navigate_to_breadcrumb(CaseSearchUserInput.mixed_case_type_menu)
     webapps.clear_selections_on_case_search_page()
     # Checks case type song
     casename = casesearch.search_against_property(search_property=CaseSearchUserInput.name,
-                                                  input_value=CaseSearchUserInput.song_automation_song_1,
+                                                  input_value=CaseSearchUserInput.song_automation_song_2,
                                                   property_type=TEXT_INPUT
                                                   )
+    print("casename: ", casename)
     webapps.search_button_on_case_search_page()
     webapps.omni_search(casename)
     # Include related cases check
@@ -215,6 +217,7 @@ def test_case_07_multi_case_types_and_related_cases(driver, settings):
                                        property_type=TEXT_INPUT
                                        )
     webapps.search_button_on_case_search_page()
+    webapps.change_page_number("100")
     webapps.omni_search(CaseSearchUserInput.show_case_casesearch_1)
     webapps.select_case_and_continue(CaseSearchUserInput.show_case_casesearch_1)
     webapps.submit_the_form()

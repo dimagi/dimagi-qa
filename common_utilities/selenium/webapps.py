@@ -213,8 +213,8 @@ class WebApps(BasePage):
         else:
             self.scroll_to_element(self.submit_on_case_search_page)
             self.wait_to_click(self.submit_on_case_search_page)
-            time.sleep(5)
-        self.wait_after_interaction(50)
+            time.sleep(10)
+        self.wait_after_interaction(150)
         if case_list is not None:
             self.is_visible_and_displayed(self.case_list, timeout=100)
         else:
@@ -238,6 +238,8 @@ class WebApps(BasePage):
             total_pages = int(self.get_attribute(self.last_page, "data-id")) - 1
             for page in range(total_pages):
                 self.wait_to_click(self.next_page)
+                time.sleep(5)
+                self.wait_after_interaction(100)
                 if displayed == YES:
                     assert self.is_displayed(self.case)
                     break
@@ -395,10 +397,10 @@ class WebApps(BasePage):
         for position in range(1, len(elements) + 1):
             per_answer_locator = (By.XPATH, self.per_answer_format.format(question_label, input_type, position))
             self.scroll_to_element(per_answer_locator)
-            
+
             self.clear(per_answer_locator)
             self.send_keys(per_answer_locator, input_value+Keys.TAB)
-            
+
             print(str(per_answer_locator), input_value)
 
     def open_domain(self, current_url, domain_name):
@@ -409,6 +411,8 @@ class WebApps(BasePage):
 
     def change_page_number(self, page_number):
         self.select_by_value(self.pagination_select, page_number)
+        time.sleep(10)
+        self.wait_after_interaction(60)
 
     def switch_bw_pages(self):
         self.wait_to_click(self.next_page)
