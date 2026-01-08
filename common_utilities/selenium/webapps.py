@@ -397,10 +397,10 @@ class WebApps(BasePage):
         for position in range(1, len(elements) + 1):
             per_answer_locator = (By.XPATH, self.per_answer_format.format(question_label, input_type, position))
             self.scroll_to_element(per_answer_locator)
-            
+
             self.clear(per_answer_locator)
             self.send_keys(per_answer_locator, input_value+Keys.TAB)
-            
+
             print(str(per_answer_locator), input_value)
 
     def open_domain(self, current_url, domain_name):

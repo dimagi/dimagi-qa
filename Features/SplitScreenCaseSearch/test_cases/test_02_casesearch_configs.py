@@ -484,7 +484,6 @@ def test_case_15_sticky_search_without_default_value(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     base = BasePage(driver)
-    webapps.login_as(CaseSearchUserInput.user_1)
     """Check sticky search without default value"""
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.normal_menu)
@@ -496,7 +495,7 @@ def test_case_15_sticky_search_without_default_value(driver, settings):
                                        )
     time.sleep(2)
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
-                                       input_value=CaseSearchUserInput.five_star,
+                                       input_value=CaseSearchUserInput.three_star,
                                        property_type=COMBOBOX
                                        )
     time.sleep(2)
@@ -508,7 +507,7 @@ def test_case_15_sticky_search_without_default_value(driver, settings):
                                                   search_format=text
                                                   )
         casesearch.check_default_values_displayed(search_property=CaseSearchUserInput.rating,
-                                                  default_value=CaseSearchUserInput.five_star,
+                                                  default_value=CaseSearchUserInput.three_star,
                                                   search_format=combobox
                                                   )
     # This is failing
@@ -571,7 +570,6 @@ def test_case_17_required_property(driver, settings):
 def test_case_18_conditionally_required_condition_property(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
-    base = BasePage(driver)
     """Check conditionally required condition property"""
     webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
@@ -600,8 +598,6 @@ def test_case_18_conditionally_required_condition_property(driver, settings):
                                              property_type=COMBOBOX
                                              )
     """Check form submission"""
-    base.back()
-    webapps.open_menu(CaseSearchUserInput.inline_search_menu)
     webapps.clear_selections_on_case_search_page()
     casesearch.search_against_property(search_property=CaseSearchUserInput.rating,
                                        input_value=CaseSearchUserInput.two_star,
