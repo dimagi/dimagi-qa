@@ -3,6 +3,7 @@ import os
 import time
 
 from openpyxl import load_workbook
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 from common_utilities.selenium.base_page import BasePage
@@ -59,7 +60,10 @@ class ImportCasesPage(BasePage):
             print("Upload successful.")
         self.click(self.next_step)
         self.is_visible_and_displayed(self.case_type)
-        self.select_by_text(self.case_type, casetype)
+        try:
+            self.select_by_text(self.case_type, casetype)
+        except NoSuchElementException:
+            print(f"No {casetype} found in the dropdown")
         self.wait_for_element(self.create_new_cases)
         self.scroll_to_element(self.create_new_cases)
         self.wait_to_click(self.create_new_cases)

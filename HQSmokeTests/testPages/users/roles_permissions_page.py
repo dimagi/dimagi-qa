@@ -51,9 +51,9 @@ class RolesPermissionPage(BasePage):
         self.edit_data = (By.XPATH, "//div[@id='user-roles-table']/div[@class='panel-body']/div[@class='modal fade in']/div[@class='modal-dialog']/form/div[@class='modal-content']/div[@class='modal-body']/div[@class='form form-horizontal']/fieldset/div[3]/div[@class='form-group'][7]/div[@class='col-sm-2 controls'][1]/div[@class='form-check']/label")
         self.view_data_dictionary = (By.XPATH, "//input[@id='view-data-dict-checkbox']")
         self.edit_data_dictionary = (By.XPATH, "//input[@id='edit-data-dict-checkbox']")
-        self.edit_data = (By.XPATH, "//input[@id='edit-data-checkbox']")
-        self.view_data_dictionary = (By.XPATH, "//input[@id='view-data-dict-checkbox']")
-        self.edit_data_dictionary = (By.XPATH, "//input[@id='edit-data-dict-checkbox']")
+        self.edit_data = (By.XPATH, "//label[@for='edit-data-checkbox']")
+        self.view_data_dictionary = (By.XPATH, "//label[@for='view-data-dict-checkbox']")
+        self.edit_data_dictionary = (By.XPATH, "//label[@for='edit-data-dict-checkbox']")
 
         self.web_user_permission = "//th[./span[.='{}']]//following-sibling::td/div[contains(@data-bind,'edit_web_users')]/i[contains(@class,'check')]"
         self.mobile_worker_permission = "//th[./span[.='{}']]//following-sibling::td/div[contains(@data-bind,'edit_commcare_users')]/i[contains(@class,'check')]"
@@ -70,7 +70,7 @@ class RolesPermissionPage(BasePage):
         self.scroll_to_element(self.save_button)
         time.sleep(0.5)
         self.wait_to_click(self.save_button)
-        
+
         assert self.is_present_and_displayed(self.role_created), "Role not added successfully!"
 
     def edit_role(self):
@@ -81,28 +81,27 @@ class RolesPermissionPage(BasePage):
         self.scroll_to_element(self.save_button)
         time.sleep(0.5)
         self.wait_to_click(self.save_button)
-        
+
         assert self.is_present_and_displayed(self.role_renamed), "Role not edited successfully!"
-        
+
 
     def cleanup_role(self):
         self.wait_to_click(self.delete_role)
         self.wait_to_click(self.confirm_role_delete)
 
     def delete_test_roles(self):
-        list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
-        print(list_profile)
+        list_profile = self.driver.find_elements(By.XPATH, "//th[./span[contains(text(),'role_')]]")
+        print(list_profile, str(len(list_profile)))
         try:
-            if len(list_profile) > 0:
-                for i in range(len(list_profile))[::-1]:
-                    text = list_profile[i].text
-                    print(text)
-                    self.driver.find_element(By.XPATH,
-                                             "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')])[" + str(
-                                                 i + 1) + "]").click()
-                    self.wait_to_click(self.confirm_role_delete)
-                    
-                    list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
+            while self.is_present_and_displayed((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]")):
+                text = self.get_text((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]"))
+                # for i in range(len(list_profile))[::-1]:
+                print(text)
+                self.wait_to_click((By.XPATH, f"(//th[./span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')]/i)[last()]"))
+                self.wait_to_click(self.confirm_role_delete)
+                self.reload_page()
+                time.sleep(2)
+                # list_profile = self.driver.find_elements(By.XPATH, "//th[./span[contains(text(),'role_')]]")
             else:
                 print("There are no test roles")
         except ElementNotInteractableException:
@@ -115,16 +114,17 @@ class RolesPermissionPage(BasePage):
             list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
             print(list_profile)
             if len(list_profile) > 0:
-               for i in range(len(list_profile))[::-1]:
-                   text = list_profile[i].text
-                   print(text)
-                   self.driver.find_element(By.XPATH,
-                                                 "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')])[" + str(
-                                                     i + 1) + "]").click()
-                   self.wait_to_click(self.confirm_role_delete)
-                   
-                   list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
-               else:
+                while self.is_present_and_displayed((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]")):
+                    text = self.get_text((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]"))
+                    # for i in range(len(list_profile))[::-1]:
+                    print(text)
+                    self.wait_to_click((By.XPATH,
+                                        f"(//th[./span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')]/i)[last()]")
+                                       )
+                    self.wait_to_click(self.confirm_role_delete)
+                    self.reload_page()
+                    time.sleep(2)
+                else:
                    print("There are no test roles")
 
 
@@ -156,7 +156,7 @@ class RolesPermissionPage(BasePage):
         self.scroll_to_element(self.save_button)
         time.sleep(0.5)
         self.wait_to_click(self.save_button)
-        
+
         assert self.is_present_and_displayed(self.role_non_admin), "Role not added successfully!"
         return self.role_non_admin_created
 
@@ -164,17 +164,20 @@ class RolesPermissionPage(BasePage):
         self.wait_to_click(self.add_new_role)
         self.wait_to_clear_and_send_keys(self.role_name, self.role_non_admin_created)
         time.sleep(1)
-        self.click(self.edit_data,5)
-        self.click(self.view_data_dictionary)
+        self.js_click(self.edit_data,5)
+        self.js_click(self.view_data_dictionary)
         if value == 1:
             print("only view access selected")
         elif value ==2:
             time.sleep(5)
-            self.click(self.edit_data_dictionary)
+            self.js_click(self.edit_data_dictionary)
         else:
-            self.click(self.view_data_dictionary)
-            self.click(self.edit_data_dictionary)
-            self.click(self.edit_data_dictionary)
+            self.js_click(self.view_data_dictionary)
+            self.js_click(self.edit_data_dictionary)
+            self.js_click(self.edit_data_dictionary)
+        self.scroll_to_element(self.save_button)
+        time.sleep(0.5)
+        self.wait_to_click(self.save_button)
         print("Role added successfully")
         return self.role_non_admin_created
 
