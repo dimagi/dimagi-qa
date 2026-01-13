@@ -90,19 +90,18 @@ class RolesPermissionPage(BasePage):
         self.wait_to_click(self.confirm_role_delete)
 
     def delete_test_roles(self):
-        list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
-        print(list_profile)
+        list_profile = self.driver.find_elements(By.XPATH, "//th[./span[contains(text(),'role_')]]")
+        print(list_profile, str(len(list_profile)))
         try:
-            if len(list_profile) > 0:
-                for i in range(len(list_profile))[::-1]:
-                    text = list_profile[i].text
-                    print(text)
-                    self.driver.find_element(By.XPATH,
-                                             "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')])[" + str(
-                                                 i + 1) + "]").click()
-                    self.wait_to_click(self.confirm_role_delete)
-
-                    list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
+            while self.is_present_and_displayed((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]")):
+                text = self.get_text((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]"))
+                # for i in range(len(list_profile))[::-1]:
+                print(text)
+                self.wait_to_click((By.XPATH, f"(//th[./span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')]/i)[last()]"))
+                self.wait_to_click(self.confirm_role_delete)
+                self.reload_page()
+                time.sleep(2)
+                # list_profile = self.driver.find_elements(By.XPATH, "//th[./span[contains(text(),'role_')]]")
             else:
                 print("There are no test roles")
         except ElementNotInteractableException:
@@ -115,16 +114,17 @@ class RolesPermissionPage(BasePage):
             list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
             print(list_profile)
             if len(list_profile) > 0:
-               for i in range(len(list_profile))[::-1]:
-                   text = list_profile[i].text
-                   print(text)
-                   self.driver.find_element(By.XPATH,
-                                                 "(//th[.//span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')])[" + str(
-                                                     i + 1) + "]").click()
-                   self.wait_to_click(self.confirm_role_delete)
-
-                   list_profile = self.driver.find_elements(By.XPATH, "//th[.//span[contains(text(),'role_')]]")
-               else:
+                while self.is_present_and_displayed((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]")):
+                    text = self.get_text((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]"))
+                    # for i in range(len(list_profile))[::-1]:
+                    print(text)
+                    self.wait_to_click((By.XPATH,
+                                        f"(//th[./span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')]/i)[last()]")
+                                       )
+                    self.wait_to_click(self.confirm_role_delete)
+                    self.reload_page()
+                    time.sleep(2)
+                else:
                    print("There are no test roles")
 
 
