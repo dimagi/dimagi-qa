@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from HQSmokeTests.testPages.android.android_screen import AndroidScreen
+from HQSmokeTests.testPages.android.android_screen_old import AndroidScreen
 from HQSmokeTests.testPages.applications.application_page import ApplicationPage
 from HQSmokeTests.testPages.users.group_page import GroupPage
 from HQSmokeTests.userInputs.user_inputs import UserData
