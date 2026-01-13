@@ -75,7 +75,7 @@ class DataDictionaryPage(BasePage):
 
         # In App
         self.make_new_version_button = (By.XPATH, "//button[contains(@data-bind,'Make New Version')]")
-        self.case_list = (By.XPATH, "//span[contains(text(),'Case List')]")
+        self.case_list = (By.XPATH, "//span[contains(text(),'Case List') and @data-placement='right']")
         self.case_type_warning = (By.XPATH, "//*[@id='deprecated-case-types-warning']")
         self.applications_menu_id = (By.ID, "ApplicationsTab")
         self.case_list_warning = (By.XPATH, "//*[@id='case_type_deprecated_warning']")
@@ -298,7 +298,7 @@ class DataDictionaryPage(BasePage):
         url = self.get_current_url()
         if "staging" in url:
             self.get_url(UserData.case_data_link_staging)
-        elif "prod" in url:
+        elif "www" in url:
             self.get_url(UserData.case_data_link_prod)
         assert self.is_present_and_displayed(self.case_data_page_warning), "casetype not depreated on the case data page"
         "This case uses a deprecated case type. See the help documentation for more information is displayed"
