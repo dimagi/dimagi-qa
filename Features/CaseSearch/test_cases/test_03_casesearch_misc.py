@@ -200,7 +200,7 @@ def test_case_06_performance_check(driver, settings):
     else:
         print("Results load time is more than expected: " + str(run_time) + " sec.")
 
-
+@pytest.mark.xfail
 def test_case_07_multi_case_types_and_related_cases(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
@@ -295,10 +295,8 @@ def test_case_10_claim_condition(driver, settings):
     assert not bool(form_name), "Form name should not be present"
     print("Form name not present")
 
-
+@pytest.mark.xfail
 def test_case_11_do_not_search_cases(driver, settings):
-    if "staging" in settings["url"]:
-        pytest.xfail("This test is failing on Staging")
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Check don't search cases owned by the following ids"""

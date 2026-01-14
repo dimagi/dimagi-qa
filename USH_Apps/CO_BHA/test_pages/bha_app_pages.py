@@ -1,6 +1,8 @@
 import time
 
 from selenium.webdriver.common.by import By
+
+from USH_Apps.CO_BHA.user_inputs.bha_user_inputs import BhaUserInput
 from common_utilities.selenium.base_page import BasePage
 from Features.CaseSearch.constants import *
 
@@ -132,3 +134,10 @@ class BhaWorkflows(BasePage):
         elif is_multi == NO:
             assert expected_value in values_, "Expected values are not present"
             print("Expected values are present")
+
+    def get_app_name(self):
+        if "staging" in self.get_current_url():
+            app_name = BhaUserInput.bha_app_name_staging
+        else:
+            app_name = BhaUserInput.bha_app_name_prod
+        return app_name

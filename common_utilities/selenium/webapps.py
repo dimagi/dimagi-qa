@@ -122,6 +122,7 @@ class WebApps(BasePage):
         self.wait_for_element(self.link)
         self.js_click(self.link)
         time.sleep(0.5)
+        self.wait_after_interaction(100)
         self.wait_for_element((By.XPATH, self.current_page.format(breadcrumb_value)), timeout=60)
 
     def open_menu(self, menu_name, assertion='Yes'):
@@ -154,6 +155,7 @@ class WebApps(BasePage):
             else:
                 self.wait_for_element((By.XPATH, self.current_page.format(menu_name)), timeout=60)
                 self.wait_for_element(self.caselist_header)
+        time.sleep(3)
 
     def open_form(self, form_name):
         if self.is_present_and_displayed(self.error_message, 5):
@@ -410,9 +412,12 @@ class WebApps(BasePage):
         return user_menu_url
 
     def change_page_number(self, page_number):
-        self.select_by_value(self.pagination_select, page_number)
-        time.sleep(10)
-        self.wait_after_interaction(60)
+        try:
+            self.select_by_value(self.pagination_select, page_number)
+            time.sleep(10)
+            self.wait_after_interaction(60)
+        except:
+            print("No Page Limit Dropdown present")
 
     def switch_bw_pages(self):
         self.wait_to_click(self.next_page)

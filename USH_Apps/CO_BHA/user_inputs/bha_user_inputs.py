@@ -5,8 +5,8 @@ class BhaUserInput:
     """Test Data"""
 
     """App Name"""
-    bha_app_name = "Central Registry" #"BHA Provider Services"  # check for both staging & prod
-
+    bha_app_name_prod = "Central Registry" #"BHA Provider Services"  # check for both staging & prod
+    bha_app_name_staging = "Central Registry - M&O 5"
     """Users"""
     state_level_user = "bha_test_users+30@dimagi.com"#"state.level.user1"
     clinic_level_user = "bha_test_users+43@dimagi.com"#"clinic.level.user1"

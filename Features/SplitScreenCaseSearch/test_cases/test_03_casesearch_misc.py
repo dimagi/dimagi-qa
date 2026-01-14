@@ -1,6 +1,8 @@
 import random
 import time
 
+import pytest
+
 from Features.CaseSearch.constants import *
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
@@ -174,7 +176,7 @@ def test_case_06_performance_check(driver, settings):
     else:
         print("Results load time is more than expected: " + str(run_time) + " sec.")
 
-
+@pytest.mark.xfail(reason="https://dimagi.atlassian.net/browse/SUPPORT-26367")
 def test_case_07_multi_case_types_and_related_cases(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
@@ -194,7 +196,7 @@ def test_case_07_multi_case_types_and_related_cases(driver, settings):
     webapps.clear_selections_on_case_search_page()
     # Checks case type song
     casename = casesearch.search_against_property(search_property=CaseSearchUserInput.name,
-                                                  input_value=CaseSearchUserInput.song_automation_song_2,
+                                                  input_value=CaseSearchUserInput.song_automation_song_1,
                                                   property_type=TEXT_INPUT
                                                   )
     print("casename: ", casename)

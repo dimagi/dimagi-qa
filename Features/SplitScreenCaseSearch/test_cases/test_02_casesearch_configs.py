@@ -621,6 +621,7 @@ def test_case_19_json_property_function(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Check json property funtion"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.artist_menu)
     webapps.search_all_cases()
@@ -667,8 +668,10 @@ def test_case_21_dependent_dropdowns_multiselect_combobox(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Check Dependent Dropdowns"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.search_first_menu)
+
     casesearch.search_against_property(search_property=CaseSearchUserInput.genre,
                                        input_value=CaseSearchUserInput.latin_music,
                                        property_type=COMBOBOX
