@@ -299,7 +299,7 @@ jobs:
           client = WebClient(token=token)
 
           message = (
-              f"{status_icon} 📊 *[{env}] {workflow} Test Summary Charts triggered by {event_label} event*\n\n"
+              f"{status_icon} 📊 *[{env}] {workflow} Run #${{ github.run_number }} Test Summary Charts triggered by {event_label} event*\n\n"
               f"📎 *Artifact:* <{artifact_url}|Download here>"
           )
 

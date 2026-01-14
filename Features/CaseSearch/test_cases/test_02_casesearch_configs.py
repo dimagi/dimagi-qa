@@ -285,6 +285,7 @@ def test_case_11_allow_blank_values_normal(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Check allow blanks normal"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.normal_menu)
     webapps.search_all_cases()
@@ -581,6 +582,7 @@ def test_case_22_dependent_dropdowns_single_select_combobox(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Check Dependent Dropdowns Inline Case Search"""
+    webapps.login_as(CaseSearchUserInput.user_1)
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.inline_search_menu)
     webapps.clear_selections_on_case_search_page()

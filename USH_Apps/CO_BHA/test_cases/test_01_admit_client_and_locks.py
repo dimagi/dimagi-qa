@@ -17,8 +17,8 @@ def test_case_01_admit_case_1(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     app = BhaWorkflows(driver)
-
-    webapps.open_app(BhaUserInput.bha_app_name)
+    
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_and_admit_client)
     app.check_search_properties_present([BhaUserInput.client_id, BhaUserInput.ssn, BhaUserInput.medicaid_id])
 
@@ -62,7 +62,7 @@ def test_case_02_admit_case_2(driver, settings):
     casesearch = CaseSearchWorkflows(driver)
     app = BhaWorkflows(driver)
 
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_and_admit_client)
     typo_first_name = casesearch.search_against_property(search_property=BhaUserInput.first_name_required,
                                                          input_value=app.replace_one_char(value["first_name"]),
@@ -92,7 +92,7 @@ def test_case_02_admit_case_2(driver, settings):
     """Check if case present in pending requests menu"""
     # webapps.login_as(BhaUserInput.state_level_user)
     webapps.bha_login_as(BhaUserInput.state_level_user, settings['bha_password'], settings['url'], settings['db'])
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.pending_requests)
     # casesearch.search_against_property(search_property=BhaUserInput.name,
     #                                    input_value=typo_first_name + " " + typo_last_name,
@@ -113,7 +113,7 @@ def test_case_03_lock_in_1_1(driver, settings):
     app = BhaWorkflows(driver)
 
     webapps.bha_login_as(BhaUserInput.user_B, settings['user_b_pwd'], settings['url'], settings['db'])
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_my_clients)
     casesearch.search_against_property(search_property=BhaUserInput.first_name,
                                                     input_value=value["first_name"],
@@ -146,7 +146,7 @@ def test_case_04_lock_in_1_2(driver, settings):
 
     webapps.bha_login_as(BhaUserInput.state_level_user, settings['bha_password'], settings['url'], settings['db'])
     # webapps.login_as(BhaUserInput.state_level_user)
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.pending_requests)
     full_name = value["first_name"] + " " + value["last_name"]
     # commenting the search steps due to https://dimagi.atlassian.net/browse/QA-6651
@@ -171,7 +171,7 @@ def test_case_05_admit_case_7(driver, settings):
     app = BhaWorkflows(driver)
 
     webapps.bha_login_as(BhaUserInput.clinic_level_user, settings['bha_password'], settings['url'], settings['db'])
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_and_admit_client)
     domain_url = driver.current_url
     if "staging" in domain_url:

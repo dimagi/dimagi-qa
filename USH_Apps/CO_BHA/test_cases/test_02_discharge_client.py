@@ -16,7 +16,7 @@ def test_case_discharge_client_1(driver, settings):
 
     # webapps.login_as(BhaUserInput.state_level_user)
     webapps.bha_login_as(BhaUserInput.state_level_user, settings['bha_password'], settings['url'], settings['db'])
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_and_admit_client)
     first_name = casesearch.search_against_property(search_property=BhaUserInput.first_name_required,
                                                     input_value=names.get_first_name(),
@@ -61,7 +61,7 @@ def test_case_discharge_client_1(driver, settings):
     webapps.sync_app()
     # webapps.login_as(BhaUserInput.clinic_level_user)
     # webapps.bha_login_as(BhaUserInput.clinic_level_user, settings['bha_password'], settings['url'], settings['db'])
-    # webapps.open_app(BhaUserInput.bha_app_name)
+    # webapps.open_app(app.get_app_name())
     # webapps.open_menu(BhaUserInput.search_my_clients)
     # casesearch.search_against_property(search_property=BhaUserInput.first_name,
     #                                    input_value=first_name,
@@ -81,7 +81,7 @@ def test_case_discharge_client_1(driver, settings):
     """Search Central Registry as state user"""
     # webapps.login_as(BhaUserInput.state_level_user)
     webapps.bha_login_as(BhaUserInput.state_level_user, settings['bha_password'], settings['url'], settings['db'])
-    webapps.open_app(BhaUserInput.bha_app_name)
+    webapps.open_app(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_central_registry)
     casesearch.search_against_property(search_property=BhaUserInput.first_name,
                                        input_value=first_name,
@@ -100,7 +100,7 @@ def test_case_discharge_client_1(driver, settings):
     # check future discharge date
     webapps.submit_the_form()
     """Check the admission status on case list"""
-    webapps.navigate_to_breadcrumb(BhaUserInput.bha_app_name)
+    webapps.navigate_to_breadcrumb(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_central_registry)
     casesearch.search_against_property(search_property=BhaUserInput.first_name,
                                        input_value=first_name,

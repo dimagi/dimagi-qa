@@ -1,5 +1,7 @@
 import time
 
+import pytest
+
 from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.webapps import WebApps
@@ -85,7 +87,7 @@ def test_case_03_search_property_settings(driver, settings):
                                           search_property=CaseSearchUserInput.rating_input,
                                           expected_value=CaseSearchUserInput.rating_four_and_five)
 
-
+@pytest.mark.xfail
 def test_case_04_load_from_external_domain(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)

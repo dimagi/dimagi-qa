@@ -136,7 +136,13 @@ class CaseSearchWorkflows(BasePage):
         elif property_type == COMBOBOX:
             self.combox_select_element = self.get_element(self.combox_select, search_property)
             self.wait_for_element(self.combox_select_element, 50)
-            self.select_by_text(self.combox_select_element, input_value)
+            self.scroll_to_element(self.combox_select_element)
+            time.sleep(1)
+
+            try:
+                self.select_by_text(self.combox_select_element, input_value)
+            except:
+                self.select_by_value(self.combox_select_element, input_value)
             self.wait_after_interaction(40)
             text = self.get_selected_text(self.combox_select_element)
             print(text)

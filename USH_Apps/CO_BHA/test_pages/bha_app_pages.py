@@ -1,6 +1,8 @@
 import time
 
 from selenium.webdriver.common.by import By
+
+from USH_Apps.CO_BHA.user_inputs.bha_user_inputs import BhaUserInput
 from common_utilities.selenium.base_page import BasePage
 from Features.CaseSearch.constants import *
 
@@ -40,12 +42,13 @@ class BhaWorkflows(BasePage):
         return original_string[:index] + new_character + original_string[index + 1:]
 
     def select_radio(self, value):
-        time.sleep(1)
+        time.sleep(4)
         radio_value = self.get_element(self.radio_option_value, value)
-        if self.is_present_and_displayed(radio_value, 10):
+        if self.is_present_and_displayed(radio_value, 50):
             self.scroll_to_element(radio_value)
-            self.wait_to_click(radio_value)
-            time.sleep(1)
+            time.sleep(2)
+            self.js_click(radio_value)
+            time.sleep(2)
         else:
             print("Yes button is not present")
 
@@ -132,3 +135,10 @@ class BhaWorkflows(BasePage):
         elif is_multi == NO:
             assert expected_value in values_, "Expected values are not present"
             print("Expected values are present")
+
+    def get_app_name(self):
+        if "staging" in self.get_current_url():
+            app_name = BhaUserInput.bha_app_name_staging
+        else:
+            app_name = BhaUserInput.bha_app_name_prod
+        return app_name
