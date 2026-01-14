@@ -42,12 +42,13 @@ class BhaWorkflows(BasePage):
         return original_string[:index] + new_character + original_string[index + 1:]
 
     def select_radio(self, value):
-        time.sleep(1)
+        time.sleep(4)
         radio_value = self.get_element(self.radio_option_value, value)
-        if self.is_present_and_displayed(radio_value, 10):
+        if self.is_present_and_displayed(radio_value, 50):
             self.scroll_to_element(radio_value)
-            self.wait_to_click(radio_value)
-            time.sleep(1)
+            time.sleep(2)
+            self.js_click(radio_value)
+            time.sleep(2)
         else:
             print("Yes button is not present")
 

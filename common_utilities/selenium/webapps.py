@@ -466,6 +466,7 @@ class WebApps(BasePage):
 
     def bha_login_as(self, username, password, url, db):
         self.logout_webapps(db)
+        time.sleep(5)
         self.login_webapps(username, password, url)
 
     def sync_app(self):

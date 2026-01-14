@@ -137,8 +137,10 @@ def test_case_03_lock_in_1_1(driver, settings):
 
 
 def test_case_04_lock_in_1_2(driver, settings):
-    if value["first_name"] == None and value["last_name"] == None:
-        pytest.skip("Skipping as name is null")
+    # if value["first_name"] == None and value["last_name"] == None:
+    #     pytest.skip("Skipping as name is null")
+    value["first_name"] = "Tina"
+    value["last_name"] = "Archuleta"
     """use case: no existing lock status for state user"""
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)

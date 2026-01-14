@@ -100,7 +100,7 @@ def test_case_discharge_client_1(driver, settings):
     # check future discharge date
     webapps.submit_the_form()
     """Check the admission status on case list"""
-    webapps.navigate_to_breadcrumb(BhaUserInput.bha_app_name)
+    webapps.navigate_to_breadcrumb(app.get_app_name())
     webapps.open_menu(BhaUserInput.search_central_registry)
     casesearch.search_against_property(search_property=BhaUserInput.first_name,
                                        input_value=first_name,
