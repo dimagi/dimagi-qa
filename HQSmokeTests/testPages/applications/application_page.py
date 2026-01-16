@@ -76,7 +76,7 @@ class ApplicationPage(BasePage):
         self.languages_tab_content = (By.ID, "language-settings-options")
         self.multimedia_tab = (By.XPATH, "//a[@href='#multimedia-tab']")
         self.multimedia_tab_content = (By.ID, "multimedia-tab")
-        self.actions_tab = (By.XPATH, "//a[text()='Actions']")
+        self.actions_tab = (By.XPATH, "//a[@href='#actions']")
         self.actions_tab_content = (By.ID, "actions")
         self.add_ons_tab = (By.XPATH, "//a[@href='#add-ons']")
         self.add_ons_tab_content = (By.ID, "add-ons")
