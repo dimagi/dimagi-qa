@@ -51,7 +51,7 @@ class ApplicationPage(BasePage):
         # Delete Application
         self.settings = (By.XPATH, "//i[contains(@class,'fa-gear')]")
         self.delete_app = (By.XPATH, "//a[@href='#delete-app-modal']")
-        self.delete_confirm = (By.XPATH, "(//button[@class='disable-on-submit btn btn-danger'])[last()]")
+        self.delete_confirm = (By.XPATH, "(//button/i[contains(@class,'trash')])[last()]")
         self.delete_success = (By.XPATH, "//div[contains(@class,'alert-success')][contains(.,'You have deleted an application.')]")
         self.app_link = "(//li/a[contains(., '{}')])[1]"
 
@@ -76,7 +76,7 @@ class ApplicationPage(BasePage):
         self.languages_tab_content = (By.ID, "language-settings-options")
         self.multimedia_tab = (By.XPATH, "//a[@href='#multimedia-tab']")
         self.multimedia_tab_content = (By.ID, "multimedia-tab")
-        self.actions_tab = (By.XPATH, "//a[@href='#actions']")
+        self.actions_tab = (By.XPATH, "//a[@href='#actions' or @href='#advanced']")
         self.actions_tab_content = (By.ID, "actions")
         self.add_ons_tab = (By.XPATH, "//a[@href='#add-ons']")
         self.add_ons_tab_content = (By.ID, "add-ons")
@@ -187,6 +187,7 @@ class ApplicationPage(BasePage):
         except TimeoutException:
             self.wait_for_element(self.form_settings)
             self.js_click(self.form_settings)
+            time.sleep(4)
             self.wait_for_element(self.actions_tab)
             self.js_click(self.actions_tab)
         self.wait_for_element(self.download_xml)
