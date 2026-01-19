@@ -87,7 +87,6 @@ def test_case_03_search_property_settings(driver, settings):
                                           search_property=CaseSearchUserInput.rating_input,
                                           expected_value=CaseSearchUserInput.rating_four_and_five)
 
-@pytest.mark.xfail
 def test_case_04_load_from_external_domain(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
