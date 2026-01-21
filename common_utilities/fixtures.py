@@ -171,33 +171,24 @@ def pytest_runtest_makereport(item):
     outcome = yield
     report = outcome.get_result()
 
-    # Never let reporting crash the run
     try:
-        # Add tags column (your existing behavior)
         report.tags = ", ".join([m.name for m in item.iter_markers() if m.name != "run"])
         extra = getattr(report, "extra", [])
 
         # Skip intermediate rerun attempts
-        # (pytest-rerunfailures marks those with outcome == "rerun")
         if getattr(report, "outcome", None) == "rerun":
             report.extra = extra
             return
 
-        # Only attach on real failure/xfail-skip
-        xfail = hasattr(report, "wasxfail")
-        is_problem = (report.failed and not xfail) or (report.skipped and xfail)
-        if not is_problem:
-            report.extra = extra
-            return
-
-        # Prefer teardown screenshot: only attach once per test
-        # Store state on the item so call-phase doesn't attach if teardown will.
+        # --- CALL: detect failure and mark it ---
         if report.when == "call":
-            # mark that we saw a failure in call; teardown will do the screenshot
-            setattr(item, "_needs_teardown_screenshot", True)
+            xfail = hasattr(report, "wasxfail")
+            is_problem = (report.failed and not xfail) or (report.skipped and xfail)
+            setattr(item, "_needs_teardown_screenshot", is_problem)
             report.extra = extra
             return
 
+        # --- TEARDOWN: attach screenshot if CALL failed ---
         if report.when == "teardown":
             if not getattr(item, "_needs_teardown_screenshot", False):
                 report.extra = extra
@@ -220,6 +211,9 @@ def pytest_runtest_makereport(item):
                 ))
 
             report.extra = extra
+            return
+
+        report.extra = extra
 
     except Exception as e:
         print(f"[WARN] pytest_runtest_makereport failed (ignored): {type(e).__name__}: {e}")

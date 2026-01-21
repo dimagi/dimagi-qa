@@ -16,13 +16,15 @@ from HQSmokeTests.userInputs.user_inputs import UserData
 
 @pytest.mark.data
 @pytest.mark.importCases
-@pytest.mark.xfail
+# @pytest.mark.xfail
 def test_case_29_import_cases(driver, settings):
     """
         1. Navigate to Data>Import Cases from Excel.
         2. Verify you are able to Import Cases successfully from the excel sheet.
         (A quick way to do this is to download a previously successful upload and change one property)
     """
+    if "www" in settings['url']:
+        pytest.xfail("Failing on Prod")
     home = HomePage(driver, settings)
     home.data_menu()
     imp = ImportCasesPage(driver)
