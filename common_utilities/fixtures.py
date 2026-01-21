@@ -175,43 +175,32 @@ def pytest_runtest_makereport(item):
         report.tags = ", ".join([m.name for m in item.iter_markers() if m.name != "run"])
         extra = getattr(report, "extra", [])
 
-        # Skip intermediate rerun attempts
+        # Skip intermediate rerun attempts (rerunfailures)
         if getattr(report, "outcome", None) == "rerun":
             report.extra = extra
             return
 
-        # --- CALL: detect failure and mark it ---
+        # pytest-html reliably shows extras for CALL
         if report.when == "call":
             xfail = hasattr(report, "wasxfail")
             is_problem = (report.failed and not xfail) or (report.skipped and xfail)
-            setattr(item, "_needs_teardown_screenshot", is_problem)
-            report.extra = extra
-            return
 
-        # --- TEARDOWN: attach screenshot if CALL failed ---
-        if report.when == "teardown":
-            if not getattr(item, "_needs_teardown_screenshot", False):
-                report.extra = extra
-                return
+            if is_problem:
+                driver = item.funcargs.get("driver")
+                screen_img = _capture_screenshot(driver)  # your SAFE helper
 
-            driver = item.funcargs.get("driver")
-            screen_img = _capture_screenshot(driver)
-
-            if pytest_html and screen_img:
-                html_block = (
-                    '<div><img src="data:image/png;base64,%s" alt="screenshot" '
-                    'style="width:600px;height:300px;" '
-                    'onclick="window.open(this.src)" align="right"/></div>'
-                    % screen_img
-                )
-                extra.append(pytest_html.extras.html(html_block))
-            elif pytest_html:
-                extra.append(pytest_html.extras.html(
-                    "<div><em>[WARN] Screenshot unavailable (browser unresponsive)</em></div>"
-                ))
-
-            report.extra = extra
-            return
+                if pytest_html and screen_img:
+                    html_block = (
+                        '<div><img src="data:image/png;base64,%s" alt="screenshot" '
+                        'style="width:600px;height:300px;" '
+                        'onclick="window.open(this.src)" align="right"/></div>'
+                        % screen_img
+                    )
+                    extra.append(pytest_html.extras.html(html_block))
+                elif pytest_html:
+                    extra.append(pytest_html.extras.html(
+                        "<div><em>[WARN] Screenshot unavailable (browser unresponsive)</em></div>"
+                    ))
 
         report.extra = extra
 
