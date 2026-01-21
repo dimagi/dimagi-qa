@@ -4,6 +4,8 @@ import pytest
 from py.xml import html
 
 from selenium import webdriver
+from selenium.common import TimeoutException, WebDriverException
+
 from common_utilities.path_settings import PathSettings
 from common_utilities.hq_login.login_page import LoginPage
 import base64
@@ -121,31 +123,107 @@ def pytest_html_results_table_row(report, cells):
 
 
 def _capture_screenshot(driver):
-    return base64.b64encode(driver.get_screenshot_as_png()).decode('utf-8')
+    if not driver:
+        return None
+    try:
+        # quick health check; fails fast if renderer is dead
+        driver.execute_script("return 1")
+        png = driver.get_screenshot_as_png()
+        return base64.b64encode(png).decode("utf-8")
+    except (TimeoutException, WebDriverException, Exception) as e:
+        print(f"[WARN] Screenshot capture failed (ignored): {type(e).__name__}: {e}")
+        return None
+
+# @pytest.hookimpl(hookwrapper=True)
+# def pytest_runtest_makereport(item):
+#     pytest_html = item.config.pluginmanager.getplugin("html")
+#     outcome = yield
+#     report = outcome.get_result()
+#     tags = ", ".join([m.name for m in item.iter_markers() if m.name != 'run'])
+#     extra = getattr(report, 'extra', [])
+#
+#     if report.when == "call" or report.when == "teardown":
+#         xfail = hasattr(report, 'wasxfail')
+#         if (report.skipped and xfail) or (report.failed and not xfail):
+#             print("reports skipped or failed")
+#             file_name = report.nodeid.replace("::", "_") + ".png"
+#             driver = item.funcargs.get("driver")
+#             screen_img = _capture_screenshot(driver)
+#
+#             if screen_img:  # only attach if we actually got one
+#                 html = (
+#                         '<div><img src="data:image/png;base64,%s" alt="screenshot" '
+#                         'style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>'
+#                         % screen_img
+#                 )
+#                 extra.append(pytest_html.extras.html(html))
+#             else:
+#                 extra.append(pytest_html.extras.html(
+#                     "<div><em>[WARN] Screenshot unavailable (browser unresponsive)</em></div>"
+#                     )
+#                     )
+#         report.extra = extra
+#         report.tags = tags
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item):
     pytest_html = item.config.pluginmanager.getplugin("html")
     outcome = yield
     report = outcome.get_result()
-    tags = ", ".join([m.name for m in item.iter_markers() if m.name != 'run'])
-    extra = getattr(report, 'extra', [])
 
-    if report.when == "call" or report.when == "teardown":
-        xfail = hasattr(report, 'wasxfail')
-        if (report.skipped and xfail) or (report.failed and not xfail):
-            print("reports skipped or failed")
-            file_name = report.nodeid.replace("::", "_") + ".png"
-            screen_img = _capture_screenshot(item.funcargs["driver"])
-            if file_name:
-                html = (
+    # Never let reporting crash the run
+    try:
+        # Add tags column (your existing behavior)
+        report.tags = ", ".join([m.name for m in item.iter_markers() if m.name != "run"])
+        extra = getattr(report, "extra", [])
+
+        # Skip intermediate rerun attempts
+        # (pytest-rerunfailures marks those with outcome == "rerun")
+        if getattr(report, "outcome", None) == "rerun":
+            report.extra = extra
+            return
+
+        # Only attach on real failure/xfail-skip
+        xfail = hasattr(report, "wasxfail")
+        is_problem = (report.failed and not xfail) or (report.skipped and xfail)
+        if not is_problem:
+            report.extra = extra
+            return
+
+        # Prefer teardown screenshot: only attach once per test
+        # Store state on the item so call-phase doesn't attach if teardown will.
+        if report.when == "call":
+            # mark that we saw a failure in call; teardown will do the screenshot
+            setattr(item, "_needs_teardown_screenshot", True)
+            report.extra = extra
+            return
+
+        if report.when == "teardown":
+            if not getattr(item, "_needs_teardown_screenshot", False):
+                report.extra = extra
+                return
+
+            driver = item.funcargs.get("driver")
+            screen_img = _capture_screenshot(driver)
+
+            if pytest_html and screen_img:
+                html_block = (
                     '<div><img src="data:image/png;base64,%s" alt="screenshot" '
-                    'style="width:600px;height:300px;" onclick="window.open(this.src)" align="right"/></div>'
+                    'style="width:600px;height:300px;" '
+                    'onclick="window.open(this.src)" align="right"/></div>'
                     % screen_img
                 )
-                extra.append(pytest_html.extras.html(html))
-        report.extra = extra
-        report.tags = tags
+                extra.append(pytest_html.extras.html(html_block))
+            elif pytest_html:
+                extra.append(pytest_html.extras.html(
+                    "<div><em>[WARN] Screenshot unavailable (browser unresponsive)</em></div>"
+                ))
+
+            report.extra = extra
+
+    except Exception as e:
+        print(f"[WARN] pytest_runtest_makereport failed (ignored): {type(e).__name__}: {e}")
+        report.extra = getattr(report, "extra", [])
 
 
 
