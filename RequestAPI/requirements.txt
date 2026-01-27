@@ -9,3 +9,13 @@ pytest-metadata
 matplotlib
 py>=1.10.0
 selenium == 4.11.0
+pandas>=1.2.2
+pytest-json-report
+openpyxl
+matplotlib >= 3.3.4
+Appium-Python-Client >= 2.10.0
+pyotp >=2.6.0
+pytest-order
+imap-tools
+beautifulsoup4
+html5lib
