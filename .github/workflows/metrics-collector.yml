@@ -1,0 +1,249 @@
+name: Metrics Collector
+
+on:
+  workflow_run:
+    workflows:
+      - "HQ Smoke Tests"
+      - "Python Request API"
+      - "CO BHA Smoke Tests"
+      - "Lookup table Tests"
+      - "Case Search Tests"
+      - "Case Search Split Screen Tests"
+      - "Data Dictionary Tests"
+      - "Elastic Search Tests"
+      - "Export Tests"
+      - "Find Data by ID Tests"
+      - "Formplayer Tests"
+      - "Multi Select Tests"
+      - "Priority Escape Defects Tests"
+      - "Power BI Tests"
+    types: [completed]
+
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "GitHub Actions run_id to ingest (from any branch)"
+        required: false
+        type: string
+
+  # Daily digest (10:00 AM IST = 04:30 UTC)
+  schedule:
+    - cron: "30 4 * * *"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  collect:
+    if: >
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled')
+      || (github.event_name == 'workflow_dispatch' && inputs.run_id != '')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout metrics branch
+        uses: actions/checkout@v4
+        with:
+          ref: metrics
+          fetch-depth: 0
+
+      - name: Determine run id
+        id: runid
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "RID=${{ inputs.run_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "RID=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download run-summary artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runId = Number("${{ steps.runid.outputs.RID }}");
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner, repo, run_id: runId
+            });
+
+            const target = artifacts.data.artifacts.find(a => a.name === "run-summary");
+            if (!target) core.setFailed(`run-summary artifact not found for run_id=${runId}`);
+
+            const dl = await github.rest.actions.downloadArtifact({
+              owner, repo, artifact_id: target.id, archive_format: "zip"
+            });
+
+            const fs = require("fs");
+            fs.writeFileSync("run-summary.zip", Buffer.from(dl.data));
+
+      - name: Unzip run summary
+        run: |
+          sudo apt-get update && sudo apt-get install -y unzip
+          unzip -o run-summary.zip -d incoming
+          ls -la incoming
+
+      - name: Append to dataset
+        run: |
+          mkdir -p metrics
+          test -f incoming/run_summary.json
+          cat incoming/run_summary.json >> metrics/runs.jsonl
+          echo "" >> metrics/runs.jsonl
+
+      - name: Build site
+        run: |
+          mkdir -p site/data
+          cp metrics/runs.jsonl site/data/runs.jsonl
+          cp -r dashboard/* site/
+
+      - name: Commit and push
+        run: |
+          git config user.name "metrics-bot"
+          git config user.email "metrics-bot@users.noreply.github.com"
+          git add metrics/runs.jsonl site/
+          git commit -m "Metrics update from run ${{ steps.runid.outputs.RID }}" || echo "No changes"
+          git push origin metrics
+
+  daily_digest:
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout metrics branch
+        uses: actions/checkout@v4
+        with:
+          ref: metrics
+          fetch-depth: 0
+
+      - name: Build digest message (last 24h)
+        id: digest
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timedelta, timezone
+          from collections import defaultdict
+
+          path = "metrics/runs.jsonl"
+          now = datetime.now(timezone.utc)
+          window_start = now - timedelta(hours=24)
+
+          runs = []
+          if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+              for line in f:
+                line = line.strip()
+                if not line:
+                  continue
+                try:
+                  d = json.loads(line)
+                  ts = d.get("timestamp_utc")
+                  if not ts:
+                    continue
+                  t = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                  if t >= window_start:
+                    runs.append(d)
+                except Exception:
+                  continue
+
+          if not runs:
+            msg = "📊 *Daily Automation Dashboard* (last 24h)\nNo runs recorded in the last 24 hours."
+            print("HAS_DATA=true")
+            print("MSG<<EOF")
+            print(msg)
+            print("EOF")
+            raise SystemExit(0)
+
+          total_runs = len(runs)
+          pass_runs = sum(1 for r in runs if r.get("status") == "pass")
+          fail_runs = total_runs - pass_runs
+
+          by_env = defaultdict(lambda: {"runs":0, "pass":0, "fail":0, "reruns":0})
+          by_suite_fail = defaultdict(int)
+
+          for r in runs:
+            env = r.get("env","unknown")
+            suite = r.get("suite","unknown")
+            status = r.get("status","unknown")
+            by_env[env]["runs"] += 1
+            if status == "pass":
+              by_env[env]["pass"] += 1
+            else:
+              by_env[env]["fail"] += 1
+              by_suite_fail[suite] += 1
+            by_env[env]["reruns"] += int(r.get("rerun_count") or 0)
+
+          top_fail = sorted(by_suite_fail.items(), key=lambda x: x[1], reverse=True)[:5]
+          top_fail_txt = ", ".join([f"{k} ({v})" for k,v in top_fail]) if top_fail else "None"
+
+          env_lines = []
+          for env, s in sorted(by_env.items(), key=lambda x: x[0]):
+            env_lines.append(f"• *{env}*: runs {s['runs']} | ✅ {s['pass']} | ❌ {s['fail']} | reruns {s['reruns']}")
+
+          dashboard_url = os.environ.get("DASHBOARD_URL","").strip()
+          dash_line = f"\n📈 Dashboard: {dashboard_url}" if dashboard_url else ""
+
+          msg = (
+            f"📊 *Daily Automation Dashboard* (last 24h)\n"
+            f"Total runs: *{total_runs}* | ✅ *{pass_runs}* | ❌ *{fail_runs}*\n\n"
+            f"*By environment:*\n" + "\n".join(env_lines) + "\n\n"
+            f"*Top failing suites:* {top_fail_txt}"
+            + dash_line
+          )
+
+          print("HAS_DATA=true")
+          print("MSG<<EOF")
+          print(msg)
+          print("EOF")
+          PY
+        env:
+          DASHBOARD_URL: ${{ vars.AUTOMATION_DASHBOARD_URL }}
+
+      - name: Post/Update digest message in Slack (single pinned-style message)
+        env:
+          SLACK_QA_BOT_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+          DIGEST_MESSAGE: ${{ steps.digest.outputs.MSG }}
+        run: |
+          pip install --quiet slack_sdk
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from slack_sdk import WebClient
+
+          token = os.environ["SLACK_QA_BOT_TOKEN"]
+          channel = os.environ["SLACK_CHANNEL_ID"]
+          msg = os.environ["DIGEST_MESSAGE"]
+
+          state_path = Path("metrics/slack_dashboard_message.json")
+          state_path.parent.mkdir(parents=True, exist_ok=True)
+
+          client = WebClient(token=token)
+
+          ts = None
+          if state_path.exists():
+            try:
+              ts = json.loads(state_path.read_text(encoding="utf-8")).get("ts")
+            except Exception:
+              ts = None
+
+          if ts:
+            # Update existing message
+            resp = client.chat_update(channel=channel, ts=ts, text=msg)
+          else:
+            # Create new message
+            resp = client.chat_postMessage(channel=channel, text=msg)
+            ts = resp["ts"]
+            state_path.write_text(json.dumps({"ts": ts}, indent=2), encoding="utf-8")
+
+          print(f"✅ Dashboard message updated (ts={ts})")
+          PY
+
+      - name: Commit Slack message state (ts)
+        run: |
+          git config user.name "metrics-bot"
+          git config user.email "metrics-bot@users.noreply.github.com"
+          git add metrics/slack_dashboard_message.json
+          git commit -m "Update dashboard Slack message state" || echo "No changes"
+          git push origin metrics
