@@ -85,6 +85,8 @@ jobs:
       - name: Case Search Regression
         env:
           DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
+          SUITE_NAME: ${{ github.workflow }}
+          TRIGGER_TYPE: ${{ github.event_name == 'repository_dispatch' && 'deploy' || github.event_name == 'schedule' && 'schedule' || github.event_name == 'workflow_dispatch' && 'manual' || 'other' }}
           DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
           DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
           DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
@@ -114,6 +116,15 @@ jobs:
           name: test-result-reports--${{ matrix.environment }}-${{ github.run_id }}
           path: /home/runner/work/dimagi-qa/dimagi-qa/report_${{ matrix.environment }}.html
           retention-days: 2
+
+      - name: Upload run summary JSON (central dashboard)
+        if: ${{ (success() || failure()) && !cancelled() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-summary
+          path: metrics_out/run_summary.json
+          retention-days: 30
+
 
       - name: Fetch artifact ID
         run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
@@ -182,7 +193,7 @@ jobs:
 
 
       - name: Set slack vars
-        if: ${{ always() }}
+        if: ${{ (success() || failure()) && !cancelled() }}
         id: configure_slack
         uses: actions/github-script@v6
         env:
@@ -236,7 +247,7 @@ jobs:
             return { SLACK_WEBHOOK_URL, SLACK_CHANNEL_ID };
 
       - name: Upload Combined Chart to Slack
-        if: ${{ (success() || failure()) && steps.configure_slack.outputs.SLACK_CHANNEL_ID != '' }}
+        if: ${{ (success() || failure()) && !cancelled() && steps.configure_slack.outputs.SLACK_CHANNEL_ID != '' }}
         env:
           SLACK_QA_BOT_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ steps.configure_slack.outputs.SLACK_CHANNEL_ID }}
