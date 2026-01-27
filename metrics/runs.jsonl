@@ -214,3 +214,84 @@
     "charts_dir": "slack_charts"
   }
 }
+{
+  "timestamp_utc": "2026-01-27T17:26:50.130551+00:00",
+  "suite": "Python Request API",
+  "env": "india",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 1,
+  "github": {
+    "run_id": "21407240017",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21407240017",
+    "workflow": "Python Request API",
+    "sha": "2583d6675c3a0f3497f74d45af1a271e90657474",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
+{
+  "timestamp_utc": "2026-01-27T17:26:59.100983+00:00",
+  "suite": "Python Request API",
+  "env": "production",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21407240017",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21407240017",
+    "workflow": "Python Request API",
+    "sha": "2583d6675c3a0f3497f74d45af1a271e90657474",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
+{
+  "timestamp_utc": "2026-01-27T17:29:07.349164+00:00",
+  "suite": "Python Request API",
+  "env": "staging",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21407240017",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21407240017",
+    "workflow": "Python Request API",
+    "sha": "2583d6675c3a0f3497f74d45af1a271e90657474",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
