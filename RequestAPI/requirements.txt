@@ -8,3 +8,4 @@ pytest-xdist
 pytest-metadata
 matplotlib
 py>=1.10.0
+selenium == 4.11.0
