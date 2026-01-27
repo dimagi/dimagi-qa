@@ -36,8 +36,12 @@ permissions:
 
 jobs:
   collect:
+    # ✅ Only run after a workflow_run is COMPLETE (not per job), or manual ingest
     if: >
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled')
+      (github.event_name == 'workflow_run'
+        && github.event.action == 'completed'
+        && github.event.workflow_run.status == 'completed'
+        && github.event.workflow_run.conclusion != 'cancelled')
       || (github.event_name == 'workflow_dispatch' && inputs.run_id != '')
     runs-on: ubuntu-latest
 
@@ -57,9 +61,11 @@ jobs:
             echo "RID=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download run-summary artifact
+      - name: Download run-summary artifacts (supports matrix + legacy)
+        id: dl
         uses: actions/github-script@v7
         with:
+          result-encoding: json
           script: |
             const runId = Number("${{ steps.runid.outputs.RID }}");
             const owner = context.repo.owner;
@@ -69,36 +75,71 @@ jobs:
               owner, repo, run_id: runId
             });
 
-            const target = artifacts.data.artifacts.find(a => a.name === "run-summary");
-            if (!target) core.setFailed(`run-summary artifact not found for run_id=${runId}`);
+            const all = artifacts.data.artifacts || [];
+            const targets = all.filter(a => a.name === "run-summary" || a.name.startsWith("run-summary-"));
 
-            const dl = await github.rest.actions.downloadArtifact({
-              owner, repo, artifact_id: target.id, archive_format: "zip"
-            });
+            if (!targets.length) {
+              core.notice(
+                `No run-summary artifacts found for run_id=${runId}. ` +
+                `Available: ${all.map(a => a.name).join(", ") || "(none)"}`
+              );
+              core.setOutput("FOUND", "false");
+              return { found: false, count: 0, names: [] };
+            }
 
             const fs = require("fs");
-            fs.writeFileSync("run-summary.zip", Buffer.from(dl.data));
+            for (const a of targets) {
+              const dl = await github.rest.actions.downloadArtifact({
+                owner, repo, artifact_id: a.id, archive_format: "zip"
+              });
+              const safeName = a.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+              const out = `run-summary__${safeName}.zip`;
+              fs.writeFileSync(out, Buffer.from(dl.data));
+              core.info(`Downloaded ${a.name} -> ${out}`);
+            }
 
-      - name: Unzip run summary
+            core.setOutput("FOUND", "true");
+            return { found: true, count: targets.length, names: targets.map(t => t.name) };
+
+      - name: Unzip run summaries
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y unzip
-          unzip -o run-summary.zip -d incoming
-          ls -la incoming
+          mkdir -p incoming
+          for z in run-summary__run-summary*.zip; do
+            d="incoming/${z%.zip}"
+            mkdir -p "$d"
+            echo "Unzipping $z -> $d"
+            unzip -o "$z" -d "$d"
+          done
+          echo "Found run_summary.json files:"
+          find incoming -type f -name "run_summary.json" -print
 
       - name: Append to dataset
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
         run: |
           mkdir -p metrics
-          test -f incoming/run_summary.json
-          cat incoming/run_summary.json >> metrics/runs.jsonl
-          echo "" >> metrics/runs.jsonl
+          found_any=0
+          while IFS= read -r f; do
+            found_any=1
+            cat "$f" >> metrics/runs.jsonl
+            echo "" >> metrics/runs.jsonl
+          done < <(find incoming -type f -name "run_summary.json")
+
+          if [ "$found_any" -eq 0 ]; then
+            echo "No run_summary.json found after unzip. Skipping dataset update."
+            exit 0
+          fi
 
       - name: Build site
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
         run: |
           mkdir -p site/data
           cp metrics/runs.jsonl site/data/runs.jsonl
           cp -r dashboard/* site/
 
       - name: Commit and push
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
         run: |
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
@@ -229,10 +270,8 @@ jobs:
               ts = None
 
           if ts:
-            # Update existing message
-            resp = client.chat_update(channel=channel, ts=ts, text=msg)
+            client.chat_update(channel=channel, ts=ts, text=msg)
           else:
-            # Create new message
             resp = client.chat_postMessage(channel=channel, text=msg)
             ts = resp["ts"]
             state_path.write_text(json.dumps({"ts": ts}, indent=2), encoding="utf-8")

@@ -106,7 +106,7 @@ jobs:
         if: ${{ (success() || failure()) && !cancelled() && !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: run-summary
+          name: run-summary-${{ matrix.environment }}
           path: metrics_out/run_summary.json
           retention-days: 30
 
