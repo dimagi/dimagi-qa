@@ -136,7 +136,14 @@ jobs:
         run: |
           mkdir -p site/data
           cp metrics/runs.jsonl site/data/runs.jsonl
-          cp -r dashboard/* site/
+
+          if [ -d "dashboard" ]; then
+            echo "Dashboard folder found. Building site."
+            cp -r dashboard/* site/
+          else
+            echo "No dashboard folder present. Skipping site build."
+          fi
+      
 
       - name: Commit and push
         if: ${{ steps.dl.outputs.FOUND == 'true' }}
