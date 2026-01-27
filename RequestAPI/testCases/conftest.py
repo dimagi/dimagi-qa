@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 
+from common_utilities.fixtures import write_run_summary_json
 
 """"This file provides fixture functions for driver initialization"""
 
