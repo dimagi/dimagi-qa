@@ -149,7 +149,7 @@ jobs:
         run: |
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
-          git add metrics/runs.jsonl
+          git add metrics/runs.jsonl site/
           git commit -m "Metrics update from run ${{ steps.runid.outputs.RID }}" || echo "No changes"
           git push origin metrics
 
