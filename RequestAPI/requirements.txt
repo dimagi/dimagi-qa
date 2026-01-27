@@ -7,3 +7,4 @@ pytest-rerunfailures
 pytest-xdist
 pytest-metadata
 matplotlib
+py>=1.10.0
