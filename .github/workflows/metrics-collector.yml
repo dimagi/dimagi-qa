@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: "GitHub Actions run_id to ingest (from any branch)"
+        description: "GitHub Actions run_id to ingest (optional). Leave blank to only run the Slack digest."
         required: false
         type: string
 
@@ -33,10 +33,17 @@ on:
 permissions:
   contents: write
   actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: metrics-collector
+  cancel-in-progress: false
 
 jobs:
   collect:
-    # ✅ Only run after a workflow_run is COMPLETE (not per job), or manual ingest
+    # ✅ Only after the full workflow run completes (not per job),
+    # or manual ingest when run_id is provided
     if: >
       (github.event_name == 'workflow_run'
         && github.event.action == 'completed'
@@ -106,7 +113,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y unzip
           mkdir -p incoming
-          for z in run-summary__run-summary*.zip; do
+          shopt -s nullglob
+          for z in run-summary__*.zip; do
             d="incoming/${z%.zip}"
             mkdir -p "$d"
             echo "Unzipping $z -> $d"
@@ -131,8 +139,29 @@ jobs:
             exit 0
           fi
 
-      - name: Build site
+      - name: Commit dataset update
         if: ${{ steps.dl.outputs.FOUND == 'true' }}
+        run: |
+          git config user.name "metrics-bot"
+          git config user.email "metrics-bot@users.noreply.github.com"
+          git add metrics/runs.jsonl
+          git commit -m "Metrics update from run ${{ steps.runid.outputs.RID }}" || echo "No changes"
+          git push origin metrics
+
+  publish_dashboard:
+    # Rebuild & publish the site after dataset updates (only when collect ran + dataset found)
+    needs: collect
+    if: ${{ needs.collect.result == 'success' && (github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && inputs.run_id != '')) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout metrics branch
+        uses: actions/checkout@v4
+        with:
+          ref: metrics
+          fetch-depth: 0
+
+      - name: Build site artifact for GitHub Pages
         run: |
           mkdir -p site/data
           cp metrics/runs.jsonl site/data/runs.jsonl
@@ -141,22 +170,30 @@ jobs:
             echo "Dashboard folder found. Building site."
             cp -r dashboard/* site/
           else
-            echo "No dashboard folder present. Skipping site build."
+            echo "No dashboard folder present. Creating placeholder index."
+            cat > site/index.html <<'HTML'
+          <!doctype html>
+          <html>
+            <head><meta charset="utf-8"><title>Automation Dashboard</title></head>
+            <body>
+              <h2>Automation Dashboard</h2>
+              <p>Dashboard assets not found in this branch yet.</p>
+            </body>
+          </html>
+          HTML
           fi
 
-      - name: Commit and push
-        if: ${{ steps.dl.outputs.FOUND == 'true' }}
-        run: |
-          git config user.name "metrics-bot"
-          git config user.email "metrics-bot@users.noreply.github.com"
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
-          git add metrics/runs.jsonl
-
-          git commit -m "Metrics update from run ${{ steps.runid.outputs.RID }}" || echo "No changes"
-          git push origin metrics
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
 
   daily_digest:
-    if: ${{ github.event_name == 'schedule' }}
+    # Run on schedule OR manual trigger (manual trigger without run_id is "digest only")
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -168,6 +205,8 @@ jobs:
 
       - name: Build digest message (last 24h)
         id: digest
+        env:
+          DASHBOARD_URL: ${{ vars.AUTOMATION_DASHBOARD_URL }}
         run: |
           python - <<'PY'
           import json, os
@@ -198,56 +237,50 @@ jobs:
 
           if not runs:
             msg = "📊 *Daily Automation Dashboard* (last 24h)\nNo runs recorded in the last 24 hours."
-            print("HAS_DATA=true")
-            print("MSG<<EOF")
-            print(msg)
-            print("EOF")
-            raise SystemExit(0)
+          else:
+            total_runs = len(runs)
+            pass_runs = sum(1 for r in runs if r.get("status") == "pass")
+            fail_runs = total_runs - pass_runs
 
-          total_runs = len(runs)
-          pass_runs = sum(1 for r in runs if r.get("status") == "pass")
-          fail_runs = total_runs - pass_runs
+            by_env = defaultdict(lambda: {"runs":0, "pass":0, "fail":0, "reruns":0})
+            by_suite_fail = defaultdict(int)
 
-          by_env = defaultdict(lambda: {"runs":0, "pass":0, "fail":0, "reruns":0})
-          by_suite_fail = defaultdict(int)
+            for r in runs:
+              env = r.get("env","unknown")
+              suite = r.get("suite","unknown")
+              status = r.get("status","unknown")
+              by_env[env]["runs"] += 1
+              if status == "pass":
+                by_env[env]["pass"] += 1
+              else:
+                by_env[env]["fail"] += 1
+                by_suite_fail[suite] += 1
+              by_env[env]["reruns"] += int(r.get("rerun_count") or 0)
 
-          for r in runs:
-            env = r.get("env","unknown")
-            suite = r.get("suite","unknown")
-            status = r.get("status","unknown")
-            by_env[env]["runs"] += 1
-            if status == "pass":
-              by_env[env]["pass"] += 1
-            else:
-              by_env[env]["fail"] += 1
-              by_suite_fail[suite] += 1
-            by_env[env]["reruns"] += int(r.get("rerun_count") or 0)
+            top_fail = sorted(by_suite_fail.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_fail_txt = ", ".join([f"{k} ({v})" for k,v in top_fail]) if top_fail else "None"
 
-          top_fail = sorted(by_suite_fail.items(), key=lambda x: x[1], reverse=True)[:5]
-          top_fail_txt = ", ".join([f"{k} ({v})" for k,v in top_fail]) if top_fail else "None"
+            env_lines = []
+            for env, s in sorted(by_env.items(), key=lambda x: x[0]):
+              env_lines.append(f"• *{env}*: runs {s['runs']} | ✅ {s['pass']} | ❌ {s['fail']} | reruns {s['reruns']}")
 
-          env_lines = []
-          for env, s in sorted(by_env.items(), key=lambda x: x[0]):
-            env_lines.append(f"• *{env}*: runs {s['runs']} | ✅ {s['pass']} | ❌ {s['fail']} | reruns {s['reruns']}")
+            dashboard_url = os.environ.get("DASHBOARD_URL","").strip()
+            dash_line = f"\n📈 Dashboard: {dashboard_url}" if dashboard_url else ""
 
-          dashboard_url = os.environ.get("DASHBOARD_URL","").strip()
-          dash_line = f"\n📈 Dashboard: {dashboard_url}" if dashboard_url else ""
+            msg = (
+              f"📊 *Daily Automation Dashboard* (last 24h)\n"
+              f"Total runs: *{total_runs}* | ✅ *{pass_runs}* | ❌ *{fail_runs}*\n\n"
+              f"*By environment:*\n" + "\n".join(env_lines) + "\n\n"
+              f"*Top failing suites:* {top_fail_txt}"
+              + dash_line
+            )
 
-          msg = (
-            f"📊 *Daily Automation Dashboard* (last 24h)\n"
-            f"Total runs: *{total_runs}* | ✅ *{pass_runs}* | ❌ *{fail_runs}*\n\n"
-            f"*By environment:*\n" + "\n".join(env_lines) + "\n\n"
-            f"*Top failing suites:* {top_fail_txt}"
-            + dash_line
-          )
-
-          print("HAS_DATA=true")
-          print("MSG<<EOF")
-          print(msg)
-          print("EOF")
+          out_path = os.environ["GITHUB_OUTPUT"]
+          with open(out_path, "a", encoding="utf-8") as out:
+            out.write("MSG<<EOF\n")
+            out.write(msg + "\n")
+            out.write("EOF\n")
           PY
-        env:
-          DASHBOARD_URL: ${{ vars.AUTOMATION_DASHBOARD_URL }}
 
       - name: Post/Update digest message in Slack (single pinned-style message)
         env:
