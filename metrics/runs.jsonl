@@ -79,3 +79,57 @@
     "charts_dir": "slack_charts"
   }
 }
+{
+  "timestamp_utc": "2026-01-27T16:59:14.136376+00:00",
+  "suite": "Python Request API",
+  "env": "india",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21406313935",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21406313935",
+    "workflow": "Python Request API",
+    "sha": "5065f967194518a85013058e4c30d2575734f4d8",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
+{
+  "timestamp_utc": "2026-01-27T16:59:03.612720+00:00",
+  "suite": "Python Request API",
+  "env": "production",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21406313935",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21406313935",
+    "workflow": "Python Request API",
+    "sha": "5065f967194518a85013058e4c30d2575734f4d8",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
