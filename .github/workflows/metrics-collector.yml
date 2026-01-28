@@ -42,8 +42,7 @@ concurrency:
 
 jobs:
   collect:
-    # ✅ Only after the full workflow run completes (not per job),
-    # or manual ingest when run_id is provided
+    # Only after workflow_run completes, or manual ingest when run_id is provided
     if: >
       (github.event_name == 'workflow_run'
         && github.event.action == 'completed'
@@ -139,7 +138,7 @@ jobs:
             exit 0
           fi
 
-      - name: Commit dataset update
+      - name: Commit dataset update (DO NOT commit site/)
         if: ${{ steps.dl.outputs.FOUND == 'true' }}
         run: |
           git config user.name "metrics-bot"
@@ -149,10 +148,12 @@ jobs:
           git push origin metrics
 
   publish_dashboard:
-    # Rebuild & publish the site after dataset updates (only when collect ran + dataset found)
     needs: collect
-    if: ${{ needs.collect.result == 'success' && (github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && inputs.run_id != '')) }}
+    # also allow schedule/manual to publish even if no ingestion happened
+    if: ${{ always() }}
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
 
     steps:
       - name: Checkout metrics branch
@@ -164,20 +165,23 @@ jobs:
       - name: Build site artifact for GitHub Pages
         run: |
           mkdir -p site/data
+          # ensure file exists for first run
+          if [ ! -f "metrics/runs.jsonl" ]; then
+            mkdir -p metrics
+            touch metrics/runs.jsonl
+          fi
           cp metrics/runs.jsonl site/data/runs.jsonl
 
           if [ -d "dashboard" ]; then
-            echo "Dashboard folder found. Building site."
             cp -r dashboard/* site/
           else
-            echo "No dashboard folder present. Creating placeholder index."
             cat > site/index.html <<'HTML'
           <!doctype html>
           <html>
             <head><meta charset="utf-8"><title>Automation Dashboard</title></head>
             <body>
               <h2>Automation Dashboard</h2>
-              <p>Dashboard assets not found in this branch yet.</p>
+              <p>dashboard/index.html not found.</p>
             </body>
           </html>
           HTML
@@ -189,6 +193,7 @@ jobs:
           path: site
 
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
 
   daily_digest:
@@ -239,7 +244,7 @@ jobs:
             msg = "📊 *Daily Automation Dashboard* (last 24h)\nNo runs recorded in the last 24 hours."
           else:
             total_runs = len(runs)
-            pass_runs = sum(1 for r in runs if r.get("status") == "pass")
+            pass_runs = sum(1 for r in runs if (r.get("status","").lower() == "pass"))
             fail_runs = total_runs - pass_runs
 
             by_env = defaultdict(lambda: {"runs":0, "pass":0, "fail":0, "reruns":0})
@@ -248,7 +253,7 @@ jobs:
             for r in runs:
               env = r.get("env","unknown")
               suite = r.get("suite","unknown")
-              status = r.get("status","unknown")
+              status = r.get("status","unknown").lower()
               by_env[env]["runs"] += 1
               if status == "pass":
                 by_env[env]["pass"] += 1
@@ -282,7 +287,7 @@ jobs:
             out.write("EOF\n")
           PY
 
-      - name: Post/Update digest message in Slack (single pinned-style message)
+      - name: Post/Update digest message in Slack (single message)
         env:
           SLACK_QA_BOT_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
