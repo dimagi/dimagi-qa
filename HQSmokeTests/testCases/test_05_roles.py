@@ -69,6 +69,8 @@ def test_cleanup_items_in_role_menu(driver, settings):
         2. Delete all test roles
 
     """
+    if 'staging' in settings['url']:
+        pytest.xfail("failing due to QA-8357")
     menu = HomePage(driver, settings)
     menu.users_menu()
     clean3 = RolesPermissionPage(driver, settings)

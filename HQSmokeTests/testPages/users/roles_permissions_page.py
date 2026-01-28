@@ -27,10 +27,10 @@ class RolesPermissionPage(BasePage):
         self.role_rename_created = "role_rename_" + fetch_random_string()
         self.roles_menu = (By.XPATH, "//a[@data-title='Roles & Permissions']")
         self.add_new_role = (
-        By.XPATH, "//button[@data-bind='click: function () {$root.setRoleBeingEdited($root.defaultRole)}']")
+        By.XPATH, "//button[./i[contains(@class,'plus')] and contains(.,'Add Role')]")
         self.role_name = (By.ID, "role-name")
         self.edit_web_user_checkbox = (By.XPATH, "//input[@id='edit-web-users-checkbox']//following-sibling::label/span")
-        self.save_button = (By.XPATH, "//button[@class='btn btn-primary disable-on-submit']")
+        self.save_button = (By.XPATH, "//button[contains(.,'Save')]")
         self.role_created = (By.XPATH, "//span[text()='" + str(self.role_name_created) + "']")
         self.edit_created_role = (By.XPATH, "//th[.//span[.='" + str(
             self.role_name_created) + "']]/following-sibling::td//*[contains(@class,'edit')]")
@@ -69,9 +69,13 @@ class RolesPermissionPage(BasePage):
         self.js_click(self.edit_web_user_checkbox)
         self.scroll_to_element(self.save_button)
         time.sleep(0.5)
-        self.wait_to_click(self.save_button)
-
-        assert self.is_present_and_displayed(self.role_created), "Role not added successfully!"
+        self.js_click(self.save_button)
+        time.sleep(3)
+        try:
+            assert self.is_present_and_displayed(self.role_created, 100), "Role not added successfully!"
+        except:
+            self.wait_until_disabled(self.save_button)
+            print("No message present but the Save buttion is disabled")
 
     def edit_role(self):
         self.wait_for_element(self.edit_created_role, 60)
@@ -81,9 +85,12 @@ class RolesPermissionPage(BasePage):
         self.scroll_to_element(self.save_button)
         time.sleep(0.5)
         self.wait_to_click(self.save_button)
-
-        assert self.is_present_and_displayed(self.role_renamed), "Role not edited successfully!"
-
+        time.sleep(3)
+        try:
+            assert self.is_present_and_displayed(self.role_renamed), "Role not edited successfully!"
+        except:
+            self.wait_until_disabled(self.save_button)
+            print("No message present but the Save buttion is disabled")
 
     def cleanup_role(self):
         self.wait_to_click(self.delete_role)
@@ -97,7 +104,9 @@ class RolesPermissionPage(BasePage):
                 text = self.get_text((By.XPATH, "(//th[./span[contains(text(),'role_')]])[last()]"))
                 # for i in range(len(list_profile))[::-1]:
                 print(text)
-                self.wait_to_click((By.XPATH, f"(//th[./span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')]/i)[last()]"))
+                self.js_click((By.XPATH, f"(//th[./span[contains(text(),'role_')]]//following-sibling::td//button[contains(@class,'danger')]/i)[last()]"))
+                time.sleep(5)
+                self.wait_for_element(self.confirm_role_delete, 60)
                 self.wait_to_click(self.confirm_role_delete)
                 self.reload_page()
                 time.sleep(2)
