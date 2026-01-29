@@ -225,9 +225,39 @@
   async function load(){
     const res = await fetch("./data/runs.jsonl", { cache: "no-store" });
     const txt = await res.text();
-    ALL = txt.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
-      try { return JSON.parse(l); } catch(e){ return null; }
-    }).filter(Boolean);
+    ALL = txt
+  .split("\n")
+  .map(l => l.trim())
+  .filter(Boolean)
+  .map(l => {
+    try {
+      const r = JSON.parse(l);
+
+      return {
+        ...r,
+
+        // 🔑 normalize meta
+        env: r.env || r.environment || r._meta?.environment || "unknown",
+        suite: r.suite || r.workflow || r.testsuite || r._meta?.workflow_name || "unknown",
+
+        // 🔑 normalize counts
+        fail_count: r.fail_count ?? r.failed ?? 0,
+        pass_count: r.pass_count ?? r.passed ?? 0,
+        skip_count: r.skip_count ?? r.skipped ?? 0,
+        rerun_count: r.rerun_count ?? r.reruns ?? 0,
+
+        // 🔑 normalize status
+        status: r.status || (r.failed > 0 ? "fail" : "pass"),
+
+        // 🔑 normalize timestamp
+        timestamp_utc: r.timestamp_utc || r.timestamp || r.time || null,
+      };
+    } catch (e) {
+      return null;
+    }
+  })
+  .filter(Boolean);
+
 
     // Build dropdown options from data
     const suites = uniq(ALL.map(r => (r.suite || r.workflow || r.testsuite || "unknown")));
