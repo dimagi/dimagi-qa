@@ -1,11 +1,8 @@
 name: Metrics Collector
 
 on:
-  # ✅ Auto-trigger ONLY when a whole workflow run completes (not per job)
   workflow_run:
     workflows:
-      # Put the exact workflow names you want to track here
-      # (the "name:" at the top of those workflow yml files)
       - "HQ Smoke Tests"
       - "Python Request API"
       - "CO BHA Smoke Tests"
@@ -22,21 +19,19 @@ on:
       - "Power BI Tests"
     types: [completed]
 
-  # ✅ Manual trigger (optionally provide run_id, otherwise it will ingest latest N runs)
   workflow_dispatch:
     inputs:
       run_id:
-        description: "GitHub Actions run_id to ingest (optional). If blank, ingests latest N completed runs."
+        description: "Optional: specific run_id"
         required: false
         default: ""
       latest_runs:
-        description: "If run_id is blank, ingest this many latest completed runs"
+        description: "If run_id blank, ingest latest N runs"
         required: false
         default: "10"
 
-  # ✅ Daily run (updates dataset + pages + posts digest)
   schedule:
-    - cron: "30 18 * * *"  # 12:00 AM IST (18:30 UTC)
+    - cron: "30 18 * * *" # 12:00 AM IST
 
 permissions:
   contents: write
@@ -51,8 +46,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    outputs:
-      INGESTED: ${{ steps.ingestlist.outputs.INGESTED }}
+
     steps:
       - name: Checkout metrics branch
         uses: actions/checkout@v4
@@ -60,181 +54,128 @@ jobs:
           ref: metrics
           fetch-depth: 0
 
-      # -------- Determine which run_ids to ingest --------
-      - name: Build list of run_ids to ingest
-        id: ingestlist
+      - name: Build list of run_ids
+        id: ingest
         uses: actions/github-script@v7
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // If workflow_run trigger: ingest that completed run
             if (context.eventName === "workflow_run") {
-              const rid = context.payload.workflow_run?.id;
-              core.info(`workflow_run trigger -> ingest run_id=${rid}`);
-              core.setOutput("INGESTED", JSON.stringify([rid]));
+              core.setOutput("ids", JSON.stringify([context.payload.workflow_run.id]));
               return;
             }
 
-            // If workflow_dispatch and run_id provided: ingest that
-            const inputRunId = (core.getInput("run_id") || "").trim();
-            if (inputRunId) {
-              core.info(`workflow_dispatch -> ingest run_id=${inputRunId}`);
-              core.setOutput("INGESTED", JSON.stringify([Number(inputRunId)]));
+            const rid = (core.getInput("run_id") || "").trim();
+            if (rid) {
+              core.setOutput("ids", JSON.stringify([Number(rid)]));
               return;
             }
 
-            // Else: ingest latest N completed runs across repo (default 10)
-            const latestRuns = Number(core.getInput("latest_runs") || "10");
-            core.info(`No run_id provided -> ingest latest ${latestRuns} completed runs`);
-
+            const n = Number(core.getInput("latest_runs") || "10");
             const res = await github.rest.actions.listWorkflowRunsForRepo({
-              owner, repo,
-              status: "completed",
-              per_page: latestRuns
+              owner, repo, status: "completed", per_page: n
             });
+            core.setOutput("ids", JSON.stringify(res.data.workflow_runs.map(r => r.id)));
 
-            const runIds = res.data.workflow_runs.map(r => r.id);
-            core.setOutput("INGESTED", JSON.stringify(runIds));
-
-      # -------- Download ALL run-summary-* artifacts from each run_id --------
-      - name: Download run-summary artifacts (all envs) for each run_id
+      - name: Download run-summary artifacts
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require("fs");
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            const runIds = JSON.parse(`${{ steps.ingestlist.outputs.INGESTED }}`);
+            const ids = JSON.parse(`${{ steps.ingest.outputs.ids }}`);
             fs.mkdirSync("incoming", { recursive: true });
 
-            for (const runId of runIds) {
-              core.info(`Listing artifacts for run_id=${runId}`);
-              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-                owner, repo, run_id: runId
+            for (const id of ids) {
+              const arts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: id
               });
 
-              const targets = artifacts.data.artifacts
-                .filter(a => a.name && a.name.startsWith("run-summary"));
-
-              if (!targets.length) {
-                core.warning(`No run-summary* artifacts found for run_id=${runId}`);
-                continue;
-              }
-
-              for (const a of targets) {
-                core.info(`Downloading artifact ${a.name} (id=${a.id})`);
+              for (const a of arts.data.artifacts.filter(x => x.name.startsWith("run-summary"))) {
                 const dl = await github.rest.actions.downloadArtifact({
-                  owner, repo, artifact_id: a.id, archive_format: "zip"
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: a.id,
+                  archive_format: "zip"
                 });
-                const out = `incoming/${runId}__${a.name}.zip`;
-                fs.writeFileSync(out, Buffer.from(dl.data));
+                fs.writeFileSync(`incoming/${id}__${a.name}.zip`, Buffer.from(dl.data));
               }
             }
 
       - name: Unzip artifacts
         run: |
           set -e
-          shopt -s nullglob
           for z in incoming/*.zip; do
             d="${z%.zip}"
             mkdir -p "$d"
             unzip -o "$z" -d "$d" >/dev/null
           done
 
-      # -------- Append JSON (one line per env summary) into metrics/runs.jsonl --------
       - name: Append to metrics dataset
         run: |
           set -e
           mkdir -p metrics
           touch metrics/runs.jsonl
 
-          # Find any run_summary.json inside extracted zips
-          found=0
           while IFS= read -r f; do
-            found=1
-            # Normalize to single-line JSON and append
-            python - <<'PY' "$f" >> metrics/runs.jsonl
-            import json, sys
-            path = sys.argv[1]
-            with open(path, "r", encoding="utf-8") as fh:
-                obj = json.load(fh)
-            print(json.dumps(obj, ensure_ascii=False))
-            PY
-          done < <(find incoming -type f -name "run_summary.json" | sort)
+            parent="$(basename "$(dirname "$f")")"
+            env="${parent#*__run-summary-}"
+            [ "$env" = "$parent" ] && env="unknown"
 
-          if [ "$found" -eq 0 ]; then
-            echo "No run_summary.json files found in downloaded artifacts."
-            exit 1
-          fi
+            python - "$f" "$env" >> metrics/runs.jsonl <<'PY'
+          import json, sys
+          path = sys.argv[1]
+          env  = sys.argv[2]
 
-      - name: Commit and push metrics dataset
+          with open(path, "r", encoding="utf-8") as fh:
+              obj = json.load(fh)
+
+          obj.setdefault("env", env)
+          obj.setdefault("environment", env)
+
+          print(json.dumps(obj, ensure_ascii=False))
+          PY
+          done < <(find incoming -name "run_summary.json" | sort)
+
+      - name: Commit and push
         run: |
-          set -e
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
-
           git add metrics/runs.jsonl
-          git commit -m "Metrics update (${GITHUB_RUN_ID})" || echo "No changes to commit"
+          git commit -m "Metrics update (${GITHUB_RUN_ID})" || echo "No changes"
           git push origin metrics
 
   publish_dashboard:
     needs: collect
     runs-on: ubuntu-latest
-    if: ${{ always() }}
     environment:
       name: github-pages
     steps:
-      - name: Checkout metrics branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: metrics
-          fetch-depth: 0
 
-      - name: Build site (dashboard + data)
-        run: |
-          set -e
+      - run: |
           rm -rf site
           mkdir -p site/data
-
-          # Dashboard HTML -> site root
           cp dashboard/index.html site/index.html
-
-          # Data file used by dashboard -> /data/runs.jsonl
           cp metrics/runs.jsonl site/data/runs.jsonl
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
 
   daily_digest:
-    needs: [collect, publish_dashboard]
+    needs: publish_dashboard
+    if: ${{ github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     steps:
-      - name: Checkout metrics branch
-        uses: actions/checkout@v4
-        with:
-          ref: metrics
-
-      # ✅ Only one Slack post (prevents duplicates)
-      - name: Post Daily Digest to Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          set -e
-          if [ -z "${SLACK_WEBHOOK_URL}" ]; then
-            echo "SLACK_WEBHOOK_URL not set; skipping Slack post."
-            exit 0
-          fi
-
-          # Simple default message (replace later with richer stats)
-          curl -s -X POST -H 'Content-type: application/json' \
-            --data '{"text":"📊 Daily Automation Dashboard updated. Open the dashboard: https://dimagi.github.io/dimagi-qa/"}' \
-            "${SLACK_WEBHOOK_URL}"
+      - run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"📊 QA Automation Dashboard updated\nhttps://dimagi.github.io/dimagi-qa/"}' \
+          "${{ secrets.SLACK_WEBHOOK_URL }}"
