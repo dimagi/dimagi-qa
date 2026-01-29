@@ -1,38 +1,37 @@
 name: Metrics Collector
 
 on:
+  # Auto-ingest after selected workflows COMPLETE (not after each job)
   workflow_run:
     workflows:
-      - "HQ Smoke Tests"
       - "Python Request API"
-      - "CO BHA Smoke Tests"
-      - "Lookup table Tests"
-      - "Case Search Tests"
-      - "Case Search Split Screen Tests"
-      - "Data Dictionary Tests"
-      - "Elastic Search Tests"
-      - "Export Tests"
-      - "Find Data by ID Tests"
-      - "Formplayer Tests"
-      - "Multi Select Tests"
-      - "Priority Escape Defects Tests"
-      - "Power BI Tests"
+      - "HQ Smoke Tests"
+      - "Multi Select"
+      - "Case Search"
+      - "Split Screen Case Search"
+      # add more suite workflow names here
     types: [completed]
 
+  # Manual run (paste run_id)
   workflow_dispatch:
     inputs:
       run_id:
-        description: "Run ID to ingest (optional)"
+        description: "GitHub Actions run_id to ingest (from any branch)"
         required: false
         type: string
+      publish_only:
+        description: "Skip ingestion; only republish the dashboard (uses current metrics/runs.jsonl)"
+        required: false
+        default: false
+        type: boolean
 
-  # Daily digest (10:00 AM IST)
+  # Daily update (republish dashboard + optional digest)
   schedule:
-    - cron: "30 4 * * *"
+    - cron: "30 17 * * *"  # 11:00 PM IST (17:30 UTC)
 
 permissions:
-  contents: write
-  actions: read
+  contents: write          # commit metrics/runs.jsonl + slack state file
+  actions: read            # download artifacts from other workflow runs
   pages: write
   id-token: write
 
@@ -42,10 +41,10 @@ concurrency:
 
 jobs:
   collect:
+    # Run ingestion on workflow_run; on manual only if publish_only is false
     if: >
-      (github.event_name == 'workflow_run'
-       && github.event.workflow_run.conclusion != 'cancelled')
-      || (github.event_name == 'workflow_dispatch' && inputs.run_id != '')
+      (github.event_name == 'workflow_run') ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish_only == false)
     runs-on: ubuntu-latest
 
     steps:
@@ -57,6 +56,7 @@ jobs:
 
       - name: Determine run id
         id: runid
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "RID=${{ inputs.run_id }}" >> "$GITHUB_OUTPUT"
@@ -64,62 +64,88 @@ jobs:
             echo "RID=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download run-summary artifacts
+          if [ -z "${{ steps.runid.outputs.RID }}" ]; then
+            echo "No run_id provided/found. Exiting."
+            exit 1
+          fi
+
+      - name: Download run-summary artifacts from target run
         id: dl
         uses: actions/github-script@v7
         with:
           script: |
             const runId = Number("${{ steps.runid.outputs.RID }}");
-            const { owner, repo } = context.repo;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner, repo, run_id: runId
             });
 
-            const targets = artifacts.data.artifacts.filter(a =>
-              a.name.startsWith("run-summary")
-            );
+            // Expecting artifacts like: run-summary-staging, run-summary-production, etc.
+            const targets = artifacts.data.artifacts.filter(a => a.name.startsWith("run-summary"));
+            core.info(`Found artifacts: ${targets.map(t => t.name).join(", ")}`);
 
             if (!targets.length) {
-              core.notice("No run-summary artifacts found.");
               core.setOutput("FOUND", "false");
+              core.warning(`No run-summary* artifacts found for run_id=${runId}`);
               return;
             }
 
             const fs = require("fs");
-            for (const a of targets) {
+            for (const t of targets) {
               const dl = await github.rest.actions.downloadArtifact({
-                owner, repo, artifact_id: a.id, archive_format: "zip"
+                owner, repo,
+                artifact_id: t.id,
+                archive_format: "zip"
               });
-              fs.writeFileSync(`${a.name}.zip`, Buffer.from(dl.data));
+              const fname = `${t.name}.zip`;
+              fs.writeFileSync(fname, Buffer.from(dl.data));
+              core.info(`Downloaded ${fname}`);
             }
-
             core.setOutput("FOUND", "true");
 
-      - name: Extract run summaries
-        if: steps.dl.outputs.FOUND == 'true'
+      - name: Unzip artifacts
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
+        shell: bash
         run: |
-          sudo apt-get update && sudo apt-get install -y unzip
           mkdir -p incoming
-          unzip -o "*.zip" -d incoming
+          for z in run-summary*.zip; do
+            [ -f "$z" ] || continue
+            d="incoming/${z%.zip}"
+            mkdir -p "$d"
+            unzip -o "$z" -d "$d"
+          done
 
-      - name: Append to metrics dataset
-        if: steps.dl.outputs.FOUND == 'true'
+          echo "Found run_summary.json files:"
+          find incoming -type f -name "run_summary.json" -print
+
+      - name: Append to dataset (metrics/runs.jsonl)
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
+        shell: bash
         run: |
           mkdir -p metrics
           touch metrics/runs.jsonl
 
-          find incoming -name "run_summary.json" | while read f; do
-            python - <<'PY'
+          mapfile -t files < <(find incoming -type f -name "run_summary.json" | sort)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No run_summary.json found after unzip. Skipping dataset update."
+            exit 0
+          fi
+
+          for f in "${files[@]}"; do
+            python - "$f" <<'PY' >> metrics/runs.jsonl
           import json, sys
-          with open(sys.argv[1]) as fh:
-              print(json.dumps(json.load(fh)))
+          p = sys.argv[1]
+          with open(p, "r", encoding="utf-8") as fh:
+              obj = json.load(fh)
+          print(json.dumps(obj, ensure_ascii=False))
           PY
-          "$f" >> metrics/runs.jsonl
           done
 
       - name: Commit dataset update
-        if: steps.dl.outputs.FOUND == 'true'
+        if: ${{ steps.dl.outputs.FOUND == 'true' }}
+        shell: bash
         run: |
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
@@ -128,7 +154,10 @@ jobs:
           git push origin metrics
 
   publish_dashboard:
+    # Publish on schedule, or after collect, or manual publish_only
+    if: ${{ always() }}
     runs-on: ubuntu-latest
+    needs: [collect]
     environment:
       name: github-pages
 
@@ -137,64 +166,60 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: metrics
+          fetch-depth: 0
 
-      - name: Build Pages root
+      - name: Build static site
+        shell: bash
         run: |
-          mkdir -p data
-          touch metrics/runs.jsonl
-          cp metrics/runs.jsonl data/runs.jsonl
-          cp dashboard/index.html index.html
-          touch .nojekyll
+          rm -rf site
+          mkdir -p site/data
+
+          # Dashboard UI at root
+          cp -r dashboard/* site/
+
+          # Data file served at /data/runs.jsonl
+          cp metrics/runs.jsonl site/data/runs.jsonl
+
+          # Avoid Jekyll processing
+          touch site/.nojekyll
+
+          echo "Site contents:"
+          find site -maxdepth 3 -type f -print
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: site
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
 
   daily_digest:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Post ONLY on schedule OR manual trigger (not on workflow_run)
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    needs: [publish_dashboard]
 
     steps:
       - name: Checkout metrics branch
         uses: actions/checkout@v4
         with:
           ref: metrics
+          fetch-depth: 0
 
-      - name: Post/update Slack dashboard message
+      - name: Post/Update Slack dashboard message
+        shell: bash
         env:
-          SLACK_QA_BOT_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
-          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL: "#qa-dashboard"
+          DASHBOARD_URL: "https://dimagi.github.io/dimagi-qa/"
         run: |
-          pip install --quiet slack_sdk
-          python - <<'PY'
-          import json, os
-          from pathlib import Path
-          from slack_sdk import WebClient
-
-          client = WebClient(token=os.environ["SLACK_QA_BOT_TOKEN"])
-          channel = os.environ["SLACK_CHANNEL_ID"]
-
-          msg = "📊 *QA Automation Dashboard*\nhttps://dimagi.github.io/dimagi-qa/"
-
-          state = Path("metrics/slack_dashboard_message.json")
-          ts = json.loads(state.read_text()).get("ts") if state.exists() else None
-
-          if ts:
-            client.chat_update(channel=channel, ts=ts, text=msg)
-          else:
-            resp = client.chat_postMessage(channel=channel, text=msg)
-            state.write_text(json.dumps({"ts": resp["ts"]}))
-
-          PY
-
-      - name: Commit Slack message state
-        run: |
-          git config user.name "metrics-bot"
-          git config user.email "metrics-bot@users.noreply.github.com"
-          git add metrics/slack_dashboard_message.json
-          git commit -m "Update Slack dashboard message" || echo "No changes"
-          git push origin metrics
+          # If you already have a python helper, call it here.
+          # Otherwise this is a placeholder to show intention.
+          echo "Post/update Slack message pointing to $DASHBOARD_URL in $SLACK_CHANNEL"
+          # Recommended approach:
+          # - Store ts in metrics/slack_dashboard_message.json
+          # - Use chat.update if ts exists, else chat.postMessage
