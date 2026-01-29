@@ -376,3 +376,111 @@
     "charts_dir": "slack_charts"
   }
 }
+{
+  "timestamp_utc": "2026-01-28T09:08:30.419506+00:00",
+  "suite": "Python Request API",
+  "env": "production",
+  "trigger": "manual",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21431959939",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21431959939",
+    "workflow": "Python Request API",
+    "sha": "6683fc202d39c5ca12e25924b599046381544d97",
+    "ref": "QA-8350-poc-and-implementation-of-a-1-stop-dashboard-metrics-for-better-automation-results-visibility",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
+{
+  "timestamp_utc": "2026-01-29T08:44:08.064958+00:00",
+  "suite": "Python Request API",
+  "env": "india",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21471396982",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21471396982",
+    "workflow": "Python Request API",
+    "sha": "b228c9ca8e26337a37b2169cbdb1d0fe98029a17",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
+{
+  "timestamp_utc": "2026-01-29T08:44:38.436535+00:00",
+  "suite": "Python Request API",
+  "env": "production",
+  "trigger": "other",
+  "status": "pass",
+  "total": 33,
+  "passed": 32,
+  "failed": 0,
+  "skipped": 1,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 0,
+  "github": {
+    "run_id": "21471396982",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21471396982",
+    "workflow": "Python Request API",
+    "sha": "b228c9ca8e26337a37b2169cbdb1d0fe98029a17",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
+{
+  "timestamp_utc": "2026-01-29T08:46:25.239924+00:00",
+  "suite": "Python Request API",
+  "env": "staging",
+  "trigger": "other",
+  "status": "fail",
+  "total": 33,
+  "passed": 28,
+  "failed": 1,
+  "skipped": 4,
+  "error": 0,
+  "xfail": 0,
+  "xpassed": 0,
+  "rerun_count": 1,
+  "github": {
+    "run_id": "21471396982",
+    "run_url": "https://github.com/dimagi/dimagi-qa/actions/runs/21471396982",
+    "workflow": "Python Request API",
+    "sha": "b228c9ca8e26337a37b2169cbdb1d0fe98029a17",
+    "ref": "417/merge",
+    "actor": "kbo001"
+  },
+  "links": {
+    "pytest_html_artifact": "pytest-html-report",
+    "charts_dir": "slack_charts"
+  }
+}
