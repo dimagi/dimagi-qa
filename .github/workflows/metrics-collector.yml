@@ -157,12 +157,12 @@ jobs:
             found=1
             # Normalize to single-line JSON and append
             python - <<'PY' "$f" >> metrics/runs.jsonl
-import json, sys
-path = sys.argv[1]
-with open(path, "r", encoding="utf-8") as fh:
-    obj = json.load(fh)
-print(json.dumps(obj, ensure_ascii=False))
-PY
+            import json, sys
+            path = sys.argv[1]
+            with open(path, "r", encoding="utf-8") as fh:
+                obj = json.load(fh)
+            print(json.dumps(obj, ensure_ascii=False))
+            PY
           done < <(find incoming -type f -name "run_summary.json" | sort)
 
           if [ "$found" -eq 0 ]; then
