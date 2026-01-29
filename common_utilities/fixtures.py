@@ -383,5 +383,5 @@ def write_run_summary_json(
                 }
             }
 
-        out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        out.write_text(json.dumps(payload) + "\n", encoding="utf-8")
         print(f"✅ Run summary written: {out}")
