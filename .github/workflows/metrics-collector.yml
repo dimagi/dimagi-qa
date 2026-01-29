@@ -172,10 +172,110 @@ jobs:
 
   daily_digest:
     needs: publish_dashboard
-    if: ${{ github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"📊 QA Automation Dashboard updated\nhttps://dimagi.github.io/dimagi-qa/"}' \
-          "${{ secrets.SLACK_WEBHOOK_URL }}"
+      - uses: actions/checkout@v4
+        with:
+          ref: metrics
+          fetch-depth: 0
+
+      - name: Build Slack summary from metrics
+        id: summary
+        run: |
+          python <<'PY'
+          import json, datetime
+          from collections import defaultdict
+  
+          now = datetime.datetime.utcnow()
+          cutoff = now - datetime.timedelta(hours=24)
+  
+          env_stats = defaultdict(lambda: {"pass": 0, "fail": 0})
+          total = 0
+  
+          with open("metrics/runs.jsonl") as f:
+            for line in f:
+              r = json.loads(line)
+              ts = r.get("timestamp_utc")
+              if not ts:
+                continue
+  
+              t = datetime.datetime.fromisoformat(ts.replace("Z","+00:00"))
+              if t < cutoff:
+                continue
+  
+              env = r.get("env") or r.get("environment") or "unknown"
+              status = (r.get("status") or "").lower()
+  
+              total += 1
+              if status == "pass":
+                env_stats[env]["pass"] += 1
+              else:
+                env_stats[env]["fail"] += 1
+  
+          lines = [
+            f"• {env} → ✅ {s['pass']} pass | ❌ {s['fail']} fail"
+            for env, s in env_stats.items()
+          ]
+  
+          fail_total = sum(v["fail"] for v in env_stats.values())
+          fail_rate = round((fail_total / total * 100), 1) if total else 0
+  
+          text = (
+            "📊 *QA Automation Dashboard (last 24h)*\n\n"
+            "*Environment summary:*\n"
+            + ("\n".join(lines) if lines else "_No runs in last 24h_")
+            + f"\n\nRuns: *{total}*\n"
+            + f"Fail rate: *{fail_rate}%*\n\n"
+            + "🔗 https://dimagi.github.io/dimagi-qa/"
+          )
+  
+          print(text)
+          PY > slack_message.txt
+
+      - name: Post or update Slack message
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+        run: |
+          set -e
+          MESSAGE="$(cat slack_message.txt)"
+  
+          STATE_FILE="metrics/slack_state.json"
+          mkdir -p metrics
+          [ -f "$STATE_FILE" ] || echo "{}" > "$STATE_FILE"
+  
+          TS=$(jq -r '.dashboard_message_ts // empty' "$STATE_FILE")
+  
+          if [ -n "$TS" ]; then
+            echo "Updating existing Slack message $TS"
+            RESP=$(curl -s -X POST https://slack.com/api/chat.update \
+              -H "Authorization: Bearer $SLACK_TOKEN" \
+              -H "Content-type: application/json" \
+              --data "$(jq -n \
+                --arg channel "$CHANNEL_ID" \
+                --arg ts "$TS" \
+                --arg text "$MESSAGE" \
+                '{channel:$channel, ts:$ts, text:$text}')")
+          else
+            echo "Posting new Slack message"
+            RESP=$(curl -s -X POST https://slack.com/api/chat.postMessage \
+              -H "Authorization: Bearer $SLACK_TOKEN" \
+              -H "Content-type: application/json" \
+              --data "$(jq -n \
+                --arg channel "$CHANNEL_ID" \
+                --arg text "$MESSAGE" \
+                '{channel:$channel, text:$text}')")
+  
+            TS=$(echo "$RESP" | jq -r '.ts')
+            jq --arg ts "$TS" '.dashboard_message_ts=$ts' "$STATE_FILE" > tmp.json
+            mv tmp.json "$STATE_FILE"
+          fi
+
+      - name: Commit Slack state
+        run: |
+          git config user.name "metrics-bot"
+          git config user.email "metrics-bot@users.noreply.github.com"
+          git add metrics/slack_state.json
+          git commit -m "Update Slack dashboard message state" || echo "No changes"
+          git push origin metrics
+  
