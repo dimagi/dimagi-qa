@@ -113,6 +113,12 @@ class BasePage:
                                                                         )
             # self.wait_after_interaction()
 
+    @retry_on_exception((StaleElementReferenceException, TimeoutException))
+    def wait_until_disabled(self, locator, timeout=30):
+        WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+            lambda d: not d.find_element(*locator).is_enabled(),
+            message=f"Element did not become disabled: {locator}"
+            )
 
     @retry_on_exception((StaleElementReferenceException, TimeoutException))
     def wait_and_sleep_to_click(self, locator, timeout=20):
