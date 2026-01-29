@@ -166,7 +166,7 @@ jobs:
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
       - name: Set slack vars
-        if: ${{ always() }}
+        if: ${{ (success() || failure()) && !cancelled() }}
         id: configure_slack
         uses: actions/github-script@v6
         env:

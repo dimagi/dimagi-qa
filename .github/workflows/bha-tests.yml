@@ -186,7 +186,7 @@ jobs:
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
       - name: Set slack vars
-        if: ${{ always() }}
+        if: ${{ (success() || failure()) && !cancelled() }}
         id: configure_slack
         uses: actions/github-script@v6
         env:
@@ -225,7 +225,7 @@ jobs:
 
 
       - name: Upload Combined Chart to Slack
-        if: ${{ (success() || failure()) && steps.configure_slack.outputs.SLACK_CHANNEL_ID != '' }}
+        if: ${{ (success() || failure()) && !cancelled() && steps.configure_slack.outputs.SLACK_CHANNEL_ID != '' }}
         env:
           SLACK_QA_BOT_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ steps.configure_slack.outputs.SLACK_CHANNEL_ID }}
