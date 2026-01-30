@@ -106,6 +106,7 @@ def pytest_sessionfinish(session, exitstatus):
         "reruns": len(tr.stats.get("rerun", [])),
     }
     save_summary_charts(_test_stats)
+    write_run_summary_json(_test_stats)
 
 import base64
 

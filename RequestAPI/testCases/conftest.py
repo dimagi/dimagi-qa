@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 
+from common_utilities.fixtures import write_run_summary_json
 
 """"This file provides fixture functions for driver initialization"""
 
@@ -113,6 +114,7 @@ def pytest_sessionfinish(session, exitstatus):
         "reruns": len(tr.stats.get("rerun", [])),
     }
     save_summary_charts(_test_stats)
+    write_run_summary_json(_test_stats)
 
 import base64
 
