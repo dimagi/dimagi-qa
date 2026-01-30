@@ -213,7 +213,7 @@ jobs:
       - name: Build Slack summary from metrics
         id: summary
         run: |
-          python <<'PY'
+          cat > slack_summary.py <<'EOF'
           import json
           import datetime
           from collections import defaultdict
@@ -265,8 +265,17 @@ jobs:
               + "🔗 https://dimagi.github.io/dimagi-qa/"
           )
 
-          print(f"SLACK_TEXT<<EOF\n{text}\nEOF")
-          PY >> "$GITHUB_OUTPUT"
+          print(text)
+          EOF
+
+          SLACK_TEXT="$(python slack_summary.py)"
+
+          {
+            echo "SLACK_TEXT<<EOF"
+            echo "$SLACK_TEXT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      
 
       - name: Post or update Slack message
         env:
