@@ -224,50 +224,50 @@ daily_digest:
     - name: Build Slack summary
       run: |
         python - <<'PY'
-import json, datetime
-from collections import defaultdict
-
-now = datetime.datetime.now(datetime.timezone.utc)
-cutoff = now - datetime.timedelta(hours=24)
-
-stats = defaultdict(lambda: {"pass": 0, "fail": 0})
-total = 0
-
-with open("metrics/runs.jsonl", encoding="utf-8") as f:
-    for line in f:
-        r = json.loads(line)
-        ts = r.get("timestamp_utc")
-        if not ts:
-            continue
-
-        t = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        if t < cutoff:
-            continue
-
-        env = r.get("env") or r.get("environment") or "unknown"
-        total += 1
-
-        if (r.get("status") or "").lower() == "pass":
-            stats[env]["pass"] += 1
-        else:
-            stats[env]["fail"] += 1
-
-lines = [f"• *{e}* → ✅ {v['pass']} | ❌ {v['fail']}" for e, v in stats.items()]
-fail_total = sum(v["fail"] for v in stats.values())
-fail_rate = round((fail_total / total * 100), 1) if total else 0
-
-message = (
-    "📊 *QA Automation Dashboard (last 24h)*\n\n"
-    "*Environment summary:*\n"
-    + ("\n".join(lines) if lines else "_No runs in last 24h_")
-    + f"\n\n• Runs: *{total}*\n"
-    + f"• Fail rate: *{fail_rate}%*\n\n"
-    + "🔗 https://dimagi.github.io/dimagi-qa/"
-)
-
-with open("slack_message.txt", "w", encoding="utf-8") as f:
-    f.write(message)
-PY
+        import json, datetime
+        from collections import defaultdict
+    
+        now = datetime.datetime.now(datetime.timezone.utc)
+        cutoff = now - datetime.timedelta(hours=24)
+    
+        stats = defaultdict(lambda: {"pass": 0, "fail": 0})
+        total = 0
+    
+        with open("metrics/runs.jsonl", encoding="utf-8") as f:
+            for line in f:
+                r = json.loads(line)
+                ts = r.get("timestamp_utc")
+                if not ts:
+                    continue
+    
+                t = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                if t < cutoff:
+                    continue
+    
+                env = r.get("env") or r.get("environment") or "unknown"
+                total += 1
+    
+                if (r.get("status") or "").lower() == "pass":
+                    stats[env]["pass"] += 1
+                else:
+                    stats[env]["fail"] += 1
+    
+        lines = [f"• *{e}* → ✅ {v['pass']} | ❌ {v['fail']}" for e, v in stats.items()]
+        fail_total = sum(v["fail"] for v in stats.values())
+        fail_rate = round((fail_total / total * 100), 1) if total else 0
+    
+        message = (
+            "📊 *QA Automation Dashboard (last 24h)*\n\n"
+            "*Environment summary:*\n"
+            + ("\n".join(lines) if lines else "_No runs in last 24h_")
+            + f"\n\n• Runs: *{total}*\n"
+            + f"• Fail rate: *{fail_rate}%*\n\n"
+            + "🔗 https://dimagi.github.io/dimagi-qa/"
+        )
+    
+        with open("slack_message.txt", "w", encoding="utf-8") as f:
+            f.write(message)
+        PY
 
     - name: Post Slack update
       run: |
