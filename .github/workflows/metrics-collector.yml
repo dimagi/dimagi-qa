@@ -108,37 +108,68 @@ jobs:
       - name: Unzip artifacts
         run: |
           set -e
-          for z in incoming/*.zip; do
+          shopt -s nullglob
+          files=(incoming/*.zip)
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No run-summary artifacts found. Skipping unzip."
+            exit 0
+          fi
+
+          for z in "${files[@]}"; do
             d="${z%.zip}"
             mkdir -p "$d"
             unzip -o "$z" -d "$d" >/dev/null
           done
 
-      - name: Append to metrics dataset
+      - name: Append to metrics dataset (deduped)
         run: |
           set -e
           mkdir -p metrics
           touch metrics/runs.jsonl
 
-          while IFS= read -r f; do
-            parent="$(basename "$(dirname "$f")")"
-            env="${parent#*__run-summary-}"
-            [ "$env" = "$parent" ] && env="unknown"
+          python <<'PY'
+          import json, os
 
-            python - "$f" "$env" >> metrics/runs.jsonl <<'PY'
-          import json, sys
-          path = sys.argv[1]
-          env  = sys.argv[2]
+          existing = {}
+          if os.path.exists("metrics/runs.jsonl"):
+              with open("metrics/runs.jsonl") as f:
+                  for line in f:
+                      try:
+                          r = json.loads(line)
+                          key = (r.get("run_id"), r.get("env") or r.get("environment"))
+                          existing[key] = r
+                      except:
+                          pass
 
-          with open(path, "r", encoding="utf-8") as fh:
-              obj = json.load(fh)
+          added = 0
 
-          obj.setdefault("env", env)
-          obj.setdefault("environment", env)
+          for root, _, files in os.walk("incoming"):
+              for name in files:
+                  if name == "run_summary.json":
+                      path = os.path.join(root, name)
 
-          print(json.dumps(obj, ensure_ascii=False))
+                      parent = os.path.basename(os.path.dirname(path))
+                      env = parent.split("__run-summary-")[-1] if "__run-summary-" in parent else "unknown"
+
+                      with open(path) as fh:
+                          obj = json.load(fh)
+
+                      obj.setdefault("env", env)
+                      obj.setdefault("environment", env)
+
+                      key = (obj.get("run_id"), env)
+                      if key not in existing:
+                          existing[key] = obj
+                          added += 1
+
+          with open("metrics/runs.jsonl", "w") as out:
+              for r in sorted(existing.values(), key=lambda x: x.get("timestamp_utc", "")):
+                  out.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+          print(f"Added {added} new runs")
           PY
-          done < <(find incoming -name "run_summary.json" | sort)
+      
 
       - name: Commit and push
         run: |
