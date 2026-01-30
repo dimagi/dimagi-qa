@@ -36,6 +36,8 @@ permissions:
   contents: write
   actions: read
   pages: write
+  id-token: write
+
 
 concurrency:
   group: metrics-collector
@@ -64,9 +66,16 @@ jobs:
             const repo = context.repo.repo;
 
             if (context.eventName === "workflow_run") {
-              core.setOutput("ids", JSON.stringify([context.payload.workflow_run.id]));
+              const run = context.payload.workflow_run;
+              if (run.conclusion !== "success" && run.conclusion !== "failure") {
+                core.info("Skipping non-completed run");
+                core.setOutput("ids", JSON.stringify([]));
+                return;
+              }
+              core.setOutput("ids", JSON.stringify([run.id]));
               return;
             }
+
 
             const limit = Number(core.getInput("latest_runs") || "10");
             const res = await github.rest.actions.listWorkflowRunsForRepo({
