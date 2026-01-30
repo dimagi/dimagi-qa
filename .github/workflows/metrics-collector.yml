@@ -19,27 +19,23 @@ on:
       - "Power BI Tests"
     types: [completed]
     branches:
-      - master   # 🔒 CRITICAL
+      - master
+
 
   workflow_dispatch:
     inputs:
-      run_id:
-        description: "Optional: specific run_id"
-        required: false
-        default: ""
       latest_runs:
-        description: "If run_id blank, ingest latest N runs"
+        description: "Ingest latest N completed runs"
         required: false
         default: "10"
 
   schedule:
-    - cron: "30 18 * * *" # 12:00 AM IST
+    - cron: "30 18 * * *"   # 12:00 AM IST
 
 permissions:
   contents: write
   actions: read
   pages: write
-  id-token: write
 
 concurrency:
   group: metrics-collector
@@ -47,18 +43,81 @@ concurrency:
 
 jobs:
   collect:
-    runs-on: ubuntu-latest
     if: >
       github.event_name != 'workflow_run' ||
-      github.event.workflow_run.name != 'Metrics Collector'
+      github.event.workflow_run.conclusion != 'skipped'
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout metrics branch
+        uses: actions/checkout@v4
         with:
           ref: metrics
           fetch-depth: 0
 
-      # --- ingest, download, unzip steps unchanged ---
+      - name: Resolve run IDs to ingest
+        id: runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            if (context.eventName === "workflow_run") {
+              core.setOutput("ids", JSON.stringify([context.payload.workflow_run.id]));
+              return;
+            }
+
+            const limit = Number(core.getInput("latest_runs") || "10");
+            const res = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              status: "completed",
+              per_page: limit,
+            });
+
+            core.setOutput("ids", JSON.stringify(res.data.workflow_runs.map(r => r.id)));
+
+      - name: Download run-summary artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const ids = JSON.parse(`${{ steps.runs.outputs.ids }}`);
+            fs.mkdirSync("incoming", { recursive: true });
+
+            for (const runId of ids) {
+              const arts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: runId,
+              });
+
+              for (const a of arts.data.artifacts.filter(x => x.name.startsWith("run-summary"))) {
+                const zip = await github.rest.actions.downloadArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: a.id,
+                  archive_format: "zip",
+                });
+                fs.writeFileSync(`incoming/${runId}__${a.name}.zip`, Buffer.from(zip.data));
+              }
+            }
+
+      - name: Unzip artifacts (safe)
+        run: |
+          shopt -s nullglob
+          found=false
+          for z in incoming/*.zip; do
+            found=true
+            d="${z%.zip}"
+            mkdir -p "$d"
+            unzip -o "$z" -d "$d" >/dev/null
+          done
+          if [ "$found" = false ]; then
+            echo "No artifacts to unzip"
+          fi
+      
 
       - name: Append to metrics dataset (deduped)
         run: |
@@ -68,46 +127,57 @@ jobs:
 
           python <<'PY'
           import json, os
-
-          existing = {}
+          
+          existing_ids = set()
           if os.path.exists("metrics/runs.jsonl"):
               with open("metrics/runs.jsonl") as f:
                   for line in f:
-                      r = json.loads(line)
-                      key = (r.get("run_id"), r.get("env"))
-                      existing[key] = r
-
+                      try:
+                          obj = json.loads(line)
+                          rid = (
+                              obj.get("github", {}).get("run_id")
+                              or obj.get("run_id")
+                          )
+                          if rid:
+                              existing_ids.add(str(rid))
+                      except Exception:
+                          pass
+          
           added = 0
-          for root, _, files in os.walk("incoming"):
-              for name in files:
-                  if name == "run_summary.json":
-                      path = os.path.join(root, name)
-                      parent = os.path.basename(os.path.dirname(path))
-                      env = parent.split("__run-summary-")[-1]
-
-                      with open(path) as fh:
-                          obj = json.load(fh)
-
-                      obj.setdefault("env", env)
-                      key = (obj.get("run_id"), env)
-
-                      if key not in existing:
-                          existing[key] = obj
+          with open("metrics/runs.jsonl", "a", encoding="utf-8") as out:
+              for root, _, files in os.walk("incoming"):
+                  for name in files:
+                      if name == "run_summary.json":
+                          path = os.path.join(root, name)
+                          with open(path, encoding="utf-8") as fh:
+                              obj = json.load(fh)
+          
+                          rid = (
+                              obj.get("github", {}).get("run_id")
+                              or obj.get("run_id")
+                          )
+          
+                          if not rid:
+                              continue
+          
+                          rid = str(rid)
+                          if rid in existing_ids:
+                              continue
+          
+                          out.write(json.dumps(obj, ensure_ascii=False) + "\n")
+                          existing_ids.add(rid)
                           added += 1
-
-          with open("metrics/runs.jsonl", "w") as out:
-              for r in sorted(existing.values(), key=lambda x: x.get("timestamp_utc", "")):
-                  out.write(json.dumps(r) + "\n")
-
+          
           print(f"Added {added} new runs")
+
           PY
 
-      - name: Commit and push
+      - name: Commit metrics
         run: |
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
           git add metrics/runs.jsonl
-          git commit -m "Metrics update (${GITHUB_RUN_ID})" || echo "No changes"
+          git commit -m "Metrics update ${GITHUB_RUN_ID}" || echo "No new metrics"
           git push origin metrics
 
   publish_dashboard:
@@ -115,6 +185,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -135,126 +206,65 @@ jobs:
   daily_digest:
     needs: publish_dashboard
     runs-on: ubuntu-latest
-    steps:
-      # Slack summary + update logic (unchanged, now correct)
 
+    steps:
       - uses: actions/checkout@v4
         with:
           ref: metrics
-          fetch-depth: 0
 
-      - name: Build Slack summary from metrics
-        id: summary
+      - name: Build Slack summary
+        id: slack
         run: |
-          cat > slack_summary.py <<'EOF'
-          import json
-          import datetime
+          python <<'PY'
+          import json, datetime
           from collections import defaultdict
 
           now = datetime.datetime.now(datetime.timezone.utc)
           cutoff = now - datetime.timedelta(hours=24)
 
-          env_stats = defaultdict(lambda: {"pass": 0, "fail": 0})
+          stats = defaultdict(lambda: {"pass":0,"fail":0})
           total = 0
 
-          with open("metrics/runs.jsonl", encoding="utf-8") as f:
-              for line in f:
-                  r = json.loads(line)
+          with open("metrics/runs.jsonl") as f:
+            for line in f:
+              r = json.loads(line)
+              ts = r.get("timestamp_utc")
+              if not ts:
+                continue
+              t = datetime.datetime.fromisoformat(ts.replace("Z","+00:00"))
+              if t < cutoff:
+                continue
 
-                  ts = r.get("timestamp_utc")
-                  if not ts:
-                      continue
+              env = r.get("env","unknown")
+              total += 1
+              if (r.get("status","").lower() == "pass"):
+                stats[env]["pass"] += 1
+              else:
+                stats[env]["fail"] += 1
 
-                  try:
-                      t = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                  except Exception:
-                      continue
+          lines = [f"• *{e}* → ✅ {v['pass']} | ❌ {v['fail']}" for e,v in stats.items()]
+          fail = sum(v["fail"] for v in stats.values())
+          rate = round((fail/total*100),1) if total else 0
 
-                  if t < cutoff:
-                      continue
-
-                  env = r.get("env") or r.get("environment") or "unknown"
-                  status = (r.get("status") or "").lower()
-
-                  total += 1
-                  if status == "pass":
-                      env_stats[env]["pass"] += 1
-                  else:
-                      env_stats[env]["fail"] += 1
-
-          lines = []
-          for env, s in sorted(env_stats.items()):
-              lines.append(f"• *{env}* → ✅ {s['pass']} | ❌ {s['fail']}")
-
-          fail_total = sum(v["fail"] for v in env_stats.values())
-          fail_rate = round((fail_total / total * 100), 1) if total else 0
-
-          text = (
-              "📊 *QA Automation Dashboard (last 24h)*\n\n"
-              "*Environment summary:*\n"
-              + ("\n".join(lines) if lines else "_No runs in last 24h_")
-              + f"\n\n• Runs: *{total}*\n"
-              + f"• Fail rate: *{fail_rate}%*\n\n"
-              + "🔗 https://dimagi.github.io/dimagi-qa/"
+          msg = (
+            "📊 *QA Automation Dashboard (last 24h)*\n\n"
+            "*Environment summary:*\n" +
+            ("\n".join(lines) if lines else "_No runs in last 24h_") +
+            f"\n\n• Runs: *{total}*\n• Fail rate: *{rate}%*\n\n"
+            "🔗 https://dimagi.github.io/dimagi-qa/"
           )
 
-          print(text)
-          EOF
+          print(msg)
+          PY > slack_message.txt
 
-          SLACK_TEXT="$(python slack_summary.py)"
-
-          {
-            echo "SLACK_TEXT<<EOF"
-            echo "$SLACK_TEXT"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-      
-
-      - name: Post or update Slack message
-        env:
-          SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
-          MESSAGE: ${{ steps.summary.outputs.SLACK_TEXT }}
+      - name: Post Slack update (replace previous)
         run: |
-          set -e
+          curl -s -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer ${{ secrets.SLACK_QA_BOT_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data "$(jq -n \
+              --arg channel "${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}" \
+              --arg text "$(cat slack_message.txt)" \
+              '{channel:$channel,text:$text}')"
 
-          STATE_FILE="metrics/slack_state.json"
-          mkdir -p metrics
-          [ -f "$STATE_FILE" ] || echo "{}" > "$STATE_FILE"
-
-          TS=$(jq -r '.dashboard_message_ts // empty' "$STATE_FILE")
-
-          if [ -n "$TS" ]; then
-            echo "Updating existing Slack message $TS"
-            RESP=$(curl -s -X POST https://slack.com/api/chat.update \
-              -H "Authorization: Bearer $SLACK_TOKEN" \
-              -H "Content-type: application/json" \
-              --data "$(jq -n \
-                --arg channel "$CHANNEL_ID" \
-                --arg ts "$TS" \
-                --arg text "$MESSAGE" \
-                '{channel:$channel, ts:$ts, text:$text}')")
-          else
-            echo "Posting new Slack message"
-            RESP=$(curl -s -X POST https://slack.com/api/chat.postMessage \
-              -H "Authorization: Bearer $SLACK_TOKEN" \
-              -H "Content-type: application/json" \
-              --data "$(jq -n \
-                --arg channel "$CHANNEL_ID" \
-                --arg text "$MESSAGE" \
-                '{channel:$channel, text:$text}')")
-
-            TS=$(echo "$RESP" | jq -r '.ts')
-            jq --arg ts "$TS" '.dashboard_message_ts=$ts' "$STATE_FILE" > tmp.json
-            mv tmp.json "$STATE_FILE"
-          fi
-      
-
-      - name: Commit Slack state
-        run: |
-          git config user.name "metrics-bot"
-          git config user.email "metrics-bot@users.noreply.github.com"
-          git add metrics/slack_state.json || true
-          git commit -m "Update Slack dashboard message state" || echo "No changes"
-          git push origin metrics
   
