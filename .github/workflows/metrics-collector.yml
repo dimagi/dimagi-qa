@@ -109,8 +109,8 @@ jobs:
         run: |
           set -e
           shopt -s nullglob
-          files=(incoming/*.zip)
 
+          files=(incoming/*.zip)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No run-summary artifacts found. Skipping unzip."
             exit 0
@@ -121,6 +121,7 @@ jobs:
             mkdir -p "$d"
             unzip -o "$z" -d "$d" >/dev/null
           done
+      
 
       - name: Append to metrics dataset (deduped)
         run: |
@@ -281,16 +282,16 @@ jobs:
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+          MESSAGE: ${{ steps.summary.outputs.SLACK_TEXT }}
         run: |
           set -e
-          MESSAGE="$(cat slack_message.txt)"
-  
+
           STATE_FILE="metrics/slack_state.json"
           mkdir -p metrics
           [ -f "$STATE_FILE" ] || echo "{}" > "$STATE_FILE"
-  
+
           TS=$(jq -r '.dashboard_message_ts // empty' "$STATE_FILE")
-  
+
           if [ -n "$TS" ]; then
             echo "Updating existing Slack message $TS"
             RESP=$(curl -s -X POST https://slack.com/api/chat.update \
@@ -310,17 +311,18 @@ jobs:
                 --arg channel "$CHANNEL_ID" \
                 --arg text "$MESSAGE" \
                 '{channel:$channel, text:$text}')")
-  
+
             TS=$(echo "$RESP" | jq -r '.ts')
             jq --arg ts "$TS" '.dashboard_message_ts=$ts' "$STATE_FILE" > tmp.json
             mv tmp.json "$STATE_FILE"
           fi
+      
 
       - name: Commit Slack state
         run: |
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
-          git add metrics/slack_state.json
+          git add metrics/slack_state.json || true
           git commit -m "Update Slack dashboard message state" || echo "No changes"
           git push origin metrics
   
