@@ -7,10 +7,15 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; color:#111; }
-    h1 { margin: 0 0 10px; font-size: 42px; letter-spacing: -0.5px; }
-    h2 { margin: 26px 0 12px; font-size: 28px; }
-    .subtle { color:#666; margin: 6px 0 18px; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 24px;
+      color: #111;
+    }
+
+    h1 { font-size: 30px; margin-bottom: 6px; }
+    h2 { font-size: 20px; margin: 18px 0 10px; }
+    .subtle { color: #666; margin-bottom: 16px; }
 
     .error {
       display:none;
@@ -24,30 +29,75 @@
     }
 
     .filters { display:flex; flex-wrap: wrap; gap:16px; align-items:center; margin: 10px 0 18px; }
-    .filters label { display:flex; gap:8px; align-items:center; font-size: 18px; }
-    select { padding: 8px 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 12px; background:#fff; }
+    .filters label { display:flex; gap:8px; align-items:center; font-size: 14px; }
+    select { padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 12px; background:#fff; }
 
-    .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin: 12px 0 22px; }
-    .card { border:1px solid #ddd; border-radius: 16px; padding: 16px; }
-    .card h3 { margin:0; font-size: 18px; font-weight: 500; color:#666; }
-    .card .value { margin-top: 8px; font-size: 42px; font-weight: 700; line-height: 1; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .card h3 {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      margin: 0;
+    }
+    .card .value {
+      font-size: 21px;  /* reduced from 25 */
+      font-weight: 750;
+      margin-top: 6px;
+      letter-spacing: 0.2px;
+    }
 
-    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-    @media(max-width: 1000px){ .grid2{ grid-template-columns: 1fr; } }
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    @media (max-width: 1000px) {
+      .grid2 { grid-template-columns: 1fr; }
+    }
 
-    .box { border:1px solid #eee; border-radius: 18px; padding: 16px; background:#fff; }
-    .box h2 { margin-top: 0; }
+    .box {
+      border: 1px solid #eee;
+      border-radius: 18px;
+      padding: 16px;
+      background: #fff;
+    }
 
-    canvas { width: 100% !important; height: 320px !important; }
-    .pieWrap { max-width: 520px; margin: 0 auto; } /* reduces pie section width */
-    #envPie { height: 260px !important; }          /* reduces pie chart height */
+    canvas {
+      width: 100% !important;
+      height: 320px !important;
+    }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 16px; }
-    th { text-align:left; background: #fafafa; font-weight: 650; }
-    a { color:#2563eb; text-decoration:none; }
+    .pieWrap { max-width: 520px; margin: auto; }
+    #envPie { height: 240px !important; } /* slightly smaller pie */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+    th {
+      background: #fafafa;
+      font-weight: 600;
+      text-align: left;
+    }
+    a { color: #2563eb; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .muted { color:#777; }
+    .muted { color: #777; }
   </style>
 </head>
 
@@ -72,8 +122,10 @@
 
     <label>Time window:
       <select id="timeFilter">
-        <option value="7">Last 7d</option>
+        <option value="1">Last 24h</option>
+        <option value="7" selected>Last 7d</option>
         <option value="30">Last 30d</option>
+        <option value="60">Last 60d</option>
         <option value="90">Last 90d</option>
         <option value="all">All</option>
       </select>
@@ -169,9 +221,31 @@
   </div>
 
 <script>
-  // Colors
-  const PASS_BLUE = "#3b82f6";   // lighter "pie chart blue"
+  // --- Core colors
+  // (using the lighter blue you liked)
+  const PASS_BLUE = "#3b82f6";  // lighter, clean blue
   const FAIL_RED  = "#e53935";
+
+  // Stable palette for suites (reused across charts)
+  const SUITE_COLORS = [
+    "#3b82f6","#22c55e","#f59e0b","#a855f7",
+    "#06b6d4","#ef4444","#84cc16","#ec4899",
+    "#0ea5e9","#fb7185","#10b981","#f97316"
+  ];
+
+  // Slimmer bars + tighter spacing
+  const BAR_OPTS = {
+    barThickness: 16,
+    maxBarThickness: 18,
+    categoryPercentage: 0.58,
+    barPercentage: 0.85
+  };
+
+  // Shared axis styling (smaller ticks, less padding)
+  const AXIS_TICKS = {
+    font: { size: 11 },
+    padding: 2
+  };
 
   const $ = (id) => document.getElementById(id);
   const errBox = $("err");
@@ -207,8 +281,7 @@
   }
 
   function fillSelect(selectEl, values) {
-    // keep first option "All"
-    const keepFirst = selectEl.options[0];
+    const keepFirst = selectEl.options[0]; // "All"
     selectEl.innerHTML = "";
     selectEl.add(keepFirst);
 
@@ -251,6 +324,14 @@
     return Math.round(x * 10) / 10;
   }
 
+  // Deterministic suite -> color
+  function suiteColor(name) {
+    const s = String(name || "unknown");
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return SUITE_COLORS[h % SUITE_COLORS.length];
+  }
+
   // ---- Rendering
   function renderKPIs(d) {
     $("runsCount").textContent = d.length;
@@ -282,8 +363,7 @@
         datasets: [{
           data: totals,
           backgroundColor: labels.map((_, i) => {
-            // Simple pleasant palette (keeps pass blue + fail red available)
-            const palette = [PASS_BLUE, "#f59e0b", "#fb7185", "#22c55e", "#a78bfa", "#06b6d4", "#84cc16", "#ef4444"];
+            const palette = [PASS_BLUE, "#f59e0b", "#fb7185", "#22c55e", "#a78bfa", "#06b6d4", "#84cc16", FAIL_RED];
             return palette[i % palette.length];
           }),
           borderColor: "#fff",
@@ -303,7 +383,7 @@
               }
             }
           },
-          legend: { position: "bottom" }
+          legend: { position: "bottom", labels: { font: { size: 11 } } }
         }
       }
     });
@@ -334,14 +414,19 @@
           borderColor: FAIL_RED,
           backgroundColor: "transparent",
           pointBackgroundColor: FAIL_RED,
+          pointRadius: 3,
+          pointHoverRadius: 4,
           tension: 0.2
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" } },
-        scales: { y: { beginAtZero: true } }
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
+        scales: {
+          x: { ticks: AXIS_TICKS },
+          y: { beginAtZero: true, ticks: AXIS_TICKS }
+        }
       }
     });
   }
@@ -367,15 +452,21 @@
       data: {
         labels: suites,
         datasets: [
-          { label: "Passed runs", data: suites.map(s => m[s].p), backgroundColor: PASS_BLUE },
-          { label: "Failed runs", data: suites.map(s => m[s].f), backgroundColor: FAIL_RED }
+          { label: "Passed runs", data: suites.map(s => m[s].p), backgroundColor: PASS_BLUE, ...BAR_OPTS },
+          { label: "Failed runs", data: suites.map(s => m[s].f), backgroundColor: FAIL_RED, ...BAR_OPTS }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" } },
-        scales: { y: { beginAtZero: true } }
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
+        scales: {
+          x: {
+            stacked: false,
+            ticks: { ...AXIS_TICKS, maxRotation: 0, minRotation: 0 }
+          },
+          y: { beginAtZero: true, ticks: AXIS_TICKS }
+        }
       }
     });
   }
@@ -403,14 +494,18 @@
         datasets: [{
           label: "Failed runs",
           data: suites.length ? vals : [0],
-          backgroundColor: FAIL_RED
+          backgroundColor: suites.length ? suites.map(suiteColor) : [FAIL_RED],
+          ...BAR_OPTS
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" } },
-        scales: { y: { beginAtZero: true } }
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
+        scales: {
+          x: { ticks: { ...AXIS_TICKS, maxRotation: 0, minRotation: 0 } },
+          y: { beginAtZero: true, ticks: AXIS_TICKS }
+        }
       }
     });
   }
@@ -437,7 +532,7 @@
     if (!quarters.length) {
       draw("suiteQuarterCompare", {
         type:"bar",
-        data:{ labels:["No data"], datasets:[{label:"Fail rate (%)", data:[0], backgroundColor: FAIL_RED}] },
+        data:{ labels:["No data"], datasets:[{label:"Fail rate (%)", data:[0], backgroundColor: FAIL_RED, ...BAR_OPTS}] },
         options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}, scales:{y:{beginAtZero:true}} }
       });
       return;
@@ -457,14 +552,18 @@
           datasets: [{
             label: `${selectedSuite} fail rate (%)`,
             data: rates,
-            backgroundColor: FAIL_RED
+            backgroundColor: suiteColor(selectedSuite),
+            ...BAR_OPTS
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: "bottom" } },
-          scales: { y: { beginAtZero: true } }
+          plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
+          scales: {
+            x: { ticks: AXIS_TICKS },
+            y: { beginAtZero: true, ticks: AXIS_TICKS }
+          }
         }
       });
       return;
@@ -483,7 +582,6 @@
       .slice(0, 8)
       .map(([s]) => s);
 
-    // If no failures, still show 0s for top by run count
     if (!topSuites.length) {
       const byRuns = Object.entries(per).map(([s, byQ]) => {
         let t = 0;
@@ -494,14 +592,14 @@
     }
 
     // Stacked datasets: each suite across quarters (fail rate %)
-    const palette = ["#3b82f6","#60a5fa","#93c5fd","#a78bfa","#22c55e","#f59e0b","#fb7185","#06b6d4"];
-    const datasets = topSuites.map((s, i) => ({
+    const datasets = topSuites.map((s) => ({
       label: s,
       data: quarters.map(q => {
         const v = (per[s] && per[s][q]) ? per[s][q] : {t:0,f:0};
         return v.t ? formatPct((v.f/v.t)*100) : 0;
       }),
-      backgroundColor: palette[i % palette.length]
+      backgroundColor: suiteColor(s),
+      ...BAR_OPTS
     }));
 
     draw("suiteQuarterCompare", {
@@ -510,8 +608,11 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom" } },
-        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
+        scales: {
+          x: { stacked: true, ticks: AXIS_TICKS },
+          y: { stacked: true, beginAtZero: true, ticks: AXIS_TICKS }
+        }
       }
     });
   }
@@ -579,14 +680,12 @@
     fillSelect($("envFilter"), envs);
     fillSelect($("quarterFilter"), qs);
 
-    // Re-render on filter changes
     ["suiteFilter","envFilter","timeFilter","quarterFilter"].forEach(id => {
       $(id).addEventListener("change", () => renderAll());
     });
   }
 
   async function loadData() {
-    // cache-bust to avoid old jsonl being served
     const url = "data/runs.jsonl?v=" + Date.now();
 
     let text;
