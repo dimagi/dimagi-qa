@@ -27,11 +27,11 @@ on:
       latest_runs:
         description: "Ingest latest N completed runs"
         required: false
-        default: "10"
+        default: "30"
       cleanup_slack:
         description: "Delete all old QA-Bot messages in dashboard channel"
         required: false
-        default: "false"
+        default: "true"
 
 
   schedule:
