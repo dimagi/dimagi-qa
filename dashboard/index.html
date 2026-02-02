@@ -13,9 +13,13 @@
     @media(min-width: 980px){ .grid { grid-template-columns: 1fr 1fr; } }
     select { padding:8px; border-radius:10px; border:1px solid #ccc; }
     h2 { margin: 0 0 10px; }
+    h3 { margin: 0 0 10px; }
     canvas { background:#fff; border:1px solid #eee; border-radius:12px; padding:10px; }
     table { width:100%; border-collapse:collapse; }
-    th, td { padding:8px; border-bottom:1px solid #eee; text-align:left; font-size: 14px; }
+    th, td { padding:8px; border-bottom:1px solid #eee; text-align:left; font-size: 14px; vertical-align: top; }
+    a { color:#0b63ce; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .muted { color:#666; font-size: 13px; line-height:1.5; }
   </style>
 </head>
 <body>
@@ -36,116 +40,120 @@
         <option value="all">All</option>
       </select>
     </label>
+    <label>Quarter:
+      <select id="quarter">
+        <option value="all" selected>All</option>
+      </select>
+    </label>
   </div>
 
   <div class="row" id="cards" style="margin-bottom:16px;"></div>
 
-  <div class="grid">
+  <!-- Pie: env total share with pass/fail in labels + Quarterly trend -->
+  <div class="grid" style="margin-bottom:16px;">
     <div>
-      <h3>Pass/Fail by Environment</h3>
-      <canvas id="envBar" height="130"></canvas>
+      <h3>Pass vs Fail by Environment (runs)</h3>
+      <canvas id="envPie" height="150"></canvas>
+      <div class="muted" style="margin-top:8px;">
+        Pie slice size = total runs per environment in current filters. Labels show ✅/❌ split.
+      </div>
     </div>
     <div>
-      <h3>Fail Rate Trend (daily)</h3>
-      <canvas id="trend" height="130"></canvas>
+      <h3>Quarterly trend</h3>
+      <canvas id="quarterTrend" height="150"></canvas>
     </div>
   </div>
 
-  <div class="grid" style="margin-top:16px;">
+  <!-- Suitewise pass/fail stacked + Daily trend -->
+  <div class="grid" style="margin-bottom:16px;">
+    <div>
+      <h3>Pass / Fail by Suite (runs)</h3>
+      <canvas id="suiteBar" height="150"></canvas>
+      <div class="muted" style="margin-top:8px;">
+        Shows top 10 suites by total runs in current filters.
+      </div>
+    </div>
+    <div>
+      <h3>Fail Rate Trend (daily)</h3>
+      <canvas id="trend" height="150"></canvas>
+    </div>
+  </div>
+
+  <!-- Per-suite quarterly comparison + Top failing suites -->
+  <div class="grid" style="margin-bottom:16px;">
+    <div>
+      <h3>Per-suite quarterly comparison</h3>
+      <div class="muted" style="margin-bottom:10px;">
+        If Suite = <b>All</b>, shows top 8 suites by failures across quarters (stacked). If a suite is selected, shows that suite’s quarterly fail count.
+      </div>
+      <canvas id="suiteQuarter" height="170"></canvas>
+    </div>
     <div>
       <h3>Top Failing Suites</h3>
-      <canvas id="topSuites" height="140"></canvas>
+      <canvas id="topSuites" height="170"></canvas>
     </div>
-    <div>
-      <h3>Recent Runs (filtered)</h3>
-      <table>
-        <thead><tr><th>Time</th><th>Env</th><th>Suite</th><th>Status</th><th>Fail</th><th>Reruns</th></tr></thead>
-        <tbody id="runs"></tbody>
-      </table>
-    </div>
+  </div>
+
+  <!-- Failed runs table -->
+  <div style="margin-bottom:16px;">
+    <h3>❌ Failed Runs (click to open GitHub run)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Quarter</th>
+          <th>Env</th>
+          <th>Suite</th>
+          <th>Fail</th>
+          <th>Run</th>
+        </tr>
+      </thead>
+      <tbody id="failedRuns"></tbody>
+    </table>
+  </div>
+
+  <!-- Recent runs -->
+  <div>
+    <h3>Recent Runs (filtered)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Quarter</th>
+          <th>Env</th>
+          <th>Suite</th>
+          <th>Status</th>
+          <th>Fail</th>
+          <th>Reruns</th>
+        </tr>
+      </thead>
+      <tbody id="runs"></tbody>
+    </table>
   </div>
 
 <script>
   let ALL = [];
   let charts = {};
 
-  function parseIso(ts){
-    // expects ISO; supports "...Z"
-    return new Date(ts);
-  }
-
-  function withinWindow(run, win){
-    if(win === "all") return true;
-    const now = new Date();
-    const t = parseIso(run.timestamp_utc || run.timestamp || run.time || "");
-    if(isNaN(t.getTime())) return true; // if missing timestamp, don't drop it
-    const ms = now - t;
-    const limits = { "24h": 24*3600e3, "7d": 7*24*3600e3, "30d": 30*24*3600e3 };
-    return ms <= limits[win];
-  }
-
+  // ---------- helpers ----------
+  function parseIso(ts){ return ts ? new Date(ts) : new Date("invalid"); }
   function uniq(arr){ return [...new Set(arr)].sort(); }
 
-  function getFiltered(){
-    const suite = document.getElementById("suite").value;
-    const env = document.getElementById("env").value;
-    const win = document.getElementById("window").value;
-
-    return ALL.filter(r => {
-      if(!withinWindow(r, win)) return false;
-      if(env !== "All" && (r.env || r.environment) !== env) return false;
-      if(suite !== "All" && (r.suite || r.workflow || r.testsuite) !== suite) return false;
-      return true;
-    }).sort((a,b) => (parseIso(b.timestamp_utc||"") - parseIso(a.timestamp_utc||"")));
+  function quarterKey(ts){
+    const d = parseIso(ts);
+    if(isNaN(d.getTime())) return "unknown";
+    const y = d.getUTCFullYear();
+    const q = Math.floor(d.getUTCMonth()/3) + 1;
+    return `${y}-Q${q}`;
   }
 
-  function sum(obj, k){ return (obj[k]||0); }
-
-  function renderCards(rows){
-    const runs = rows.length;
-    const passRuns = rows.filter(r => (r.status||"").toLowerCase() === "pass").length;
-    const failRuns = runs - passRuns;
-
-    const totalFail = rows.reduce((acc,r)=> acc + Number(r.fail_count || r.failed || r.failures || 0), 0);
-    const totalPass = rows.reduce((acc,r)=> acc + Number(r.pass_count || r.passed || 0), 0);
-    const totalSkip = rows.reduce((acc,r)=> acc + Number(r.skip_count || r.skipped || 0), 0);
-    const reruns = rows.reduce((acc,r)=> acc + Number(r.rerun_count || r.reruns || 0), 0);
-
-    const cards = [
-      ["Runs", runs],
-      ["✅ Passed runs", passRuns],
-      ["❌ Failed runs", failRuns],
-      ["Fail count (events)", totalFail],
-      ["Pass count", totalPass],
-      ["Skip count", totalSkip],
-      ["Reruns", reruns],
-    ];
-
-    const el = document.getElementById("cards");
-    el.innerHTML = "";
-    for(const [k,v] of cards){
-      const c = document.createElement("div");
-      c.className = "card";
-      c.innerHTML = `<div style="font-size:13px;color:#666">${k}</div><div style="font-size:24px;font-weight:700">${v}</div>`;
-      el.appendChild(c);
-    }
-  }
-
-  function renderEnvBar(rows){
-    const envs = uniq(rows.map(r => (r.env||r.environment||"unknown")));
-    const pass = envs.map(e => rows.filter(r => (r.env||r.environment)===e && (r.status||"").toLowerCase()==="pass").length);
-    const fail = envs.map(e => rows.filter(r => (r.env||r.environment)===e && (r.status||"").toLowerCase()!=="pass").length);
-
-    const ctx = document.getElementById("envBar");
-    charts.envBar?.destroy();
-    charts.envBar = new Chart(ctx, {
-      type: "bar",
-      data: { labels: envs, datasets: [
-        { label:"Passed runs", data: pass },
-        { label:"Failed runs", data: fail },
-      ]},
-      options: { responsive:true, plugins:{legend:{position:"bottom"}}, scales:{x:{stacked:true}, y:{stacked:true, beginAtZero:true}} }
-    });
+  function withinWindow(r, w){
+    if(w==="all") return true;
+    const t = parseIso(r.timestamp_utc);
+    if(isNaN(t.getTime())) return true;
+    const diff = Date.now() - t.getTime();
+    const limits = { "24h": 24*3600e3, "7d": 7*24*3600e3, "30d": 30*24*3600e3 };
+    return diff <= limits[w];
   }
 
   function dayKey(ts){
@@ -154,127 +162,403 @@
     return d.toISOString().slice(0,10);
   }
 
+  function ensureChartDestroy(key){
+    if(charts[key]) { charts[key].destroy(); charts[key] = null; }
+  }
+
+  function getBaseFiltered(){
+    const s = suiteSel.value;
+    const e = envSel.value;
+    const w = windowSel.value;
+
+    return ALL.filter(r => {
+      if(!withinWindow(r,w)) return false;
+      if(s !== "All" && r.suite !== s) return false;
+      if(e !== "All" && r.env !== e) return false;
+      return true;
+    });
+  }
+
+  function getFiltered(){
+    const q = quarterSel.value;
+    return getBaseFiltered()
+      .filter(r => (q === "all" ? true : r.quarter === q))
+      .sort((a,b) => parseIso(b.timestamp_utc) - parseIso(a.timestamp_utc));
+  }
+
+  function runLink(r){
+    const runUrl = (r.github && r.github.run_url) ||
+      ((r.github && r.github.run_id) ? `https://github.com/dimagi/dimagi-qa/actions/runs/${r.github.run_id}` : "");
+    return runUrl || "";
+  }
+
+  // ---------- cards ----------
+  function renderCards(rows){
+    const runs = rows.length;
+    const passRuns = rows.filter(r => r.status === "pass").length;
+    const failRuns = runs - passRuns;
+
+    const totalFail = rows.reduce((acc,r)=> acc + r.fail_count, 0);
+    const totalPass = rows.reduce((acc,r)=> acc + r.pass_count, 0);
+    const totalSkip = rows.reduce((acc,r)=> acc + r.skip_count, 0);
+    const reruns = rows.reduce((acc,r)=> acc + r.rerun_count, 0);
+
+    const cards = [
+      ["Runs", runs],
+      ["✅ Passed runs", passRuns],
+      ["❌ Failed runs", failRuns],
+      ["Fail count", totalFail],
+      ["Pass count", totalPass],
+      ["Skip count", totalSkip],
+      ["Reruns", reruns],
+    ];
+
+    cardsEl.innerHTML = "";
+    for(const [k,v] of cards){
+      const c = document.createElement("div");
+      c.className = "card";
+      c.innerHTML = `<div style="font-size:13px;color:#666">${k}</div><div style="font-size:24px;font-weight:700">${v}</div>`;
+      cardsEl.appendChild(c);
+    }
+  }
+
+  // ---------- NEW: Env Pie ----------
+  function renderEnvPie(rows){
+    const envs = uniq(rows.map(r => r.env || "unknown"));
+
+    // pass/fail per env for labels
+    const pass = envs.map(e => rows.filter(r => r.env === e && r.status === "pass").length);
+    const fail = envs.map(e => rows.filter(r => r.env === e && r.status !== "pass").length);
+
+    // slice size = total runs per env
+    const data = envs.map((_, i) => pass[i] + fail[i]);
+
+    const labels = envs.map((e, i) => `${e} (✅ ${pass[i]} / ❌ ${fail[i]})`);
+
+    ensureChartDestroy("envPie");
+    charts.envPie = new Chart(document.getElementById("envPie"), {
+      type: "pie",
+      data: { labels, datasets: [{ data }] },
+      options: { responsive:true, plugins:{ legend:{ position:"bottom" } } }
+    });
+  }
+
+  // ---------- NEW: Suitewise pass/fail stacked bar ----------
+  function renderSuiteBar(rows){
+    const totals = {};
+    for(const r of rows){
+      totals[r.suite] = (totals[r.suite] || 0) + 1;
+    }
+
+    const topSuites = Object.entries(totals)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,10)
+      .map(x=>x[0]);
+
+    const pass = topSuites.map(s => rows.filter(r => r.suite === s && r.status === "pass").length);
+    const fail = topSuites.map(s => rows.filter(r => r.suite === s && r.status !== "pass").length);
+
+    ensureChartDestroy("suiteBar");
+    charts.suiteBar = new Chart(document.getElementById("suiteBar"), {
+      type: "bar",
+      data: {
+        labels: topSuites,
+        datasets: [
+          { label: "Passed runs", data: pass },
+          { label: "Failed runs", data: fail },
+        ]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{
+          x:{ stacked:true },
+          y:{ stacked:true, beginAtZero:true }
+        }
+      }
+    });
+  }
+
+  // ---------- daily fail rate ----------
   function renderTrend(rows){
-    // bucket per day: failRate = failedRuns/totalRuns
     const buckets = {};
     for(const r of rows){
-      const k = dayKey(r.timestamp_utc||r.timestamp||"");
+      const k = dayKey(r.timestamp_utc);
+      if(k==="unknown") continue;
       buckets[k] = buckets[k] || { total:0, fail:0 };
       buckets[k].total += 1;
-      if((r.status||"").toLowerCase() !== "pass") buckets[k].fail += 1;
+      if(r.status !== "pass") buckets[k].fail += 1;
     }
-    const keys = Object.keys(buckets).filter(k=>k!=="unknown").sort();
+    const keys = Object.keys(buckets).sort();
     const rate = keys.map(k => buckets[k].total ? (buckets[k].fail / buckets[k].total * 100) : 0);
 
-    const ctx = document.getElementById("trend");
-    charts.trend?.destroy();
-    charts.trend = new Chart(ctx, {
+    ensureChartDestroy("trend");
+    charts.trend = new Chart(document.getElementById("trend"), {
       type: "line",
       data: { labels: keys, datasets: [{ label:"Fail rate (%)", data: rate }]},
       options: { responsive:true, plugins:{legend:{position:"bottom"}}, scales:{y:{beginAtZero:true}} }
     });
   }
 
+  // ---------- quarterly trend (runs + fail rate) ----------
+  function renderQuarterTrend(baseRows){
+    const buckets = {};
+    for(const r of baseRows){
+      const q = r.quarter || "unknown";
+      if(q === "unknown") continue;
+      buckets[q] = buckets[q] || { total:0, fail:0 };
+      buckets[q].total += 1;
+      if(r.status !== "pass") buckets[q].fail += 1;
+    }
+
+    const labels = Object.keys(buckets).sort();
+    const runs = labels.map(k => buckets[k].total);
+    const failRate = labels.map(k => buckets[k].total ? (buckets[k].fail / buckets[k].total * 100) : 0);
+
+    ensureChartDestroy("quarterTrend");
+    charts.quarterTrend = new Chart(document.getElementById("quarterTrend"), {
+      data: {
+        labels,
+        datasets: [
+          { type:"bar", label:"Runs", data: runs, yAxisID:"y" },
+          { type:"line", label:"Fail rate (%)", data: failRate, yAxisID:"y1" },
+        ]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{
+          y:{ beginAtZero:true, title:{ display:true, text:"Runs" } },
+          y1:{ beginAtZero:true, position:"right", title:{ display:true, text:"Fail rate (%)" }, grid:{ drawOnChartArea:false } }
+        }
+      }
+    });
+  }
+
+  // ---------- top failing suites ----------
   function renderTopSuites(rows){
     const map = {};
     for(const r of rows){
-      const suite = (r.suite || r.workflow || r.testsuite || "unknown");
-      if((r.status||"").toLowerCase() === "pass") continue;
-      map[suite] = (map[suite]||0) + 1;
+      if(r.status === "pass") continue;
+      map[r.suite] = (map[r.suite] || 0) + 1; // fail-run count per suite
     }
     const items = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,10);
     const labels = items.map(x=>x[0]);
     const data = items.map(x=>x[1]);
 
-    const ctx = document.getElementById("topSuites");
-    charts.topSuites?.destroy();
-    charts.topSuites = new Chart(ctx, {
+    ensureChartDestroy("topSuites");
+    charts.topSuites = new Chart(document.getElementById("topSuites"), {
       type:"bar",
       data:{ labels, datasets:[{ label:"Failed runs", data }]},
       options:{ responsive:true, plugins:{legend:{position:"bottom"}}, scales:{y:{beginAtZero:true}} }
     });
   }
 
-  function renderRunsTable(rows){
-    const tbody = document.getElementById("runs");
-    tbody.innerHTML = "";
-    for(const r of rows.slice(0,15)){
+  // ---------- per-suite quarterly comparison ----------
+  function renderSuiteQuarter(baseRows){
+    const selectedSuite = suiteSel.value;
+    const quarters = uniq(baseRows.map(r=>r.quarter).filter(q=>q && q!=="unknown"));
+
+    if(quarters.length === 0){
+      ensureChartDestroy("suiteQuarter");
+      charts.suiteQuarter = new Chart(document.getElementById("suiteQuarter"), {
+        type: "bar",
+        data: { labels: ["No data"], datasets: [{ label:"Failed runs", data:[0] }] },
+        options: { responsive:true, plugins:{legend:{position:"bottom"}}, scales:{y:{beginAtZero:true}} }
+      });
+      return;
+    }
+
+    if(selectedSuite !== "All"){
+      const failByQ = {};
+      for(const q of quarters) failByQ[q] = 0;
+
+      for(const r of baseRows){
+        if(r.suite !== selectedSuite) continue;
+        if(r.status === "pass") continue;
+        if(!failByQ.hasOwnProperty(r.quarter)) continue;
+        failByQ[r.quarter] += 1;
+      }
+
+      const data = quarters.map(q => failByQ[q] || 0);
+
+      ensureChartDestroy("suiteQuarter");
+      charts.suiteQuarter = new Chart(document.getElementById("suiteQuarter"), {
+        type:"bar",
+        data:{ labels: quarters, datasets:[{ label:`Failed runs: ${selectedSuite}`, data }] },
+        options:{ responsive:true, plugins:{legend:{position:"bottom"}}, scales:{y:{beginAtZero:true}} }
+      });
+      return;
+    }
+
+    const suiteFailTotal = {};
+    for(const r of baseRows){
+      if(r.status === "pass") continue;
+      suiteFailTotal[r.suite] = (suiteFailTotal[r.suite] || 0) + 1;
+    }
+
+    const topSuites = Object.entries(suiteFailTotal)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,8)
+      .map(x=>x[0]);
+
+    const datasets = topSuites.map(suite => {
+      const byQ = {};
+      for(const q of quarters) byQ[q] = 0;
+
+      for(const r of baseRows){
+        if(r.suite !== suite) continue;
+        if(r.status === "pass") continue;
+        if(!byQ.hasOwnProperty(r.quarter)) continue;
+        byQ[r.quarter] += 1;
+      }
+      return { label: suite, data: quarters.map(q => byQ[q] || 0) };
+    });
+
+    ensureChartDestroy("suiteQuarter");
+    charts.suiteQuarter = new Chart(document.getElementById("suiteQuarter"), {
+      type:"bar",
+      data:{ labels: quarters, datasets },
+      options:{
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } }
+      }
+    });
+  }
+
+  // ---------- tables ----------
+  function renderFailedRunsTable(rows){
+    failedRunsBody.innerHTML = "";
+    const failures = rows.filter(r => r.status !== "pass").slice(0,25);
+
+    for(const r of failures){
+      const url = runLink(r);
+      const link = url ? `<a href="${url}" target="_blank">Open run ↗</a>` : "-";
+      const ts = r.timestamp_utc ? r.timestamp_utc.replace("T"," ").replace("Z"," UTC") : "-";
+
       const tr = document.createElement("tr");
-      const ts = r.timestamp_utc || r.timestamp || "";
       tr.innerHTML = `
-        <td>${ts ? ts.replace("T"," ").replace("Z"," UTC") : "-"}</td>
-        <td>${r.env || r.environment || "-"}</td>
-        <td>${r.suite || r.workflow || r.testsuite || "-"}</td>
-        <td>${r.status || "-"}</td>
-        <td>${r.fail_count ?? r.failed ?? r.failures ?? 0}</td>
-        <td>${r.rerun_count ?? r.reruns ?? 0}</td>
+        <td>${ts}</td>
+        <td>${r.quarter || "-"}</td>
+        <td>${r.env || "-"}</td>
+        <td>${r.suite || "-"}</td>
+        <td>${r.fail_count ?? 0}</td>
+        <td>${link}</td>
       `;
-      tbody.appendChild(tr);
+      failedRunsBody.appendChild(tr);
+    }
+
+    if(failures.length === 0){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="6" class="muted">No failed runs for current filters.</td>`;
+      failedRunsBody.appendChild(tr);
     }
   }
 
-  function refresh(){
-    const rows = getFiltered();
-    renderCards(rows);
-    renderEnvBar(rows);
-    renderTrend(rows);
-    renderTopSuites(rows);
-    renderRunsTable(rows);
+  function renderRecentRunsTable(rows){
+    runsBody.innerHTML = "";
+    for(const r of rows.slice(0,25)){
+      const ts = r.timestamp_utc ? r.timestamp_utc.replace("T"," ").replace("Z"," UTC") : "-";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${ts}</td>
+        <td>${r.quarter || "-"}</td>
+        <td>${r.env || "-"}</td>
+        <td>${r.suite || "-"}</td>
+        <td>${r.status || "-"}</td>
+        <td>${r.fail_count ?? 0}</td>
+        <td>${r.rerun_count ?? 0}</td>
+      `;
+      runsBody.appendChild(tr);
+    }
   }
 
+  // ---------- refresh ----------
+  function refresh(){
+    const base = getBaseFiltered();   // ignores quarter dropdown
+    const rows = getFiltered();       // respects quarter dropdown
+
+    renderCards(rows);
+    renderEnvPie(rows);              // Pie: env share w/ pass/fail labels
+    renderQuarterTrend(base);
+    renderSuiteBar(rows);            // Stacked bar: suitewise pass/fail
+    renderTrend(rows);
+    renderSuiteQuarter(base);
+    renderTopSuites(rows);
+    renderFailedRunsTable(rows);
+    renderRecentRunsTable(rows);
+  }
+
+  // ---------- boot ----------
   async function load(){
     const res = await fetch("./data/runs.jsonl", { cache: "no-store" });
     const txt = await res.text();
+
     ALL = txt
-  .split("\n")
-  .map(l => l.trim())
-  .filter(Boolean)
-  .map(l => {
-    try {
-      const r = JSON.parse(l);
+      .split("\n")
+      .map(l => l.trim())
+      .filter(Boolean)
+      .map(l => {
+        try {
+          const raw = JSON.parse(l);
 
-      return {
-        ...r,
+          const ts = raw.timestamp_utc || raw.timestamp || raw.time || null;
 
-        // 🔑 normalize meta
-        env: r.env || r.environment || r._meta?.environment || "unknown",
-        suite: r.suite || r.workflow || r.testsuite || r._meta?.workflow_name || "unknown",
+          // normalize env + suite from possible shapes
+          const env = raw.env || raw.environment || raw._meta?.environment || "unknown";
+          const suite = raw.suite || raw.workflow || raw.testsuite || raw._meta?.workflow_name || "unknown";
 
-        // 🔑 normalize counts
-        fail_count: r.fail_count ?? r.failed ?? 0,
-        pass_count: r.pass_count ?? r.passed ?? 0,
-        skip_count: r.skip_count ?? r.skipped ?? 0,
-        rerun_count: r.rerun_count ?? r.reruns ?? 0,
+          const failed = (raw.fail_count ?? raw.failed ?? raw.failures ?? 0);
+          const passed = (raw.pass_count ?? raw.passed ?? 0);
+          const skipped = (raw.skip_count ?? raw.skipped ?? 0);
+          const reruns = (raw.rerun_count ?? raw.reruns ?? 0);
 
-        // 🔑 normalize status
-        status: r.status || (r.failed > 0 ? "fail" : "pass"),
+          const status = (raw.status || ((Number(failed) || 0) > 0 ? "fail" : "pass")).toLowerCase();
+          const normalizedStatus = (status === "pass" || status === "success") ? "pass" : "fail";
 
-        // 🔑 normalize timestamp
-        timestamp_utc: r.timestamp_utc || r.timestamp || r.time || null,
-      };
-    } catch (e) {
-      return null;
-    }
-  })
-  .filter(Boolean);
+          return {
+            ...raw,
+            env,
+            suite,
+            timestamp_utc: ts,
+            quarter: quarterKey(ts || ""),
+            fail_count: Number(failed) || 0,
+            pass_count: Number(passed) || 0,
+            skip_count: Number(skipped) || 0,
+            rerun_count: Number(reruns) || 0,
+            status: normalizedStatus,
+          };
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter(Boolean);
 
+    // dropdown options from normalized data
+    const suites = uniq(ALL.map(r => r.suite));
+    const envs = uniq(ALL.map(r => r.env));
+    const quarters = uniq(ALL.map(r => r.quarter).filter(q => q && q !== "unknown"));
 
-    // Build dropdown options from data
-    const suites = uniq(ALL.map(r => (r.suite || r.workflow || r.testsuite || "unknown")));
-    const envs = uniq(ALL.map(r => (r.env || r.environment || "unknown")));
-
-    const suiteSel = document.getElementById("suite");
-    suiteSel.innerHTML = `<option>All</option>` + suites.map(s=>`<option>${s}</option>`).join("");
-
-    const envSel = document.getElementById("env");
-    envSel.innerHTML = `<option>All</option>` + envs.map(e=>`<option>${e}</option>`).join("");
+    suiteSel.innerHTML = `<option>All</option>` + suites.map(s => `<option>${s}</option>`).join("");
+    envSel.innerHTML = `<option>All</option>` + envs.map(e => `<option>${e}</option>`).join("");
+    quarterSel.innerHTML = `<option value="all" selected>All</option>` + quarters.map(q => `<option value="${q}">${q}</option>`).join("");
 
     suiteSel.addEventListener("change", refresh);
     envSel.addEventListener("change", refresh);
-    document.getElementById("window").addEventListener("change", refresh);
+    windowSel.addEventListener("change", refresh);
+    quarterSel.addEventListener("change", refresh);
 
     refresh();
   }
+
+  const suiteSel = document.getElementById("suite");
+  const envSel = document.getElementById("env");
+  const windowSel = document.getElementById("window");
+  const quarterSel = document.getElementById("quarter");
+  const cardsEl = document.getElementById("cards");
+  const failedRunsBody = document.getElementById("failedRuns");
+  const runsBody = document.getElementById("runs");
 
   load();
 </script>
