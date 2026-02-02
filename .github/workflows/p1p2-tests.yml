@@ -4,12 +4,12 @@
 name: Priority Escape Defects Tests
 
 on:
-  push:
-    branches-ignore:
-      - master   # run on all branches except master
-  pull_request:
-    branches-ignore:
-      - master   # ignore PRs targeting master
+#  push:
+#    branches-ignore:
+#      - master   # run on all branches except master
+#  pull_request:
+#    branches-ignore:
+#      - master   # ignore PRs targeting master
   workflow_dispatch:
     inputs:
       environment:
@@ -285,8 +285,8 @@ jobs:
 
           message = (
               f"{status_icon} 📊 *[{env}] {workflow} Run #${{ github.run_number }} Test Summary Charts triggered by {event_label} event*\n\n"
-              f"📎 *Artifact:* <{artifact_url}|Download here>"
-              f"🔗 *Dashboard:* https://dimagi.github.io/dimagi-qa/"
+              f"📎 *Artifact:* <{artifact_url}|Download here>\n\n"
+              f" 🔗 *Dashboard:* https://dimagi.github.io/dimagi-qa/"
           )
 
           try:
