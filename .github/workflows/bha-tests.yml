@@ -120,6 +120,14 @@ jobs:
           path: /home/runner/work/dimagi-qa/dimagi-qa/report_${{ matrix.environment }}.html
           retention-days: 2
 
+      - name: Upload run summary JSON (central dashboard)
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-summary-${{ matrix.environment }}
+          path: metrics_out/run_summary.json
+          retention-days: 30
+
       - name: Fetch artifact ID
         run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
 

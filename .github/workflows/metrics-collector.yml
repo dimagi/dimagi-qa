@@ -28,6 +28,11 @@ on:
         description: "Ingest latest N completed runs"
         required: false
         default: "10"
+      cleanup_slack:
+        description: "Delete all old QA-Bot messages in dashboard channel"
+        required: false
+        default: "false"
+
 
   schedule:
     - cron: "30 18 * * *"   # 12:00 AM IST
@@ -65,27 +70,63 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
+            // same allowlist as workflow_run.workflows
+            const ALLOWED = new Set([
+              "HQ Smoke Tests",
+              "Python Request API",
+              "CO BHA Smoke Tests",
+              "Lookup table Tests",
+              "Case Search Tests",
+              "Case Search Split Screen Tests",
+              "Data Dictionary Tests",
+              "Elastic Search Tests",
+              "Export Tests",
+              "Find Data by ID Tests",
+              "Formplayer Tests",
+              "Multi Select Tests",
+              "Priority Escape Defects Tests",
+              "Power BI Tests",
+            ]);
+
             if (context.eventName === "workflow_run") {
               const run = context.payload.workflow_run;
-              if (run.conclusion !== "success" && run.conclusion !== "failure") {
-                core.info("Skipping non-completed run");
+
+              // only ingest success/failure runs
+              if (!["success", "failure"].includes(run.conclusion)) {
+                core.info(`Skipping run ${run.id} with conclusion=${run.conclusion}`);
                 core.setOutput("ids", JSON.stringify([]));
                 return;
               }
+
+              // Ensure it’s one of the allowed workflows (extra safety)
+              if (!ALLOWED.has(run.name)) {
+                core.info(`Skipping workflow not in allowlist: ${run.name}`);
+                core.setOutput("ids", JSON.stringify([]));
+                return;
+              }
+
               core.setOutput("ids", JSON.stringify([run.id]));
               return;
             }
 
-
             const limit = Number(core.getInput("latest_runs") || "10");
+
+            // Get more than 'limit' and filter down, because repo runs include unrelated workflows
             const res = await github.rest.actions.listWorkflowRunsForRepo({
               owner,
               repo,
               status: "completed",
-              per_page: limit,
+              per_page: Math.min(100, limit * 5),
             });
 
-            core.setOutput("ids", JSON.stringify(res.data.workflow_runs.map(r => r.id)));
+            const ids = res.data.workflow_runs
+              .filter(r => ALLOWED.has(r.name))
+              .slice(0, limit)
+              .map(r => r.id);
+
+            core.info(`Selected ${ids.length} run(s) from allowlisted workflows`);
+            core.setOutput("ids", JSON.stringify(ids));
+      
 
       - name: Download run-summary artifacts
         uses: actions/github-script@v7
@@ -220,43 +261,45 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: metrics
+          fetch-depth: 0
 
       - name: Build Slack summary
         run: |
           python - <<'PY'
           import json, datetime
           from collections import defaultdict
-      
+
           now = datetime.datetime.now(datetime.timezone.utc)
           cutoff = now - datetime.timedelta(hours=24)
-      
+
           stats = defaultdict(lambda: {"pass": 0, "fail": 0})
           total = 0
-      
+
           with open("metrics/runs.jsonl", encoding="utf-8") as f:
               for line in f:
                   r = json.loads(line)
                   ts = r.get("timestamp_utc")
                   if not ts:
                       continue
-      
                   t = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
                   if t < cutoff:
                       continue
-      
+
                   env = r.get("env") or r.get("environment") or "unknown"
                   total += 1
-      
                   if (r.get("status") or "").lower() == "pass":
                       stats[env]["pass"] += 1
                   else:
                       stats[env]["fail"] += 1
-      
-          lines = [f"• *{e}* → ✅ {v['pass']} | ❌ {v['fail']}" for e, v in stats.items()]
+
+          # stable ordering in Slack
+          env_order = sorted(stats.keys())
+          lines = [f"• *{e}* → ✅ {stats[e]['pass']} | ❌ {stats[e]['fail']}" for e in env_order]
+
           fail_total = sum(v["fail"] for v in stats.values())
           fail_rate = round((fail_total / total * 100), 1) if total else 0
-      
-          message = (
+
+          msg = (
               "📊 *QA Automation Dashboard (last 24h)*\n\n"
               "*Environment summary:*\n"
               + ("\n".join(lines) if lines else "_No runs in last 24h_")
@@ -264,17 +307,138 @@ jobs:
               + f"• Fail rate: *{fail_rate}%*\n\n"
               + "🔗 https://dimagi.github.io/dimagi-qa/"
           )
-      
-          with open("slack_message.txt", "w", encoding="utf-8") as f:
-              f.write(message)
+
+          with open("slack_message.txt", "w", encoding="utf-8") as out:
+              out.write(msg)
           PY
 
-      - name: Post Slack update
+      - name: Cleanup old Slack messages (QA-Bot)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_slack == 'true' }}
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
         run: |
-          curl -s -X POST https://slack.com/api/chat.postMessage \
-            -H "Authorization: Bearer ${{ secrets.SLACK_QA_BOT_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data "$(jq -n \
-              --arg channel "${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}" \
-              --arg text "$(cat slack_message.txt)" \
-              '{channel:$channel,text:$text}')"
+          set -euo pipefail
+
+          # Identify the bot user id
+          AUTH="$(curl -sS https://slack.com/api/auth.test \
+            -H "Authorization: Bearer ${SLACK_TOKEN}")"
+
+          if [ "$(echo "$AUTH" | jq -r '.ok')" != "true" ]; then
+            echo "auth.test failed:"
+            echo "$AUTH" | jq .
+            exit 1
+          fi
+
+          BOT_USER_ID="$(echo "$AUTH" | jq -r '.user_id')"
+          echo "Bot user id: $BOT_USER_ID"
+
+          CURSOR=""
+          DELETED=0
+
+          while : ; do
+            if [ -n "$CURSOR" ]; then
+              HIST="$(curl -sS https://slack.com/api/conversations.history \
+                -H "Authorization: Bearer ${SLACK_TOKEN}" \
+                --get \
+                --data-urlencode "channel=${SLACK_CHANNEL}" \
+                --data-urlencode "limit=200" \
+                --data-urlencode "cursor=${CURSOR}")"
+            else
+              HIST="$(curl -sS https://slack.com/api/conversations.history \
+                -H "Authorization: Bearer ${SLACK_TOKEN}" \
+                --get \
+                --data-urlencode "channel=${SLACK_CHANNEL}" \
+                --data-urlencode "limit=200")"
+            fi
+
+            if [ "$(echo "$HIST" | jq -r '.ok')" != "true" ]; then
+              echo "conversations.history failed:"
+              echo "$HIST" | jq .
+              exit 1
+            fi
+
+            # Delete messages authored by this bot user
+            TS_LIST="$(echo "$HIST" | jq -r --arg u "$BOT_USER_ID" '.messages[] | select(.user==$u) | .ts')"
+
+            if [ -n "$TS_LIST" ]; then
+              while IFS= read -r TS; do
+                [ -z "$TS" ] && continue
+                RESP="$(curl -sS -X POST https://slack.com/api/chat.delete \
+                  -H "Authorization: Bearer ${SLACK_TOKEN}" \
+                  -H "Content-Type: application/json; charset=utf-8" \
+                  --data "$(jq -n --arg channel "$SLACK_CHANNEL" --arg ts "$TS" \
+                    '{channel:$channel, ts:$ts}')" )"
+
+                if [ "$(echo "$RESP" | jq -r '.ok')" = "true" ]; then
+                  DELETED=$((DELETED+1))
+                else
+                  # common: cant_delete_message, missing_scope, not_in_channel
+                  echo "Failed to delete ts=$TS:"
+                  echo "$RESP" | jq .
+                fi
+              done <<< "$TS_LIST"
+            fi
+
+            CURSOR="$(echo "$HIST" | jq -r '.response_metadata.next_cursor // ""')"
+            [ -z "$CURSOR" ] && break
+          done
+
+          echo "Deleted $DELETED old QA-Bot messages."
+
+          # Also clear the stored TS so next step posts a fresh "single message"
+          rm -f metrics/slack_state.json || true
+
+      - name: Post or update Slack message (single pinned-style message)
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p metrics
+          STATE_FILE="metrics/slack_state.json"
+
+          PREV_TS=""
+          if [ -f "$STATE_FILE" ]; then
+            PREV_TS="$(python -c "import json; print((json.load(open('$STATE_FILE')) or {}).get('ts',''))" 2>/dev/null || true)"
+          fi
+
+          TEXT="$(cat slack_message.txt)"
+
+          if [ -n "${PREV_TS}" ]; then
+            echo "Updating existing Slack message ts=${PREV_TS}"
+            RESP="$(curl -sS -X POST https://slack.com/api/chat.update \
+              -H "Authorization: Bearer ${SLACK_TOKEN}" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              --data "$(jq -n --arg channel "$SLACK_CHANNEL" --arg ts "$PREV_TS" --arg text "$TEXT" \
+                '{channel:$channel, ts:$ts, text:$text}')" )"
+          else
+            echo "Posting new Slack message (no previous ts found)"
+            RESP="$(curl -sS -X POST https://slack.com/api/chat.postMessage \
+              -H "Authorization: Bearer ${SLACK_TOKEN}" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              --data "$(jq -n --arg channel "$SLACK_CHANNEL" --arg text "$TEXT" \
+                '{channel:$channel, text:$text}')" )"
+          fi
+
+          OK="$(echo "$RESP" | jq -r '.ok')"
+          if [ "$OK" != "true" ]; then
+            echo "Slack API error response:"
+            echo "$RESP" | jq .
+            exit 1
+          fi
+
+          NEW_TS="$(echo "$RESP" | jq -r '.ts')"
+          echo "Slack message ts=${NEW_TS}"
+
+          # Save state so next run updates instead of posting new
+          echo "$RESP" | jq '{ts: .ts, channel: .channel}' > "$STATE_FILE"
+
+      - name: Commit Slack state
+        run: |
+          git config user.name "metrics-bot"
+          git config user.email "metrics-bot@users.noreply.github.com"
+          git add metrics/slack_state.json || true
+          git commit -m "Update Slack dashboard message state" || echo "No changes"
+          git push origin metrics

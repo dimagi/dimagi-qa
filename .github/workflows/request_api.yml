@@ -76,6 +76,7 @@ jobs:
       env:
         DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
         SUITE_NAME: ${{ github.workflow }}
+        TEST_SUITE: ${{ github.workflow }}
         TRIGGER_TYPE: ${{ github.event_name == 'repository_dispatch' && 'deploy' || github.event_name == 'schedule' && 'schedule' || github.event_name == 'workflow_dispatch' && 'manual' || 'other' }}
         DIMAGIQA_PASSWORD: ${{ secrets.DIMAGIQA_API_PASSWORD }}
         DIMAGIQA_LOGIN_USER: ${{ secrets.DIMAGIQA_APILOGIN_USERNAME }}
@@ -109,7 +110,7 @@ jobs:
         retention-days: 2
 
     - name: Upload run summary JSON (central dashboard)
-      if: ${{ (success() || failure()) && !cancelled() && !cancelled() }}
+      if: ${{ always() && !cancelled() }}
       uses: actions/upload-artifact@v4
       with:
         name: run-summary-${{ matrix.environment }}
