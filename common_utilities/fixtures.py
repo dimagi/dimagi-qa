@@ -7,13 +7,13 @@ from selenium import webdriver
 from selenium.common import TimeoutException, WebDriverException
 
 from common_utilities.path_settings import PathSettings
+from datetime import datetime, timezone
+from pathlib import Path
 from common_utilities.hq_login.login_page import LoginPage
 import base64
-import json
-from pathlib import Path
 import ast
+import json
 import os
-
 
 """"This file provides fixture functions for driver initialization"""
 
@@ -21,6 +21,7 @@ global driver
 from collections import OrderedDict
 
 failed_items = OrderedDict()
+
 
 @pytest.fixture(scope="module", autouse=True)
 def driver(settings, browser):
@@ -55,7 +56,8 @@ def driver(settings, browser):
                 "download.prompt_for_download": False,
                 "download.directory_upgrade": True,
                 "safebrowsing.enabled": True,
-                "safebrowsing.disable_download_protection": True})
+                "safebrowsing.disable_download_protection": True}
+                                                   )
         elif browser == "firefox":
             firefox_options.add_argument('--headless')
             firefox_options.add_argument('--no-sandbox')
@@ -75,7 +77,8 @@ def driver(settings, browser):
             firefox_options.set_preference("pdfjs.disabled", True)
             firefox_options.set_preference("browser.download.manager.showWhenStarting", False)
             firefox_options.set_preference("browser.download.panel.shown", False)
-            firefox_options.set_preference("security.mixed_content.block_active_content", False)  # allow mixed content if needed
+            firefox_options.set_preference("security.mixed_content.block_active_content", False
+                                           )  # allow mixed content if needed
     if browser == "chrome":
         web_driver = webdriver.Chrome(options=chrome_options)
         print("Chrome version:", web_driver.capabilities['browserVersion'])
@@ -92,9 +95,11 @@ def driver(settings, browser):
 def pytest_addoption(parser):
     """CLI args which can be used to run the tests with specified values."""
     parser.addoption("--browser", action="store", default='chrome', choices=['chrome', 'firefox'],
-                     help='Your choice of browser to run tests.')
+                     help='Your choice of browser to run tests.'
+                     )
     parser.addoption("--appsite", action="store", choices=['CO', 'NY'],
-                     help='Your choice of app site.')
+                     help='Your choice of app site.'
+                     )
 
 
 @pytest.fixture(scope="module")
@@ -133,6 +138,7 @@ def _capture_screenshot(driver):
     except (TimeoutException, WebDriverException, Exception) as e:
         print(f"[WARN] Screenshot capture failed (ignored): {type(e).__name__}: {e}")
         return None
+
 
 # @pytest.hookimpl(hookwrapper=True)
 # def pytest_runtest_makereport(item):
@@ -191,23 +197,23 @@ def pytest_runtest_makereport(item):
 
                 if pytest_html and screen_img:
                     html_block = (
-                        '<div><img src="data:image/png;base64,%s" alt="screenshot" '
-                        'style="width:600px;height:300px;" '
-                        'onclick="window.open(this.src)" align="right"/></div>'
-                        % screen_img
+                            '<div><img src="data:image/png;base64,%s" alt="screenshot" '
+                            'style="width:600px;height:300px;" '
+                            'onclick="window.open(this.src)" align="right"/></div>'
+                            % screen_img
                     )
                     extra.append(pytest_html.extras.html(html_block))
                 elif pytest_html:
                     extra.append(pytest_html.extras.html(
                         "<div><em>[WARN] Screenshot unavailable (browser unresponsive)</em></div>"
-                    ))
+                        )
+                        )
 
         report.extra = extra
 
     except Exception as e:
         print(f"[WARN] pytest_runtest_makereport failed (ignored): {type(e).__name__}: {e}")
         report.extra = getattr(report, "extra", [])
-
 
 
 # def pytest_sessionfinish(session, exitstatus):
@@ -243,6 +249,7 @@ def check_if_any_test_failed(json_path="final_failures.json") -> bool:
         print(f"Error checking failures: {e}")
         return False
 
+
 def generate_jira_summary_from_json_report(json_path="final_failures.json", output_path="jira_ticket_body.html"):
     """
     Extracts failed test cases from JSON report and gathers their docstrings for Jira summary in HTML format.
@@ -258,7 +265,7 @@ def generate_jira_summary_from_json_report(json_path="final_failures.json", outp
     failures = [
         test for test in report_data.get("tests", [])
         if test.get("outcome") == "failed"
-    ]
+        ]
 
     seen = set()
     unique_failures = []
@@ -292,7 +299,9 @@ def generate_jira_summary_from_json_report(json_path="final_failures.json", outp
         if not unique_failures:
             f.write("<p>✅ All testcases passed.</p>\n")
         else:
-            f.write(f"<h2 style='color:red;'>🚨 Failed Test Cases with Reproducible Steps ({datetime.now().strftime('%Y-%m-%d %H:%M')})</h2>\n")
+            f.write(
+                f"<h2 style='color:red;'>🚨 Failed Test Cases with Reproducible Steps ({datetime.now().strftime('%Y-%m-%d %H:%M')})</h2>\n"
+                )
             for test in unique_failures:
                 doc = extract_docstring_from_file(test["nodeid"])
                 f.write(f"<b>Test:</b> {test['nodeid']}<br>\n")
@@ -301,3 +310,78 @@ def generate_jira_summary_from_json_report(json_path="final_failures.json", outp
         f.write("</body></html>\n")
 
     print(f"Jira summary written to {output_path}")
+
+def write_run_summary_json(
+            stats: dict,
+            output_path: str = "metrics_out/run_summary.json",
+            *,
+            suite_name: str | None = None,
+            env_name: str | None = None,
+            trigger_type: str | None = None,
+            ):
+        """
+        Writes a single JSON summary for dashboards/collector pipelines.
+
+        stats example:
+          {"passed": 10, "failed": 1, "skipped": 2, "error": 0, "xfail": 0, "reruns": 3}
+        """
+        out = Path(output_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+
+        # Prefer explicit env vars; fallback to your existing DIMAGIQA_ENV usage
+        env = env_name or os.environ.get("DIMAGIQA_ENV") or os.environ.get("ENV") or "unknown_env"
+
+        # For suite name: prefer env var so every workflow can set it
+        suite = suite_name or os.environ.get("SUITE_NAME") or os.environ.get("GITHUB_WORKFLOW") or "unknown_suite"
+
+        trigger = trigger_type or os.environ.get("TRIGGER_TYPE") or "unknown_trigger"
+
+        passed = int(stats.get("passed", 0))
+        failed = int(stats.get("failed", 0))
+        skipped = int(stats.get("skipped", 0))
+        error = int(stats.get("error", 0))
+        xfail = int(stats.get("xfail", 0))
+        xpassed = int(stats.get("xpassed", 0)) if "xpassed" in stats else 0
+        reruns = int(stats.get("reruns", 0))
+
+        # Total = final executed outcomes (reruns are tracked separately)
+        total = passed + failed + skipped + error + xfail + xpassed
+        status = "pass" if (failed == 0 and error == 0) else "fail"
+
+        # GitHub run URL (set by Actions automatically)
+        run_id = os.environ.get("GITHUB_RUN_ID", "")
+        repo = os.environ.get("GITHUB_REPOSITORY", "")
+        server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+        run_url = f"{server_url}/{repo}/actions/runs/{run_id}" if (repo and run_id) else ""
+
+        payload = {
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "suite": suite,
+            "env": env,
+            "trigger": trigger,
+            "status": status,
+            "total": total,
+            "passed": passed,
+            "failed": failed,
+            "skipped": skipped,
+            "error": error,
+            "xfail": xfail,
+            "xpassed": xpassed,
+            "rerun_count": reruns,
+            "github": {
+                "run_id": run_id,
+                "run_url": run_url,
+                "workflow": os.environ.get("GITHUB_WORKFLOW", ""),
+                "sha": os.environ.get("GITHUB_SHA", ""),
+                "ref": os.environ.get("GITHUB_REF_NAME", ""),
+                "actor": os.environ.get("GITHUB_ACTOR", ""),
+                },
+            "links": {
+                # The collector/dashboard can use these artifact names consistently
+                "pytest_html_artifact": os.environ.get("PYTEST_HTML_ARTIFACT", "pytest-html-report"),
+                "charts_dir": os.environ.get("CHARTS_DIR", "slack_charts"),
+                }
+            }
+
+        out.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+        print(f"✅ Run summary written: {out}")

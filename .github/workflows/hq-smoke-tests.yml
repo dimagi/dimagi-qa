@@ -74,6 +74,9 @@ jobs:
       - name: CCHQ Smoke Test with pytest
         env:
           DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
+          SUITE_NAME: ${{ github.workflow }}
+          TEST_SUITE: ${{ github.workflow }}
+          TRIGGER_TYPE: ${{ github.event_name == 'repository_dispatch' && 'deploy' || github.event_name == 'schedule' && 'schedule' || github.event_name == 'workflow_dispatch' && 'manual' || 'other' }}
           DIMAGIQA_LOGIN_USERNAME: ${{ secrets.DIMAGIQA_LOGIN_USERNAME }}
           DIMAGIQA_LOGIN_PASSWORD: ${{ secrets.DIMAGIQA_LOGIN_PASSWORD }}
           DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
@@ -110,6 +113,15 @@ jobs:
           name: test-result-reports--${{ matrix.environment }}-${{ github.run_id }}
           path: /home/runner/work/dimagi-qa/dimagi-qa/report_${{ matrix.environment }}.html
           retention-days: 2
+
+      - name: Upload run summary JSON (central dashboard)
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-summary-${{ matrix.environment }}
+          path: metrics_out/run_summary.json
+          retention-days: 30
+
 
       - name: Fetch artifact ID
         run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
@@ -207,7 +219,7 @@ jobs:
 
 
       - name: Set slack vars
-        if: ${{ always() }}
+        if: ${{ (success() || failure()) && !cancelled() }}
         id: configure_slack
         uses: actions/github-script@v6
         env:
@@ -257,7 +269,7 @@ jobs:
             return { SLACK_WEBHOOK_URL, SLACK_CHANNEL_ID };
 
       - name: Upload Combined Chart to Slack
-        if: ${{ (success() || failure()) && steps.configure_slack.outputs.SLACK_CHANNEL_ID != '' }}
+        if: ${{ (success() || failure()) && !cancelled() && steps.configure_slack.outputs.SLACK_CHANNEL_ID != '' }}
         env:
           SLACK_QA_BOT_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ steps.configure_slack.outputs.SLACK_CHANNEL_ID }}
@@ -321,7 +333,8 @@ jobs:
 
           message = (
               f"{status_icon} 📊 *[{env}] {workflow} Run #${{ github.run_number }} Test Summary Charts triggered by {event_label} event*\n\n"
-              f"📎 *Artifact:* <{artifact_url}|Download here>"
+              f"📎 *Artifact:* <{artifact_url}|Download here>\n\n"
+              f" 🔗 *Dashboard:* https://dimagi.github.io/dimagi-qa/"
           )
 
           try:
