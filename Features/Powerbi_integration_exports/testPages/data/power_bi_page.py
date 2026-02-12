@@ -73,7 +73,7 @@ class PowerBiPage(BasePage):
     def power_bi_page_ui(self,flag):
         self.wait_to_click(self.power_bi,2)
         #initially to delete the existing files.
-        if flag == 'Y':
+        if str(flag).lower() == 'y':
             self.power_bi_tableau_integration_bulk_delete()
         self.wait_to_click(self.add_odata_feed)
 
