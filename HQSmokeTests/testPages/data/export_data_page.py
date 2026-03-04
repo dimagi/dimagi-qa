@@ -308,8 +308,11 @@ class ExportDataPage(BasePage):
         time.sleep(15)
         self.wait_for_element(self.add_export_button)
         self.wait_to_click(self.add_export_button)
-        time.sleep(20)
-        self.is_visible_and_displayed(self.case_type, 200)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
+        self.is_visible_and_displayed(self.case_type, 370)
         self.wait_for_element(self.case_type, 200)
         # self.is_clickable(self.application)
         # self.select_by_text(self.application, UserData.village_application)
@@ -439,7 +442,7 @@ class ExportDataPage(BasePage):
             time.sleep(200)
         else:
             time.sleep(30)
-        self.is_visible_and_displayed(self.model, 200)
+        self.is_visible_and_displayed(self.model, 370)
         self.wait_for_element(self.model, 200)
         self.select_by_value(self.model, UserData.model_type_form)
         self.select_by_text(self.app_type, UserData.app_type)
@@ -488,7 +491,7 @@ class ExportDataPage(BasePage):
             time.sleep(200)
         else:
             time.sleep(30)
-        self.is_visible_and_displayed(self.model, 200)
+        self.is_visible_and_displayed(self.model, 370)
         self.wait_for_element(self.model, 200)
         self.select_by_value(self.model, UserData.model_type_case)
         try:
@@ -567,7 +570,7 @@ class ExportDataPage(BasePage):
             time.sleep(200)
         else:
             time.sleep(30)
-        self.is_visible_and_displayed(self.model, 200)
+        self.is_visible_and_displayed(self.model, 370)
         self.wait_for_element(self.model, 100)
         self.select_by_value(self.model, UserData.model_type_form)
         self.select_by_text(self.app_type, UserData.app_type)
@@ -609,7 +612,7 @@ class ExportDataPage(BasePage):
             time.sleep(200)
         else:
             time.sleep(30)
-        self.is_visible_and_displayed(self.model, 200)
+        self.is_visible_and_displayed(self.model, 370)
         self.wait_for_element(self.model, 400)
         self.select_by_value(self.model, UserData.model_type_case)
         try:
@@ -694,7 +697,7 @@ class ExportDataPage(BasePage):
             time.sleep(200)
         else:
             time.sleep(30)
-        self.is_visible_and_displayed(self.case_type, 200)
+        self.is_visible_and_displayed(self.case_type, 370)
         self.wait_for_element(self.case_type, 200)
         self.select_by_text(self.case, UserData.case_update_name)
         self.wait_to_click(self.add_export_conf)
@@ -887,7 +890,7 @@ class ExportDataPage(BasePage):
             time.sleep(200)
         else:
             time.sleep(30)
-        self.is_visible_and_displayed(self.case_type, 200)
+        self.is_visible_and_displayed(self.case_type, 370)
         self.wait_for_element(self.case_type, 200)
         self.select_by_text(self.case, UserData.case_reassign)
         self.wait_to_click(self.add_export_conf)
