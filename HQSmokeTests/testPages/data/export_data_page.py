@@ -262,8 +262,11 @@ class ExportDataPage(BasePage):
         self.wait_for_element(self.add_export_button, 100)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(10)
-        self.is_visible_and_displayed(self.app_type, 200)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
+        self.is_visible_and_displayed(self.app_type, 370)
         self.wait_for_element(self.app_type, 200)
         self.is_clickable(self.app_type)
         self.select_by_text(self.app_type, UserData.app_type)
@@ -432,7 +435,10 @@ class ExportDataPage(BasePage):
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
         self.is_visible_and_displayed(self.model, 200)
         self.wait_for_element(self.model, 200)
         self.select_by_value(self.model, UserData.model_type_form)
@@ -478,7 +484,10 @@ class ExportDataPage(BasePage):
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
         self.is_visible_and_displayed(self.model, 200)
         self.wait_for_element(self.model, 200)
         self.select_by_value(self.model, UserData.model_type_case)
@@ -554,7 +563,10 @@ class ExportDataPage(BasePage):
             self.wait_to_click(self.powerBI_tab_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
         self.is_visible_and_displayed(self.model, 200)
         self.wait_for_element(self.model, 100)
         self.select_by_value(self.model, UserData.model_type_form)
@@ -593,7 +605,10 @@ class ExportDataPage(BasePage):
         self.wait_to_click(self.powerBI_tab_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
         self.is_visible_and_displayed(self.model, 200)
         self.wait_for_element(self.model, 400)
         self.select_by_value(self.model, UserData.model_type_case)
@@ -675,7 +690,10 @@ class ExportDataPage(BasePage):
         self.delete_bulk_exports()
         time.sleep(2)
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
         self.is_visible_and_displayed(self.case_type, 200)
         self.wait_for_element(self.case_type, 200)
         self.select_by_text(self.case, UserData.case_update_name)
@@ -778,8 +796,11 @@ class ExportDataPage(BasePage):
     def add_form_exports_reassign(self):
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
-        self.is_visible_and_displayed(self.app_type, 200)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
+        self.is_visible_and_displayed(self.app_type, 370)
         self.wait_for_element(self.app_type, 200)
         self.select_by_text(self.app_type, UserData.app_type)
         self.select_by_text(self.application, UserData.reassign_cases_application)
@@ -862,7 +883,10 @@ class ExportDataPage(BasePage):
         self.wait_to_click(self.export_case_data_link)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(50)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
         self.is_visible_and_displayed(self.case_type, 200)
         self.wait_for_element(self.case_type, 200)
         self.select_by_text(self.case, UserData.case_reassign)
@@ -979,8 +1003,11 @@ class ExportDataPage(BasePage):
         self.wait_for_element(self.add_export_button, 100)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(100)
-        self.is_visible_and_displayed(self.app_type, 200)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
+        self.is_visible_and_displayed(self.app_type, 370)
         self.wait_for_element(self.app_type, 200)
         self.is_clickable(self.app_type)
         self.select_by_text(self.app_type, UserData.app_type)
@@ -1023,8 +1050,11 @@ class ExportDataPage(BasePage):
     def add_shared_form_exports(self, name, private='NO'):
         self.wait_for_element(self.add_export_button, 100)
         self.wait_and_sleep_to_click(self.add_export_button)
-        time.sleep(100)
-        self.is_visible_and_displayed(self.app_type, 200)
+        if 'staging' in self.get_current_url():
+            time.sleep(200)
+        else:
+            time.sleep(30)
+        self.is_visible_and_displayed(self.app_type, 370)
         self.wait_for_element(self.app_type, 200)
         self.is_clickable(self.app_type)
         self.select_by_text(self.app_type, UserData.app_type)
