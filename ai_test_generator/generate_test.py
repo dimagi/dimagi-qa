@@ -53,6 +53,14 @@ Your job is to write a complete, production-ready pytest test file from a plain 
 
 ## FRAMEWORK RULES (follow these exactly):
 
+0. **Constructor signatures** – this is critical:
+   Every page object class has an `INSTANTIATE AS:` line in the context below.
+   You MUST use EXACTLY those arguments — no more, no less.
+   Examples:
+   - `INSTANTIATE AS: ReportPage(driver)`      → `page = ReportPage(driver)`         ✓
+   - `INSTANTIATE AS: HomePage(driver, settings)` → `page = HomePage(driver, settings)` ✓
+   - Never guess or add extra parameters like `settings` if not in the constructor.
+
 1. **Imports** – always include:
    ```python
    import pytest

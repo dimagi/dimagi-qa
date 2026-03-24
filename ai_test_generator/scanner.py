@@ -36,8 +36,17 @@ SUITES = {
 COMMON_UTILITIES = ROOT / "common_utilities"
 
 
+def _get_init_signature(node: ast.ClassDef) -> str:
+    """Extract the __init__ constructor args (excluding self) for a class."""
+    for item in node.body:
+        if isinstance(item, ast.FunctionDef) and item.name == "__init__":
+            args = [a.arg for a in item.args.args if a.arg != "self"]
+            return ", ".join(args)
+    return ""
+
+
 def _extract_classes_and_methods(filepath: Path) -> list[dict]:
-    """Parse a Python file and return class info with public method signatures."""
+    """Parse a Python file and return class info with constructor + public method signatures."""
     try:
         source = filepath.read_text(encoding="utf-8", errors="ignore")
         tree = ast.parse(source)
@@ -49,6 +58,9 @@ def _extract_classes_and_methods(filepath: Path) -> list[dict]:
         if not isinstance(node, ast.ClassDef):
             continue
 
+        init_args = _get_init_signature(node)
+        instantiation = f"{node.name}({init_args})"
+
         methods = []
         for item in node.body:
             if not isinstance(item, ast.FunctionDef):
@@ -58,7 +70,6 @@ def _extract_classes_and_methods(filepath: Path) -> list[dict]:
 
             # Build readable signature
             args = [a.arg for a in item.args.args if a.arg != "self"]
-            # Include defaults info
             defaults = item.args.defaults
             if defaults:
                 num_defaults = len(defaults)
@@ -84,6 +95,7 @@ def _extract_classes_and_methods(filepath: Path) -> list[dict]:
             results.append({
                 "class": node.name,
                 "file": str(filepath.relative_to(ROOT)),
+                "instantiation": instantiation,   # e.g. "ReportPage(driver)"
                 "methods": methods,
             })
 
@@ -162,6 +174,7 @@ def scan_common_utilities() -> str:
         classes = _extract_classes_and_methods(filepath)
         for cls in classes:
             lines.append(f"\nClass: {cls['class']} (from {cls['file']})")
+            lines.append(f"  INSTANTIATE AS: {cls['instantiation']}")
             for m in cls["methods"]:
                 line = f"  - {m['signature']}"
                 if m["doc"]:
@@ -275,8 +288,10 @@ def format_suite_context(suite_data: dict, common_utils: str) -> str:
     # Suite-specific page objects
     if suite_data["page_classes"]:
         lines.append("=== SUITE-SPECIFIC PAGE OBJECTS ===")
+        lines.append("IMPORTANT: Instantiate each class EXACTLY as shown — do not add or remove parameters.")
         for cls in suite_data["page_classes"]:
             lines.append(f"\nClass: {cls['class']} (from {cls['file']})")
+            lines.append(f"  INSTANTIATE AS: {cls['instantiation']}")
             for m in cls["methods"]:
                 line = f"  - {m['signature']}"
                 if m["doc"]:

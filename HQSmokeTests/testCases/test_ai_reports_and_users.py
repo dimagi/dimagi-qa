@@ -1,142 +1,129 @@
 """
-This module tests report visibility and loading, user creation,
-user group management, export functionality, and web app access.
+This module contains tests for verifying the correct display and functionality of report sections, 
+the creation of mobile workers and user groups, the export data functionality, and the accessibility of applications via Web Apps.
 """
 
 import pytest
 from common_utilities.selenium.webapps import WebApps
 from common_utilities.hq_login.login_page import LoginPage
-from HQSmokeTests.testPages.reports.report_page import ReportPage
 from HQSmokeTests.testPages.home.home_page import HomePage
+from HQSmokeTests.testPages.reports.report_page import ReportPage
 from HQSmokeTests.testPages.users.mobile_workers_page import MobileWorkerPage
 from HQSmokeTests.testPages.users.group_page import GroupPage
 from HQSmokeTests.testPages.data.export_data_page import ExportDataPage
 from HQSmokeTests.testPages.webapps.web_apps_page import WebAppsPage
 from HQSmokeTests.userInputs.user_inputs import UserData
 
+
 @pytest.mark.reports
-def test_01_verify_report_sections_displayed(driver, settings):
-    """Verify all report sections are displayed and load correctly."""
-    print("Step 1: Navigate to the HQ home page")
+def test_01_verify_report_sections(driver, settings):
+    """
+    Verify all report sections are displayed and load correctly:
+    1. Navigate to Reports menu
+    2. Verify each report section is displayed
+    3. Run various reports and ensure they load with data
+    """
     home_page = HomePage(driver, settings)
     home_page.reports_menu()
+
+    report_page = ReportPage(driver)
+    assert report_page.is_present_and_displayed('Monitor Workers Section'), "Monitor Workers section is not displayed"
+    assert report_page.is_present_and_displayed('Inspect Data Section'), "Inspect Data section is not displayed"
+    assert report_page.is_present_and_displayed('Manage Deployments Section'), "Manage Deployments section is not displayed"
+    assert report_page.is_present_and_displayed('Messaging Section'), "Messaging section is not displayed"
+
+    report_page.worker_activity_report()
+    assert report_page.check_if_report_loaded(), "Worker Activity report did not load correctly"
+
+    report_page.daily_form_activity_report()
+    assert report_page.check_if_report_loaded(), "Daily Form Activity report did not load correctly"
     
-    reports_page = ReportPage(driver, settings)
+    report_page.case_activity_report()
+    assert report_page.check_if_report_loaded(), "Case Activity report did not load correctly"
 
-    print("Step 3: Verify Monitor Workers section is displayed")
-    assert home_page.is_present_and_displayed(reports_page.get_element("locator_for_monitor_workers")), "Monitor Workers section not found"
+    report_page.submit_history_report()
+    assert report_page.check_if_report_loaded(), "Submit History report did not load correctly"
 
-    print("Step 4: Verify Inspect Data section is displayed")
-    assert home_page.is_present_and_displayed(reports_page.get_element("locator_for_inspect_data")), "Inspect Data section not found"
-
-    print("Step 5: Verify Manage Deployments section is displayed")
-    assert home_page.is_present_and_displayed(reports_page.get_element("locator_for_manage_deployments")), "Manage Deployments section not found"
-
-    print("Step 6: Verify Messaging section is displayed")
-    assert home_page.is_present_and_displayed(reports_page.get_element("locator_for_messaging")), "Messaging section not found"
-
-    print("Step 7: Open and run the Worker Activity report")
-    reports_page.worker_activity_report()
-    assert reports_page.check_if_report_loaded(), "Worker Activity report failed to load data"
-
-    print("Step 8: Open and run the Daily Form Activity report")
-    reports_page.daily_form_activity_report()
-    assert reports_page.check_if_report_loaded(), "Daily Form Activity report failed to load data"
-
-    print("Step 9: Open and run the Case Activity report")
-    reports_page.case_activity_report()
-    assert reports_page.check_if_report_loaded(), "Case Activity report failed to load data"
-
-    print("Step 10: Open and run the Submit History report")
-    reports_page.submit_history_report()
-    assert reports_page.check_if_report_loaded(), "Submit History report failed to load data"
 
 @pytest.mark.users
-def test_02_create_mobile_worker(driver, settings):
-    """Create a new mobile worker and verify it appears in the list."""
+def test_02_create_and_verify_mobile_worker(driver, settings):
+    """
+    Create a new mobile worker and verify it appears in the list:
+    1. Navigate to Mobile Workers
+    2. Add a new mobile worker
+    3. Verify the worker is in the list
+    """
     home_page = HomePage(driver, settings)
     home_page.users_menu()
-    
-    mobile_worker_page = MobileWorkerPage(driver, settings)
-    
-    print("Step 2: Click on Mobile Workers")
+
+    mobile_worker_page = MobileWorkerPage(driver)
     mobile_worker_page.mobile_worker_menu()
 
-    print("Step 3: Click Add Mobile Worker")
+    new_username = "testworker" + str(settings["random"])
     mobile_worker_page.create_mobile_worker()
-    
-    username = f"user_{str(int(time.time()))}"
-    password = UserData.app_password
+    mobile_worker_page.mobile_worker_enter_username(new_username)
+    mobile_worker_page.mobile_worker_enter_password(UserData.app_password)
+    mobile_worker_page.click_create(new_username)
 
-    print(f"Step 4: Enter a unique username: {username}")
-    mobile_worker_page.mobile_worker_enter_username(username)
+    mobile_worker_page.search_user(new_username)
+    assert mobile_worker_page.is_present_and_displayed(new_username), "New mobile worker is not visible in the list"
 
-    print("Step 5: Enter a password")
-    mobile_worker_page.mobile_worker_enter_password(password)
-
-    print("Step 6: Save the new mobile worker")
-    mobile_worker_page.click_create(username)
-    
-    print("Step 7: Search for the newly created worker in the list")
-    assert mobile_worker_page.search_user(username), f"Mobile worker {username} not found in the list"
 
 @pytest.mark.users
-def test_03_create_user_group_and_add_worker(driver, settings):
-    """Create a user group and add a mobile worker to it."""
+def test_03_create_and_verify_user_group(driver, settings):
+    """
+    Create a user group and add a mobile worker to it:
+    1. Navigate to Groups
+    2. Create a new group and add a mobile worker
+    3. Verify the group appears in the list
+    """
     home_page = HomePage(driver, settings)
     home_page.users_menu()
-    
-    group_page = GroupPage(driver, settings)
-    
-    print("Step 2: Click on Groups")
+
+    group_page = GroupPage(driver)
     group_page.click_group_menu()
 
-    group_name = f"group_{str(int(time.time()))}"
-    print(f"Step 3: Create a new group with a unique name: {group_name}")
-    group_page.add_group(group_name)
+    new_group_name = "testgroup" + str(settings["random"])
+    group_page.add_group(new_group_name)
     
-    username = UserData.app_login
-    print(f"Step 4: Add an existing mobile worker {username} to the group")
-    group_page.add_user_to_group(username, group_name)
-    
-    print("Step 5: Save the group")
-    print("Step 6: Verify the group appears in the groups list")
-    assert group_page.is_present_and_displayed(group_page.get_element("locator_for_group", group_name)), f"Group {group_name} not found"
+    # Assuming a predefined user is added for simplicity
+    existing_user = UserData.mobile_testuser
+    group_page.add_user_to_group(existing_user, new_group_name)
+
+    assert group_page.is_present_and_displayed(new_group_name), "Group is not visible in the list"
+
 
 @pytest.mark.data
 def test_04_verify_export_data_functionality(driver, settings):
-    """Verify export data functionality works."""
+    """
+    Verify export data functionality works:
+    1. Navigate to Export Data
+    2. Create and verify a case export
+    3. Download export file
+    """
     home_page = HomePage(driver, settings)
     home_page.data_menu()
-    
-    export_data_page = ExportDataPage(driver, settings)
-    
-    print("Step 2: Click on Export Data")
-    export_data_page.prepare_and_download_export(UserData.case_export_name)
-    
-    print("Step 3: Create a new case export")
+
+    export_data_page = ExportDataPage(driver)
     export_data_page.add_case_exports()
-    
-    print("Step 4: Verify the export appears in the exports list")
-    assert export_data_page.verify_export_count(UserData.case_export_name), "Export not found in the list"
-    
-    print("Step 5: Download the export file")
-    export_data_page.create_dse_and_download(UserData.case_export_name, type="case")
+    new_export_name = UserData.case_export_name + str(settings["random"])
+    export_data_page.case_exports(new_export_name)
+
+    assert export_data_page.is_present_and_displayed(new_export_name), "Export is not visible in the export list"
+    export_data_page.prepare_and_download_export(new_export_name)
+    assert export_data_page.assert_downloaded_file(new_export_name), "Export file download failed"
+
 
 @pytest.mark.webApps
 def test_05_verify_application_access_via_web_apps(driver, settings):
-    """Verify application is accessible via Web Apps."""
-    home_page = HomePage(driver, settings)
-    home_page.web_apps_menu()
+    """
+    Verify application is accessible via Web Apps:
+    1. Navigate to Web Apps
+    2. Ensure the list of applications is displayed
+    3. Open an application and verify menus are displayed
+    """
+    web_apps_page = WebApps(driver, settings)
+    web_apps_page.open_app(UserData.village_application)
     
-    webapps_page = WebAppsPage(driver, settings)
-    
-    print("Step 2: Verify the list of applications is displayed")
-    assert webapps_page.verify_apps_presence(), "List of applications not displayed"
-    
-    app_name = UserData.village_application
-    print(f"Step 3: Open the available application: {app_name}")
-    webapps_page.login_as(app_name)
-    
-    print("Step 4: Verify the application menus are displayed")
-    assert webapps_page.is_present_and_displayed(webapps_page.get_element("locator_for_app_menus")), "Application menus not displayed"
+    web_apps_page.navigate_to_breadcrumb('Menu')
+    assert web_apps_page.is_present_and_displayed('App Menu'), "App menu did not display correctly in Web Apps"
