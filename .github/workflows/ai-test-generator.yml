@@ -5,7 +5,7 @@
 # describe the test in plain English, and get a ready-to-run test file committed
 # back to the repository.
 #
-# Required secret: ANTHROPIC_API_KEY
+# Required secret: OPENAI_API_KEY
 
 name: AI Test Generator
 
@@ -92,7 +92,7 @@ jobs:
       - name: Generate test file
         id: generate
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           INPUT_SUITE: ${{ inputs.suite }}
           INPUT_DESCRIPTION: ${{ inputs.description }}
           INPUT_OUTPUT: ${{ inputs.output_path }}

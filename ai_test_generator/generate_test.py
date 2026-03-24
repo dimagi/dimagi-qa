@@ -13,10 +13,10 @@ Usage (GitHub Actions):
     Triggered via workflow_dispatch - see .github/workflows/ai-test-generator.yml
 
 Requirements:
-    pip install anthropic
+    pip install openai
 
 Environment variable:
-    ANTHROPIC_API_KEY   Your Anthropic API key (required)
+    OPENAI_API_KEY   Your OpenAI API key (required)
 """
 
 import argparse
@@ -30,9 +30,9 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 try:
-    import anthropic
+    from openai import OpenAI
 except ImportError:
-    print("[ERROR] anthropic package not installed. Run: pip install anthropic")
+    print("[ERROR] openai package not installed. Run: pip install openai")
     sys.exit(1)
 
 from ai_test_generator.scanner import (
@@ -148,11 +148,25 @@ def build_user_prompt(description: str, suite_context: str, output_filename: str
 
 # ─── Claude API call ──────────────────────────────────────────────────────────
 
+def _load_env_file():
+    """Load .env file from ai_test_generator/ if it exists."""
+    env_file = Path(__file__).parent / ".env"
+    if env_file.exists():
+        for line in env_file.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, _, value = line.partition("=")
+                os.environ.setdefault(key.strip(), value.strip())
+
+
 def generate_test_code(description: str, suite_name: str, output_filename: str,
-                       model: str = "claude-sonnet-4-6") -> str:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+                       model: str = "gpt-4o") -> str:
+    _load_env_file()
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        print("[ERROR] ANTHROPIC_API_KEY environment variable not set.")
+        print("[ERROR] OPENAI_API_KEY not set.")
+        print("  Option 1: Create ai_test_generator/.env with OPENAI_API_KEY=your-key")
+        print("  Option 2: Set environment variable OPENAI_API_KEY before running")
         sys.exit(1)
 
     print(f"[INFO] Scanning suite: {suite_name}")
@@ -162,23 +176,20 @@ def generate_test_code(description: str, suite_name: str, output_filename: str,
 
     print(f"[INFO] Found {len(suite_data['page_classes'])} page object class(es)")
     print(f"[INFO] Found {len(suite_data['user_inputs'])} user input constant(s)")
-    print(f"[INFO] Calling Claude ({model}) to generate test...")
+    print(f"[INFO] Calling OpenAI ({model}) to generate test...")
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = OpenAI(api_key=api_key)
 
-    message = client.messages.create(
+    response = client.chat.completions.create(
         model=model,
         max_tokens=4096,
-        system=SYSTEM_PROMPT,
         messages=[
-            {
-                "role": "user",
-                "content": build_user_prompt(description, suite_context, output_filename),
-            }
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": build_user_prompt(description, suite_context, output_filename)},
         ],
     )
 
-    return message.content[0].text.strip()
+    return response.choices[0].message.content.strip()
 
 
 # ─── Output helpers ───────────────────────────────────────────────────────────
@@ -261,8 +272,8 @@ def parse_args():
     )
     parser.add_argument(
         "--model", "-m",
-        help="Claude model to use (default: claude-sonnet-4-6)",
-        default="claude-sonnet-4-6",
+        help="OpenAI model to use (default: gpt-4o)",
+        default="gpt-4o",
     )
     parser.add_argument(
         "--list-suites",
