@@ -1,6 +1,7 @@
 Suite: HQSmokeTests
 
 Test 1: Verify all report sections are displayed and load correctly
+Tags: report, smoke
 1. Navigate to the HQ home page
 2. Click on the Reports menu
 3. Verify Monitor Workers section is displayed
@@ -14,6 +15,7 @@ Test 1: Verify all report sections are displayed and load correctly
 Expected Result: All report sections are visible and each report loads with data
 
 Test 2: Create a new mobile worker and verify it appears in the list
+Tags: users, mobileWorker
 1. Navigate to Users menu
 2. Click on Mobile Workers
 3. Click Add Mobile Worker
@@ -24,6 +26,7 @@ Test 2: Create a new mobile worker and verify it appears in the list
 Expected Result: New mobile worker is created and visible in the mobile workers list
 
 Test 3: Create a user group and add a mobile worker to it
+Tags: users, groups
 1. Navigate to Users menu
 2. Click on Groups
 3. Create a new group with a unique name
@@ -33,6 +36,7 @@ Test 3: Create a user group and add a mobile worker to it
 Expected Result: Group is created and the mobile worker is assigned to it
 
 Test 4: Verify export data functionality works
+Tags: data, exports
 1. Navigate to Data menu
 2. Click on Export Data
 3. Create a new case export
@@ -41,6 +45,7 @@ Test 4: Verify export data functionality works
 Expected Result: Export file is created and downloaded successfully
 
 Test 5: Verify application is accessible via Web Apps
+Tags: webApps, smoke
 1. Navigate to Web Apps
 2. Verify the list of applications is displayed
 3. Open one of the available applications

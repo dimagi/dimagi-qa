@@ -82,11 +82,12 @@ def parse_txt_file(txt_path: Path) -> dict:
     Returns:
     {
         "suite": str,
-        "module_name": str,       # derived from filename
+        "module_name": str,
         "tests": [
             {
-                "name": str,      # e.g. "Search by song name and submit form"
-                "steps": list,    # ["1. Login as user-1", "2. Open the Music App", ...]
+                "name": str,
+                "tags": list,     # e.g. ["report", "smoke"]
+                "steps": list,
                 "expected": str,
             },
             ...
@@ -117,9 +118,16 @@ def parse_txt_file(txt_path: Path) -> dict:
                 tests.append(current_test)
             current_test = {
                 "name": test_header.group(1).strip(),
+                "tags": [],
                 "steps": [],
                 "expected": "",
             }
+            continue
+
+        # Tags line (within a test block): "Tags: report, smoke"
+        if current_test and re.match(r'^tags?\s*:', stripped, re.IGNORECASE):
+            raw_tags = stripped.split(":", 1)[1].strip()
+            current_test["tags"] = [t.strip() for t in raw_tags.split(",") if t.strip()]
             continue
 
         # Expected result line (within a test block)
@@ -159,6 +167,9 @@ def build_module_description(parsed: dict) -> str:
 
     for i, test in enumerate(parsed["tests"], start=1):
         lines.append(f"--- Test {i}: {test['name']} ---")
+        if test.get("tags"):
+            marks = " ".join(f"@pytest.mark.{t}" for t in test["tags"])
+            lines.append(f"Pytest markers: {marks}")
         lines.append("Steps:")
         for step in test["steps"]:
             lines.append(f"  {step}")
