@@ -10,6 +10,10 @@
 name: AI Test Generator
 
 on:
+  push:
+    paths:
+      - '**/ai_testcases/*.txt'
+
   workflow_dispatch:
     inputs:
       suite:
@@ -87,26 +91,37 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install anthropic>=0.40.0
+          pip install openai>=1.0.0
 
-      - name: Generate test file
-        id: generate
+      - name: Generate from txt files (on push)
+        if: github.event_name == 'push'
+        id: generate_push
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          INPUT_SUITE: ${{ inputs.suite }}
-          INPUT_DESCRIPTION: ${{ inputs.description }}
-          INPUT_OUTPUT: ${{ inputs.output_path }}
+        run: |
+          python ai_test_generator/process_testcases.py --force
+          GENERATED=$(git diff --name-only HEAD | grep "test_ai_" | head -1)
+          echo "generated_file=$GENERATED" >> $GITHUB_OUTPUT
+
+      - name: Generate from description (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        id: generate_manual
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python ai_test_generator/generate_test.py \
             --suite "${{ inputs.suite }}" \
             --description "${{ inputs.description }}" \
             ${{ inputs.output_path != '' && format('--output "{0}"', inputs.output_path) || '' }}
-
-          # Capture the generated file path for downstream steps
           GENERATED=$(find . -newer ai_test_generator/generate_test.py -name "test_*.py" \
                         ! -path "./venv/*" ! -path "./.git/*" | head -1)
-          echo "Generated file: $GENERATED"
           echo "generated_file=$GENERATED" >> $GITHUB_OUTPUT
+
+      - name: Set generated file output
+        id: generate
+        run: |
+          FILE="${{ steps.generate_push.outputs.generated_file || steps.generate_manual.outputs.generated_file }}"
+          echo "generated_file=$FILE" >> $GITHUB_OUTPUT
 
       - name: Upload generated test as artifact
         uses: actions/upload-artifact@v4

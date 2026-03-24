@@ -1,0 +1,15 @@
+Test Name: Search by Song Name and Submit Play Song Form
+Suite: CaseSearch
+
+Steps:
+1. Login as user-1
+2. Open the Music App
+3. Open the Songs (Normal) menu
+4. Clear selections on the case search page
+5. Search for a case by song name using text input
+6. Click the search button on the case search page
+7. Select the case and continue to forms
+8. Open the Play Song form
+9. Submit the form
+
+Expected Result: Form submits successfully and user is returned to the app home screen
