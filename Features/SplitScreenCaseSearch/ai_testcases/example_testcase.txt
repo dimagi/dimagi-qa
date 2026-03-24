@@ -1,10 +1,20 @@
-Test Name: <Give your test a short name>
-Suite: <Suite name - e.g. CaseSearch, HQSmokeTests, ExportTests>
+Suite: <Suite name - e.g. CaseSearch, HQSmokeTests, ExportTests, P1P2Tests>
 
-Steps:
-1. <First step in plain English>
+Test 1: <Short name for first test>
+1. <First step>
 2. <Second step>
 3. <Third step>
 4. <Add as many steps as needed>
+Expected Result: <What should happen>
 
-Expected Result: <What should happen at the end of the test>
+Test 2: <Short name for second test>
+1. <First step>
+2. <Second step>
+3. <Third step>
+Expected Result: <What should happen>
+
+Test 3: <Short name for third test>
+1. <First step>
+2. <Second step>
+3. <Third step>
+Expected Result: <What should happen>
