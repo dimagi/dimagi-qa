@@ -216,7 +216,7 @@ def process_file(txt_path: Path, dry_run: bool = False, force: bool = False) -> 
         print(f"[SKIP] {txt_path.name} — {out_path.name} already exists. Use --force to regenerate.")
         return False
 
-    print(f"\n[GENERATE] {txt_path.name} → {out_path.relative_to(ROOT)}")
+    print(f"\n[GENERATE] {txt_path.name} -> {out_path.relative_to(ROOT)}")
     print(f"  Suite      : {suite_name}")
     print(f"  Test cases : {len(parsed['tests'])}")
     for i, t in enumerate(parsed["tests"], 1):
