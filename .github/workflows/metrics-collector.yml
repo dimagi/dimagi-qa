@@ -313,7 +313,7 @@ jobs:
           PY
 
       - name: Cleanup old Slack messages (QA-Bot)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.cleanup_slack == 'true' }}
+        if: ${{ github.event_name != 'workflow_run' }}
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
