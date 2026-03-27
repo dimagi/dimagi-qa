@@ -255,12 +255,27 @@
   ];
 
   const FAIL_COLORS = [
-  "#e53935", // red
-  "#ef4444",
-  "#f97316", // orange
-  "#fb7185",
-  "#dc2626",
-  "#f59e0b",
+    "#7f1d1d", // deep maroon
+    "#b91c1c", // dark red
+    "#dc2626", // vivid red
+    "#e11d48", // dark pink (rose)
+    "#f43f5e", // bright pink
+    "#f97316", // orange
+    "#ea580c", // burnt orange
+    "#f59e0b", // amber / mustard
+    "#d97706", // dark mustard
+  ];
+
+  const PASS_COLORS = [
+    "#1e3a8a", // navy blue
+    "#3b82f6", // blue
+    "#60a5fa", // light blue
+    "#22c55e", // green
+    "#4ade80", // light green
+    "#34d399", // mint
+    "#10b981", // emerald
+    "#a78bfa", // lavender
+    "#c4b5fd", // light lavender
   ];
 
   // Slimmer bars + tighter spacing
@@ -393,7 +408,7 @@ function renderPassEnvPie(d) {
       labels,
       datasets: [{
         data: values,
-        backgroundColor: labels.map((_, i) => SUITE_COLORS[i % SUITE_COLORS.length]),
+        backgroundColor: labels.map((_, i) => PASS_COLORS[i % PASS_COLORS.length]),
         borderColor: "#fff",
         borderWidth: 2
       }]
