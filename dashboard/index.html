@@ -70,14 +70,23 @@
       border-radius: 18px;
       padding: 16px;
       background: #fff;
+
+      display: flex;
+      flex-direction: column;
+      gap: 10px;   /* ✅ use gap instead of space-between */
     }
 
     canvas {
       width: 100% !important;
       height: 320px !important;
+      flex-grow: 1;
+    }
+    #passEnvPie,
+    #failEnvPie {
+      height: 240px !important;
     }
 
-    .pieWrap { max-width: 520px; margin: auto; }
+    .pieWrap { max-width: 420px; margin: auto; }
     #envPie { height: 240px !important; } /* slightly smaller pie */
 
     table {
@@ -148,19 +157,31 @@
     <div class="card"><h3>Reruns</h3><div class="value" id="rerunCount">0</div></div>
   </div>
 
-  <div class="grid2">
-    <div class="box">
-      <h2>Pass vs Fail by Environment (runs)</h2>
-      <div class="muted">Pie slice = total runs per environment (current filters).</div>
-      <div class="pieWrap"><canvas id="envPie"></canvas></div>
-    </div>
+  <!-- ROW 1: Pass + Fail -->
+<div class="grid2">
 
-    <div class="box">
-      <h2>Quarterly Fail Rate Trend</h2>
-      <div class="muted">Fail rate (%) across quarters for current filters.</div>
-      <canvas id="quarterTrend"></canvas>
+  <div class="box">
+    <h2>Pass by Environment</h2>
+    <div class="pieWrap">
+      <canvas id="passEnvPie"></canvas>
     </div>
   </div>
+
+  <div class="box">
+    <h2>Fail by Environment</h2>
+    <div class="pieWrap">
+      <canvas id="failEnvPie"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- ROW 2: Quarterly -->
+<div class="box" style="margin-top:22px;">
+  <h2>Quarterly Fail Rate Trend</h2>
+  <div class="muted">Fail rate (%) across quarters for current filters.</div>
+  <canvas id="quarterTrend"></canvas>
+</div>
 
   <div class="grid2" style="margin-top:22px;">
     <div class="box">
@@ -344,50 +365,68 @@
     $("rerunCount").textContent= d.reduce((a,r)=>a+(r.rerun_count||0),0);
   }
 
-  function renderEnvPie(d) {
-    const envMap = {};
-    for (const r of d) {
-      const env = r.env || "unknown";
-      if (!envMap[env]) envMap[env] = { pass:0, fail:0 };
-      if (r.status === "pass") envMap[env].pass++;
-      else envMap[env].fail++;
-    }
-
-    const labels = Object.keys(envMap);
-    const totals = labels.map(env => envMap[env].pass + envMap[env].fail);
-
-    draw("envPie", {
-      type: "pie",
-      data: {
-        labels,
-        datasets: [{
-          data: totals,
-          backgroundColor: labels.map((_, i) => {
-            const palette = [PASS_BLUE, "#f59e0b", "#fb7185", "#22c55e", "#a78bfa", "#06b6d4", "#84cc16", FAIL_RED];
-            return palette[i % palette.length];
-          }),
-          borderColor: "#fff",
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const env = ctx.label;
-                const v = envMap[env];
-                return `${env}: total ${ctx.parsed} (pass ${v.pass}, fail ${v.fail})`;
-              }
-            }
-          },
-          legend: { position: "bottom", labels: { font: { size: 11 } } }
-        }
-      }
-    });
+    // New Code starts
+// ---- Pass by Environment
+function renderPassEnvPie(d) {
+  const map = {};
+  for (const r of d) {
+    if (r.status !== "pass") continue;
+    const env = r.env || "unknown";
+    map[env] = (map[env] || 0) + 1;
   }
+
+  const labels = Object.keys(map);
+  const values = Object.values(map);
+
+  draw("passEnvPie", {
+    type: "pie",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: labels.map((_, i) => SUITE_COLORS[i % SUITE_COLORS.length]),
+        borderColor: "#fff",
+        borderWidth: 2
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: "bottom", labels: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// ---- Fail by Environment
+function renderFailEnvPie(d) {
+  const map = {};
+  for (const r of d) {
+    if (r.status !== "fail") continue;
+    const env = r.env || "unknown";
+    map[env] = (map[env] || 0) + 1;
+  }
+
+  const labels = Object.keys(map);
+  const values = Object.values(map);
+
+  draw("failEnvPie", {
+    type: "pie",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: labels.map((_, i) => SUITE_COLORS[i % SUITE_COLORS.length]),
+        borderColor: "#fff",
+        borderWidth: 2
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: "bottom", labels: { font: { size: 11 } } }
+      }
+    }
+  });
+}
 
   function renderQuarterTrend(d) {
     const qMap = {};
@@ -663,7 +702,8 @@
   function renderAll() {
     const d = filtered();
     renderKPIs(d);
-    renderEnvPie(d);
+    renderPassEnvPie(d);
+    renderFailEnvPie(d);
     renderQuarterTrend(d);
     renderSuiteQuarterCompare(d);
     renderTopFailSuites(d);

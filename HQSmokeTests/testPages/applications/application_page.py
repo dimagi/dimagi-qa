@@ -106,7 +106,7 @@ class ApplicationPage(BasePage):
         self.updates_text = (By.XPATH,"//div[@id='js-publish-status']")
         self.make_new_version_button= (By.XPATH, "//button[contains(@data-bind,'Make New Version')]")
         self.release_button = (By.XPATH, "(//button[contains(text(),'Released')])[1]")
-        self.release_button_pressed = (By.XPATH, "(//button[contains(text(),'Released')])[1][contains(@class,'active')]")
+        self.release_button_pressed = (By.XPATH, "(//button[contains(text(),'Released')])[1][contains(@class,'dark')]")
         self.publish_button = (By.XPATH,"(//*[contains(@data-bind,'click: clickDeploy')])[1]")
         self.delete_form = (By.XPATH,"//a[./span[contains(text(),'"+UserData.new_form_name+"')]]/preceding-sibling::a[./i[@class='fa fa-trash-o']]")
         self.delete_form_confirm = (By.XPATH, "//div[./p[./strong[contains(text(),'Android')]]]/following-sibling::div[button]//i[@class='fa fa-trash']")

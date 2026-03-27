@@ -1,39 +1,48 @@
 name: Metrics Collector
 
 on:
-  # Auto-ingest after selected workflows COMPLETE (not after each job)
   workflow_run:
     workflows:
-      - "Python Request API"
       - "HQ Smoke Tests"
-      - "Multi Select"
-      - "Case Search"
-      - "Split Screen Case Search"
-      # add more suite workflow names here
+      - "Python Request API"
+      - "CO BHA Smoke Tests"
+      - "Lookup table Tests"
+      - "Case Search Tests"
+      - "Case Search Split Screen Tests"
+      - "Data Dictionary Tests"
+      - "Elastic Search Tests"
+      - "Export Tests"
+      - "Find Data by ID Tests"
+      - "Formplayer Tests"
+      - "Multi Select Tests"
+      - "Priority Escape Defects Tests"
+      - "Power BI Tests"
     types: [completed]
+    branches:
+      - master
 
-  # Manual run (paste run_id)
+
   workflow_dispatch:
     inputs:
-      run_id:
-        description: "GitHub Actions run_id to ingest (from any branch)"
+      latest_runs:
+        description: "Ingest latest N completed runs"
         required: false
-        type: string
-      publish_only:
-        description: "Skip ingestion; only republish the dashboard (uses current metrics/runs.jsonl)"
+        default: "30"
+      cleanup_slack:
+        description: "Delete all old QA-Bot messages in dashboard channel"
         required: false
-        default: false
-        type: boolean
+        default: "true"
 
-  # Daily update (republish dashboard + optional digest)
+
   schedule:
-    - cron: "30 17 * * *"  # 11:00 PM IST (17:30 UTC)
+    - cron: "30 18 * * *"   # 12:00 AM IST
 
 permissions:
-  contents: write          # commit metrics/runs.jsonl + slack state file
-  actions: read            # download artifacts from other workflow runs
+  contents: write
+  actions: read
   pages: write
   id-token: write
+
 
 concurrency:
   group: metrics-collector
@@ -41,10 +50,9 @@ concurrency:
 
 jobs:
   collect:
-    # Run ingestion on workflow_run; on manual only if publish_only is false
     if: >
-      (github.event_name == 'workflow_run') ||
-      (github.event_name == 'workflow_dispatch' && inputs.publish_only == false)
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion != 'skipped'
     runs-on: ubuntu-latest
 
     steps:
@@ -54,172 +62,383 @@ jobs:
           ref: metrics
           fetch-depth: 0
 
-      - name: Determine run id
-        id: runid
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "RID=${{ inputs.run_id }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "RID=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
-          fi
-
-          if [ -z "${{ steps.runid.outputs.RID }}" ]; then
-            echo "No run_id provided/found. Exiting."
-            exit 1
-          fi
-
-      - name: Download run-summary artifacts from target run
-        id: dl
+      - name: Resolve run IDs to ingest
+        id: runs
         uses: actions/github-script@v7
         with:
           script: |
-            const runId = Number("${{ steps.runid.outputs.RID }}");
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner, repo, run_id: runId
-            });
+            // same allowlist as workflow_run.workflows
+            const ALLOWED = new Set([
+              "HQ Smoke Tests",
+              "Python Request API",
+              "CO BHA Smoke Tests",
+              "Lookup table Tests",
+              "Case Search Tests",
+              "Case Search Split Screen Tests",
+              "Data Dictionary Tests",
+              "Elastic Search Tests",
+              "Export Tests",
+              "Find Data by ID Tests",
+              "Formplayer Tests",
+              "Multi Select Tests",
+              "Priority Escape Defects Tests",
+              "Power BI Tests",
+            ]);
 
-            // Expecting artifacts like: run-summary-staging, run-summary-production, etc.
-            const targets = artifacts.data.artifacts.filter(a => a.name.startsWith("run-summary"));
-            core.info(`Found artifacts: ${targets.map(t => t.name).join(", ")}`);
+            if (context.eventName === "workflow_run") {
+              const run = context.payload.workflow_run;
 
-            if (!targets.length) {
-              core.setOutput("FOUND", "false");
-              core.warning(`No run-summary* artifacts found for run_id=${runId}`);
+              // only ingest success/failure runs
+              if (!["success", "failure"].includes(run.conclusion)) {
+                core.info(`Skipping run ${run.id} with conclusion=${run.conclusion}`);
+                core.setOutput("ids", JSON.stringify([]));
+                return;
+              }
+
+              // Ensure it’s one of the allowed workflows (extra safety)
+              if (!ALLOWED.has(run.name)) {
+                core.info(`Skipping workflow not in allowlist: ${run.name}`);
+                core.setOutput("ids", JSON.stringify([]));
+                return;
+              }
+
+              core.setOutput("ids", JSON.stringify([run.id]));
               return;
             }
 
+            const limit = Number(core.getInput("latest_runs") || "10");
+
+            // Get more than 'limit' and filter down, because repo runs include unrelated workflows
+            const res = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              status: "completed",
+              per_page: Math.min(100, limit * 5),
+            });
+
+            const ids = res.data.workflow_runs
+              .filter(r => ALLOWED.has(r.name))
+              .slice(0, limit)
+              .map(r => r.id);
+
+            core.info(`Selected ${ids.length} run(s) from allowlisted workflows`);
+            core.setOutput("ids", JSON.stringify(ids));
+      
+
+      - name: Download run-summary artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
             const fs = require("fs");
-            for (const t of targets) {
-              const dl = await github.rest.actions.downloadArtifact({
-                owner, repo,
-                artifact_id: t.id,
-                archive_format: "zip"
+            const ids = JSON.parse(`${{ steps.runs.outputs.ids }}`);
+            fs.mkdirSync("incoming", { recursive: true });
+
+            for (const runId of ids) {
+              const arts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: runId,
               });
-              const fname = `${t.name}.zip`;
-              fs.writeFileSync(fname, Buffer.from(dl.data));
-              core.info(`Downloaded ${fname}`);
+
+              for (const a of arts.data.artifacts.filter(x => x.name.startsWith("run-summary"))) {
+                const zip = await github.rest.actions.downloadArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: a.id,
+                  archive_format: "zip",
+                });
+                fs.writeFileSync(`incoming/${runId}__${a.name}.zip`, Buffer.from(zip.data));
+              }
             }
-            core.setOutput("FOUND", "true");
 
-      - name: Unzip artifacts
-        if: ${{ steps.dl.outputs.FOUND == 'true' }}
-        shell: bash
+      - name: Unzip artifacts (safe)
         run: |
-          mkdir -p incoming
-          for z in run-summary*.zip; do
-            [ -f "$z" ] || continue
-            d="incoming/${z%.zip}"
+          shopt -s nullglob
+          found=false
+          for z in incoming/*.zip; do
+            found=true
+            d="${z%.zip}"
             mkdir -p "$d"
-            unzip -o "$z" -d "$d"
+            unzip -o "$z" -d "$d" >/dev/null
           done
+          if [ "$found" = false ]; then
+            echo "No artifacts to unzip"
+          fi
+      
 
-          echo "Found run_summary.json files:"
-          find incoming -type f -name "run_summary.json" -print
-
-      - name: Append to dataset (metrics/runs.jsonl)
-        if: ${{ steps.dl.outputs.FOUND == 'true' }}
-        shell: bash
+      - name: Append to metrics dataset (deduped)
         run: |
+          set -e
           mkdir -p metrics
           touch metrics/runs.jsonl
 
-          mapfile -t files < <(find incoming -type f -name "run_summary.json" | sort)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "No run_summary.json found after unzip. Skipping dataset update."
-            exit 0
-          fi
+          python <<'PY'
+          import json, os
+          
+          existing_ids = set()
+          if os.path.exists("metrics/runs.jsonl"):
+              with open("metrics/runs.jsonl") as f:
+                  for line in f:
+                      try:
+                          obj = json.loads(line)
+                          rid = (
+                              obj.get("github", {}).get("run_id")
+                              or obj.get("run_id")
+                          )
+                          if rid:
+                              existing_ids.add(str(rid))
+                      except Exception:
+                          pass
+          
+          added = 0
+          with open("metrics/runs.jsonl", "a", encoding="utf-8") as out:
+              for root, _, files in os.walk("incoming"):
+                  for name in files:
+                      if name == "run_summary.json":
+                          path = os.path.join(root, name)
+                          with open(path, encoding="utf-8") as fh:
+                              obj = json.load(fh)
+          
+                          rid = (
+                              obj.get("github", {}).get("run_id")
+                              or obj.get("run_id")
+                          )
+          
+                          if not rid:
+                              continue
+          
+                          rid = str(rid)
+                          if rid in existing_ids:
+                              continue
+          
+                          out.write(json.dumps(obj, ensure_ascii=False) + "\n")
+                          existing_ids.add(rid)
+                          added += 1
+          
+          print(f"Added {added} new runs")
 
-          for f in "${files[@]}"; do
-            python - "$f" <<'PY' >> metrics/runs.jsonl
-          import json, sys
-          p = sys.argv[1]
-          with open(p, "r", encoding="utf-8") as fh:
-              obj = json.load(fh)
-          print(json.dumps(obj, ensure_ascii=False))
           PY
-          done
 
-      - name: Commit dataset update
-        if: ${{ steps.dl.outputs.FOUND == 'true' }}
-        shell: bash
+      - name: Commit metrics
         run: |
           git config user.name "metrics-bot"
           git config user.email "metrics-bot@users.noreply.github.com"
           git add metrics/runs.jsonl
-          git commit -m "Metrics update from run ${{ steps.runid.outputs.RID }}" || echo "No changes"
+          git commit -m "Metrics update ${GITHUB_RUN_ID}" || echo "No new metrics"
           git push origin metrics
 
   publish_dashboard:
-    # Publish on schedule, or after collect, or manual publish_only
-    if: ${{ always() }}
+    needs: collect
     runs-on: ubuntu-latest
-    needs: [collect]
     environment:
       name: github-pages
 
     steps:
-      - name: Checkout metrics branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: metrics
-          fetch-depth: 0
 
-      - name: Build static site
-        shell: bash
-        run: |
+      - run: |
           rm -rf site
           mkdir -p site/data
-
-          # Dashboard UI at root
-          cp -r dashboard/* site/
-
-          # Data file served at /data/runs.jsonl
+          cp dashboard/index.html site/index.html
           cp metrics/runs.jsonl site/data/runs.jsonl
 
-          # Avoid Jekyll processing
-          touch site/.nojekyll
-
-          echo "Site contents:"
-          find site -maxdepth 3 -type f -print
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
 
   daily_digest:
-    # Post ONLY on schedule OR manual trigger (not on workflow_run)
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    needs: publish_dashboard
     runs-on: ubuntu-latest
-    needs: [publish_dashboard]
 
     steps:
-      - name: Checkout metrics branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: metrics
           fetch-depth: 0
 
-      - name: Post/Update Slack dashboard message
-        shell: bash
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_CHANNEL: "#qa-dashboard"
-          DASHBOARD_URL: "https://dimagi.github.io/dimagi-qa/"
+      - name: Build Slack summary
         run: |
-          # If you already have a python helper, call it here.
-          # Otherwise this is a placeholder to show intention.
-          echo "Post/update Slack message pointing to $DASHBOARD_URL in $SLACK_CHANNEL"
-          # Recommended approach:
-          # - Store ts in metrics/slack_dashboard_message.json
-          # - Use chat.update if ts exists, else chat.postMessage
+          python - <<'PY'
+          import json, datetime
+          from collections import defaultdict
+
+          now = datetime.datetime.now(datetime.timezone.utc)
+          cutoff = now - datetime.timedelta(hours=24)
+
+          stats = defaultdict(lambda: {"pass": 0, "fail": 0})
+          total = 0
+
+          with open("metrics/runs.jsonl", encoding="utf-8") as f:
+              for line in f:
+                  r = json.loads(line)
+                  ts = r.get("timestamp_utc")
+                  if not ts:
+                      continue
+                  t = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                  if t < cutoff:
+                      continue
+
+                  env = r.get("env") or r.get("environment") or "unknown"
+                  total += 1
+                  if (r.get("status") or "").lower() == "pass":
+                      stats[env]["pass"] += 1
+                  else:
+                      stats[env]["fail"] += 1
+
+          # stable ordering in Slack
+          env_order = sorted(stats.keys())
+          lines = [f"• *{e}* → ✅ {stats[e]['pass']} | ❌ {stats[e]['fail']}" for e in env_order]
+
+          fail_total = sum(v["fail"] for v in stats.values())
+          fail_rate = round((fail_total / total * 100), 1) if total else 0
+
+          msg = (
+              "📊 *QA Automation Dashboard (last 24h)*\n\n"
+              "*Environment summary:*\n"
+              + ("\n".join(lines) if lines else "_No runs in last 24h_")
+              + f"\n\n• Runs: *{total}*\n"
+              + f"• Fail rate: *{fail_rate}%*\n\n"
+              + "🔗 https://dimagi.github.io/dimagi-qa/"
+          )
+
+          with open("slack_message.txt", "w", encoding="utf-8") as out:
+              out.write(msg)
+          PY
+
+      - name: Cleanup old Slack messages (QA-Bot)
+        if: ${{ github.event_name != 'workflow_run' }}
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+        run: |
+          set -euo pipefail
+
+          # Identify the bot user id
+          AUTH="$(curl -sS https://slack.com/api/auth.test \
+            -H "Authorization: Bearer ${SLACK_TOKEN}")"
+
+          if [ "$(echo "$AUTH" | jq -r '.ok')" != "true" ]; then
+            echo "auth.test failed:"
+            echo "$AUTH" | jq .
+            exit 1
+          fi
+
+          BOT_USER_ID="$(echo "$AUTH" | jq -r '.user_id')"
+          echo "Bot user id: $BOT_USER_ID"
+
+          CURSOR=""
+          DELETED=0
+
+          while : ; do
+            if [ -n "$CURSOR" ]; then
+              HIST="$(curl -sS https://slack.com/api/conversations.history \
+                -H "Authorization: Bearer ${SLACK_TOKEN}" \
+                --get \
+                --data-urlencode "channel=${SLACK_CHANNEL}" \
+                --data-urlencode "limit=200" \
+                --data-urlencode "cursor=${CURSOR}")"
+            else
+              HIST="$(curl -sS https://slack.com/api/conversations.history \
+                -H "Authorization: Bearer ${SLACK_TOKEN}" \
+                --get \
+                --data-urlencode "channel=${SLACK_CHANNEL}" \
+                --data-urlencode "limit=200")"
+            fi
+
+            if [ "$(echo "$HIST" | jq -r '.ok')" != "true" ]; then
+              echo "conversations.history failed:"
+              echo "$HIST" | jq .
+              exit 1
+            fi
+
+            # Delete messages authored by this bot user
+            TS_LIST="$(echo "$HIST" | jq -r --arg u "$BOT_USER_ID" '.messages[] | select(.user==$u) | .ts')"
+
+            if [ -n "$TS_LIST" ]; then
+              while IFS= read -r TS; do
+                [ -z "$TS" ] && continue
+                RESP="$(curl -sS -X POST https://slack.com/api/chat.delete \
+                  -H "Authorization: Bearer ${SLACK_TOKEN}" \
+                  -H "Content-Type: application/json; charset=utf-8" \
+                  --data "$(jq -n --arg channel "$SLACK_CHANNEL" --arg ts "$TS" \
+                    '{channel:$channel, ts:$ts}')" )"
+
+                if [ "$(echo "$RESP" | jq -r '.ok')" = "true" ]; then
+                  DELETED=$((DELETED+1))
+                else
+                  # common: cant_delete_message, missing_scope, not_in_channel
+                  echo "Failed to delete ts=$TS:"
+                  echo "$RESP" | jq .
+                fi
+              done <<< "$TS_LIST"
+            fi
+
+            CURSOR="$(echo "$HIST" | jq -r '.response_metadata.next_cursor // ""')"
+            [ -z "$CURSOR" ] && break
+          done
+
+          echo "Deleted $DELETED old QA-Bot messages."
+
+          # Also clear the stored TS so next step posts a fresh "single message"
+          rm -f metrics/slack_state.json || true
+
+      - name: Post or update Slack message (single pinned-style message)
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_QA_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL_ID_DASHBOARD }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p metrics
+          STATE_FILE="metrics/slack_state.json"
+
+          PREV_TS=""
+          if [ -f "$STATE_FILE" ]; then
+            PREV_TS="$(python -c "import json; print((json.load(open('$STATE_FILE')) or {}).get('ts',''))" 2>/dev/null || true)"
+          fi
+
+          TEXT="$(cat slack_message.txt)"
+
+          if [ -n "${PREV_TS}" ]; then
+            echo "Updating existing Slack message ts=${PREV_TS}"
+            RESP="$(curl -sS -X POST https://slack.com/api/chat.update \
+              -H "Authorization: Bearer ${SLACK_TOKEN}" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              --data "$(jq -n --arg channel "$SLACK_CHANNEL" --arg ts "$PREV_TS" --arg text "$TEXT" \
+                '{channel:$channel, ts:$ts, text:$text}')" )"
+          else
+            echo "Posting new Slack message (no previous ts found)"
+            RESP="$(curl -sS -X POST https://slack.com/api/chat.postMessage \
+              -H "Authorization: Bearer ${SLACK_TOKEN}" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              --data "$(jq -n --arg channel "$SLACK_CHANNEL" --arg text "$TEXT" \
+                '{channel:$channel, text:$text}')" )"
+          fi
+
+          OK="$(echo "$RESP" | jq -r '.ok')"
+          if [ "$OK" != "true" ]; then
+            echo "Slack API error response:"
+            echo "$RESP" | jq .
+            exit 1
+          fi
+
+          NEW_TS="$(echo "$RESP" | jq -r '.ts')"
+          echo "Slack message ts=${NEW_TS}"
+
+          # Save state so next run updates instead of posting new
+          echo "$RESP" | jq '{ts: .ts, channel: .channel}' > "$STATE_FILE"
+
+      - name: Commit Slack state
+        run: |
+          git config user.name "metrics-bot"
+          git config user.email "metrics-bot@users.noreply.github.com"
+          git add metrics/slack_state.json || true
+          git commit -m "Update Slack dashboard message state" || echo "No changes"
+          git push origin metrics

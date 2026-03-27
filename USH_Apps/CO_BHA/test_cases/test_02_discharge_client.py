@@ -10,6 +10,8 @@ import names
 
 def test_case_discharge_client_1(driver, settings):
     """use case: state level user"""
+    if 'www' in settings['url']:
+        pytest.xfail("Missing dropdown value on Production")
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     app = BhaWorkflows(driver)
