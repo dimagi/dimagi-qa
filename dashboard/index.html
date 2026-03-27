@@ -254,6 +254,15 @@
     "#0ea5e9","#fb7185","#10b981","#f97316"
   ];
 
+  const FAIL_COLORS = [
+  "#e53935", // red
+  "#ef4444",
+  "#f97316", // orange
+  "#fb7185",
+  "#dc2626",
+  "#f59e0b",
+  ];
+
   // Slimmer bars + tighter spacing
   const BAR_OPTS = {
     barThickness: 16,
@@ -415,7 +424,7 @@ function renderFailEnvPie(d) {
       labels,
       datasets: [{
         data: values,
-        backgroundColor: labels.map((_, i) => SUITE_COLORS[i % SUITE_COLORS.length]),
+        backgroundColor: labels.map((_, i) => FAIL_COLORS[i % FAIL_COLORS.length]),
         borderColor: "#fff",
         borderWidth: 2
       }]
