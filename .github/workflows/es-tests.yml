@@ -315,6 +315,35 @@ jobs:
                   raise SlackApiError("Upload failed", response)
               permalink = response["file"]["permalink"]
               print(f"✅ Uploaded successfully: {permalink}")
+
+              # Post AI failure analysis as a thread reply if tests failed
+              import pathlib
+              ai_report = pathlib.Path("ai_failure_report.md")
+              if os.environ.get("JOB_STATUS") != "success" and ai_report.exists():
+                  report_text = ai_report.read_text(encoding="utf-8").strip()
+                  if report_text:
+                      shares = response.get("file", {}).get("shares", {})
+                      msg_ts = None
+                      for scope in ("public", "private"):
+                          for ch_msgs in shares.get(scope, {}).values():
+                              if ch_msgs:
+                                  msg_ts = ch_msgs[0].get("ts")
+                                  break
+                          if msg_ts:
+                              break
+                      if msg_ts:
+                          if len(report_text) > 3000:
+                              report_text = report_text[:3000] + " ... [see CI artifact for full report]"
+                          try:
+                              client.chat_postMessage(
+                                  channel=channel,
+                                  thread_ts=msg_ts,
+                                  text="🤖 *AI Failure Analysis*: " + report_text,
+                                  mrkdwn=True
+                              )
+                              print("✅ AI failure analysis posted as thread reply")
+                          except SlackApiError as thread_err:
+                              print(f"⚠️ Could not post AI thread: {thread_err.response['error']}")
           except SlackApiError as e:
               print(f"❌ Slack API error: {e.response['error']}")
               raise
