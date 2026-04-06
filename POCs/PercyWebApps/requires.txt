@@ -22,3 +22,4 @@ imap-tools
 beautifulsoup4
 html5lib
 percy-selenium
+openai
