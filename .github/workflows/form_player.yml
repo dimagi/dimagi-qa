@@ -302,15 +302,25 @@ jobs:
               if os.environ.get("JOB_STATUS") != "success" and ai_report.exists():
                   report_text = ai_report.read_text(encoding="utf-8").strip()
                   if report_text:
-                      shares = response.get("file", {}).get("shares", {})
+                      file_id = None
+                      if response.get("file"):
+                          file_id = response["file"].get("id")
+                      elif response.get("files"):
+                          file_id = response["files"][0].get("id")
                       msg_ts = None
-                      for scope in ("public", "private"):
-                          for ch_msgs in shares.get(scope, {}).values():
-                              if ch_msgs:
-                                  msg_ts = ch_msgs[0].get("ts")
-                                  break
-                          if msg_ts:
-                              break
+                      if file_id:
+                          try:
+                              info = client.files_info(file=file_id)
+                              shares = info.get("file", {}).get("shares", {})
+                              for scope in ("public", "private"):
+                                  for ch_msgs in shares.get(scope, {}).values():
+                                      if ch_msgs:
+                                          msg_ts = ch_msgs[0].get("ts")
+                                          break
+                                  if msg_ts:
+                                      break
+                          except Exception as info_err:
+                              print(f"⚠️ Could not fetch file info: {info_err}")
                       if msg_ts:
                           if len(report_text) > 3000:
                               report_text = report_text[:3000] + " ... [see CI artifact for full report]"
