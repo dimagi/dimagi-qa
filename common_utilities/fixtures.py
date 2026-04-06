@@ -114,6 +114,17 @@ def appsite(pytestconfig):
     return pytestconfig.getoption("--appsite")
 
 
+def pytest_configure(config):
+    """Inject report_fix.css into every pytest-html report automatically."""
+    css_path = str(Path(__file__).parent / "report_fix.css")
+    try:
+        if hasattr(config, "option") and hasattr(config.option, "css"):
+            if css_path not in config.option.css:
+                config.option.css.append(css_path)
+    except Exception:
+        pass  # never block test collection
+
+
 @pytest.hookimpl(optionalhook=True)
 def pytest_html_results_table_header(cells):
     # <th class="sortable result initial-sort asc inactive" col="result"><div class="sort-icon">vvv</div>Result</th>
@@ -197,10 +208,12 @@ def pytest_runtest_makereport(item):
 
                 if pytest_html and screen_img:
                     html_block = (
-                            '<div><img src="data:image/png;base64,%s" alt="screenshot" '
-                            'style="width:600px;height:300px;" '
-                            'onclick="window.open(this.src)" align="right"/></div>'
-                            % screen_img
+                        '<div style="margin:6px 0; text-align:center;">'
+                        '<img src="data:image/png;base64,%s" alt="screenshot" '
+                        'style="max-width:100%%; width:800px; height:auto; '
+                        'cursor:pointer; border:1px solid #ccc; display:block; margin:0 auto;" '
+                        'onclick="window.open(this.src)" /></div>'
+                        % screen_img
                     )
                     extra.append(pytest_html.extras.html(html_block))
                 elif pytest_html:
