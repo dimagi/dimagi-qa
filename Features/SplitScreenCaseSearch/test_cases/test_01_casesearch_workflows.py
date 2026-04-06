@@ -5,8 +5,27 @@ from Features.CaseSearch.constants import *
 
 """"Contains all case search workflow related test cases"""
 
+def test_case_01_add_new_song(driver, settings):
+    webapps = WebApps(driver, settings)
+    casesearch = CaseSearchWorkflows(driver)
+    webapps.login_as(CaseSearchUserInput.user_2)
+    webapps.open_app(CaseSearchUserInput.case_search_app_name)
+    webapps.open_menu(CaseSearchUserInput.add_song)
+    casesearch.fill_form()
+    webapps.submit_the_form()
+    webapps.open_menu(CaseSearchUserInput.search_first_menu)
+    webapps.clear_selections_on_case_search_page()
+    case_name = casesearch.search_against_property(search_property=CaseSearchUserInput.song_name,
+                                                   input_value=CaseSearchUserInput.new_song_name,
+                                                   property_type=TEXT_INPUT)
+    webapps.search_button_on_case_search_page()
+    webapps.omni_search(case_name)
+    webapps.select_case_and_continue(case_name)
+    webapps.open_form(CaseSearchUserInput.close_song_form)
+    webapps.submit_the_form()
 
-def test_case_01_normal_workflow(driver, settings):
+
+def test_case_02_normal_workflow(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Checks if user can submit a form for normal search"""
@@ -29,7 +48,7 @@ def test_case_01_normal_workflow(driver, settings):
     webapps.omni_search(case_name)
 
 
-def test_case_02_search_first(driver, settings):
+def test_case_03_search_first(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Checks if user can submit a form for search first"""
@@ -46,7 +65,7 @@ def test_case_02_search_first(driver, settings):
     webapps.submit_the_form()
 
 
-def test_case_05_see_more(driver, settings):
+def test_case_04_see_more(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Checks if user can submit a form for see more"""
@@ -61,7 +80,7 @@ def test_case_05_see_more(driver, settings):
     webapps.submit_the_form()
 
 
-def test_case_07_skip_to_default_search(driver, settings):
+def test_case_05_skip_to_default_search(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     """Checks if user can submit a form for skip to default search"""
@@ -73,3 +92,5 @@ def test_case_07_skip_to_default_search(driver, settings):
     webapps.select_case_and_continue(case_name)
     webapps.open_form(CaseSearchUserInput.play_song_form)
     webapps.submit_the_form()
+
+

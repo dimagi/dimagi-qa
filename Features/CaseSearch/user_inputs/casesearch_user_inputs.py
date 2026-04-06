@@ -1,4 +1,5 @@
 """"Contains test data that are used as user inputs across various areass used in Case Search"""
+from common_utilities.generate_random_string import fetch_random_string, fetch_random_digit
 
 
 class CaseSearchUserInput:
@@ -22,10 +23,12 @@ class CaseSearchUserInput:
     kiran = "kiran"
 
     """Menus"""
+    add_song = "Add Song"
     normal_menu = "Songs (Normal)"
     search_first_menu = "Songs (Search First)"
     see_more_menu = "Songs (See More)"
     skip_default_menu = "Songs (Skip to Default Search)"
+    without_case_search_settings = "Songs - Without Case Search Settings"
     artist_menu = "Artist"
     exclude_property_from_case_search_menu = "Exclude property from case search"
     search_filter_menu = "Search Filter"
@@ -51,12 +54,14 @@ class CaseSearchUserInput:
 
     """Forms"""
     play_song_form = "Play Song"
+    search_duplicate_form ='Search Duplicates [Load External]'
     shows_form = "Shows"
     add_show_form = "Add Show"
     add_address_form = "Add Address"
     update_ratings_form = "Update Rating, Mood, or Energy"
     view_instruments_form = "View Instruments"
     update_song_form = "Update Song--> redirects to First Menu"
+    close_song_form = "Close Song --> redirects to Home Screen"
 
     """Pre=Configured Cases"""
     # Song-Cases
@@ -193,3 +198,15 @@ class CaseSearchUserInput:
 
     # Questions
     add_show_question = "Add a show in this city"
+
+    #Add songs
+    artist_name= "artist_name" + fetch_random_string()
+    new_song_name = "new song created"
+    album_name = "album_name" + fetch_random_string()
+    new_song_id = fetch_random_digit()
+    rating_values = ['5 stars','4 stars','3 stars','2 stars','1 stars']
+    location = "Delhi"
+    city = "Saugus"
+    country = "Essex"
+    favourite_value =['Yes','No']
+    genre_value = "Hip Hop"
