@@ -293,17 +293,20 @@ jobs:
                   initial_comment=message
               )
               print("✅ Summary + chart posted")
-              # Extract ts from upload response directly (avoids picking up a previous thread)
+              # Get ts via files_info using the file ID from the upload response
               parent_ts = None
               try:
                   file_data = (upload_response.get("files") or [upload_response.get("file") or {}])[0]
-                  shares = file_data.get("shares", {})
-                  for share_type in ("public", "private"):
-                      if channel in shares.get(share_type, {}):
-                          parent_ts = shares[share_type][channel][0]["ts"]
-                          break
+                  file_id = file_data.get("id")
+                  if file_id:
+                      info = client.files_info(file=file_id)
+                      shares = info.get("file", {}).get("shares", {})
+                      for share_type in ("public", "private"):
+                          if channel in shares.get(share_type, {}):
+                              parent_ts = shares[share_type][channel][0]["ts"]
+                              break
               except Exception as ts_err:
-                  print(f"⚠️ Could not extract ts from upload response: {ts_err}")
+                  print(f"⚠️ Could not get ts for threading: {ts_err}")
               print(f"✅ Got message ts for threading: {parent_ts}")
 
               # Post AI failure analysis as a thread reply if tests failed
