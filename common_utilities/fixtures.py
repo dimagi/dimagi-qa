@@ -196,13 +196,7 @@ def pytest_runtest_makereport(item):
                 screen_img = _capture_screenshot(driver)  # your SAFE helper
 
                 if pytest_html and screen_img:
-                    html_block = (
-                            '<div><img src="data:image/png;base64,%s" alt="screenshot" '
-                            'style="width:600px;height:300px;" '
-                            'onclick="window.open(this.src)" align="right"/></div>'
-                            % screen_img
-                    )
-                    extra.append(pytest_html.extras.html(html_block))
+                    extra.append(pytest_html.extras.image(screen_img, mime_type="image/png", extension="png"))
                 elif pytest_html:
                     extra.append(pytest_html.extras.html(
                         "<div><em>[WARN] Screenshot unavailable (browser unresponsive)</em></div>"

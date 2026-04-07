@@ -41,6 +41,23 @@ class BasePage:
         self.error_404 = (By.XPATH, "//h1[contains(text(),'404')]")
         self.error_403 = (By.XPATH, "//h1[text()='403 Forbidden']")
 
+    # ------------------------------------------------------------------
+    # Self-Healing
+    # ------------------------------------------------------------------
+    def _attempt_heal(self, locator: tuple, context_hint: str = "") -> tuple | None:
+        """
+        Call the AI self-healing engine for a locator that just failed.
+        Returns a healed (By, value) tuple, or None if healing is unavailable
+        or unsuccessful.  Never raises — failures are logged and swallowed so
+        the original exception can propagate normally.
+        """
+        try:
+            from common_utilities.selenium.self_healing import heal_locator
+            return heal_locator(self.driver, locator, context_hint)
+        except Exception as exc:
+            print(f"[Self-Heal] Healing attempt raised an unexpected error: {exc}")
+            return None
+
     def page_404(self):
         try:
             self.page_404_displayed = self.is_displayed(self.error_404)
@@ -64,10 +81,20 @@ class BasePage:
 
     @retry_on_exception((StaleElementReferenceException, TimeoutException), retries=2, delay=2)
     def wait_to_click(self, locator, timeout=10):
-        element = WebDriverWait(self.driver, timeout, poll_frequency=1).until(
-            ec.element_to_be_clickable(locator),
-            message=f"Couldn't find locator: {locator}"
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+                ec.element_to_be_clickable(locator),
+                message=f"Couldn't find locator: {locator}"
             )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "wait_to_click")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+                    ec.element_to_be_clickable(healed),
+                    message=f"Couldn't find healed locator: {healed}"
+                )
+            else:
+                raise
         try:
             element.click()
         except UnexpectedAlertPresentException:
@@ -79,30 +106,70 @@ class BasePage:
 
     @retry_on_exception((ElementNotInteractableException, StaleElementReferenceException, TimeoutException))
     def wait_to_clear_and_send_keys(self, locator, user_input, timeout=10):
-        element = WebDriverWait(self.driver, timeout).until(
-            ec.visibility_of_element_located(locator),
-            message=f"Couldn't find locator: {locator}"
+        try:
+            element = WebDriverWait(self.driver, timeout).until(
+                ec.visibility_of_element_located(locator),
+                message=f"Couldn't find locator: {locator}"
             )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "wait_to_clear_and_send_keys")
+            if healed:
+                element = WebDriverWait(self.driver, timeout).until(
+                    ec.visibility_of_element_located(healed),
+                    message=f"Couldn't find healed locator: {healed}"
+                )
+            else:
+                raise
         element.clear()
         element.send_keys(user_input)
         # self.wait_after_interaction()
 
     def wait_to_get_text(self, locator, timeout=10):
-        clickable = ec.visibility_of_element_located(locator)
-        element_text = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(clickable).text
-        return element_text
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                ec.visibility_of_element_located(locator)
+            )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "wait_to_get_text")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                    ec.visibility_of_element_located(healed)
+                )
+            else:
+                raise
+        return element.text
 
     def wait_to_get_value(self, locator, timeout=10):
-        clickable = ec.visibility_of_element_located(locator)
-        element_text = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(clickable).get_attribute("value")
-        return element_text
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                ec.visibility_of_element_located(locator)
+            )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "wait_to_get_value")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                    ec.visibility_of_element_located(healed)
+                )
+            else:
+                raise
+        return element.get_attribute("value")
 
     @retry_on_exception((StaleElementReferenceException, TimeoutException))
     def wait_for_element(self, locator, timeout=30):
-        clickable = ec.presence_of_element_located(locator)
-        WebDriverWait(self.driver, timeout, poll_frequency=1).until(clickable,
-                                                                        message="Couldn't find locator: " + str(locator)
-                                                                        )
+        try:
+            WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+                ec.presence_of_element_located(locator),
+                message="Couldn't find locator: " + str(locator)
+            )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "wait_for_element")
+            if healed:
+                WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+                    ec.presence_of_element_located(healed),
+                    message="Couldn't find healed locator: " + str(healed)
+                )
+            else:
+                raise
             # self.wait_after_interaction()
 
     @retry_on_exception((StaleElementReferenceException, TimeoutException))
@@ -123,10 +190,20 @@ class BasePage:
     @retry_on_exception((StaleElementReferenceException, TimeoutException))
     def wait_and_sleep_to_click(self, locator, timeout=20):
         time.sleep(2)  # Optional initial sleep
-        element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
-            ec.element_to_be_clickable(locator),
-            message=f"Couldn't find locator: {locator}"
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                ec.element_to_be_clickable(locator),
+                message=f"Couldn't find locator: {locator}"
             )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "wait_and_sleep_to_click")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                    ec.element_to_be_clickable(healed),
+                    message=f"Couldn't find healed locator: {healed}"
+                )
+            else:
+                raise
         try:
             element.click()
         except ElementClickInterceptedException:
@@ -143,12 +220,20 @@ class BasePage:
     def find_elements(self, locator):
         # self.wait_after_interaction()
         elements = self.driver.find_elements(*locator)
+        if not elements:
+            healed = self._attempt_heal(locator, "find_elements")
+            if healed:
+                elements = self.driver.find_elements(*healed)
         return elements
         # return [WrappedWebElement(e, self.driver, base_page=self) for e in elements]
 
     def find_elements_texts(self, locator):
         # self.wait_after_interaction()
         elements = self.driver.find_elements(*locator)
+        if not elements:
+            healed = self._attempt_heal(locator, "find_elements_texts")
+            if healed:
+                elements = self.driver.find_elements(*healed)
         value_list = []
         for element in elements:
             value_list.append(element.text)
@@ -156,16 +241,33 @@ class BasePage:
 
     def find_element(self, locator):
         # self.wait_after_interaction()
-        element = self.driver.find_element(*locator)
+        try:
+            element = self.driver.find_element(*locator)
+        except NoSuchElementException:
+            healed = self._attempt_heal(locator, "find_element")
+            if healed:
+                element = self.driver.find_element(*healed)
+            else:
+                raise
         return element
         # return WrappedWebElement(element, self.driver, base_page=self)
 
     @retry_on_exception((StaleElementReferenceException, ElementClickInterceptedException, TimeoutException))
     def click(self, locator, timeout=10):
-        element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
-            ec.element_to_be_clickable(locator),
-            message=f"Couldn't find or click locator: {locator}"
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                ec.element_to_be_clickable(locator),
+                message=f"Couldn't find or click locator: {locator}"
             )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "click")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                    ec.element_to_be_clickable(healed),
+                    message=f"Couldn't find or click healed locator: {healed}"
+                )
+            else:
+                raise
         try:
             element.click()
         except Exception:
@@ -222,11 +324,29 @@ class BasePage:
         select_source.deselect_all()
 
     def move_to_element_and_click(self, locator):
-        element = self.driver.find_element(*locator)
+        try:
+            element = self.driver.find_element(*locator)
+        except NoSuchElementException:
+            healed = self._attempt_heal(locator, "move_to_element_and_click")
+            if healed:
+                element = self.driver.find_element(*healed)
+            else:
+                raise
         ActionChains(self.driver).move_to_element(element).click(element).perform()
 
     def hover_on_element(self, locator):
-        element = WebDriverWait(self.driver, 20, poll_frequency=0.5).until(ec.visibility_of_element_located(locator))
+        try:
+            element = WebDriverWait(self.driver, 20, poll_frequency=0.5).until(
+                ec.visibility_of_element_located(locator)
+            )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "hover_on_element")
+            if healed:
+                element = WebDriverWait(self.driver, 20, poll_frequency=0.5).until(
+                    ec.visibility_of_element_located(healed)
+                )
+            else:
+                raise
         ActionChains(self.driver).move_to_element(element).pause(2).perform()
 
     def clear(self, locator):
@@ -235,10 +355,20 @@ class BasePage:
 
     @retry_on_exception((ElementNotInteractableException, StaleElementReferenceException, TimeoutException))
     def send_keys(self, locator, user_input, timeout=10):
-        element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
-            ec.element_to_be_clickable(locator),
-            message=f"Couldn't find or click locator: {locator}"
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                ec.element_to_be_clickable(locator),
+                message=f"Couldn't find or click locator: {locator}"
             )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "send_keys")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                    ec.element_to_be_clickable(healed),
+                    message=f"Couldn't find or click healed locator: {healed}"
+                )
+            else:
+                raise
         try:
             element.clear()
             element.send_keys(user_input)
@@ -252,13 +382,27 @@ class BasePage:
         # self.wait_after_interaction()
 
     def get_text(self, locator):
-        element = self.driver.find_element(*locator)
+        try:
+            element = self.driver.find_element(*locator)
+        except NoSuchElementException:
+            healed = self._attempt_heal(locator, "get_text")
+            if healed:
+                element = self.driver.find_element(*healed)
+            else:
+                raise
         element_text = element.text
         print(element_text)
         return element_text
 
     def get_attribute(self, locator, attribute):
-        element = self.driver.find_element(*locator)
+        try:
+            element = self.driver.find_element(*locator)
+        except NoSuchElementException:
+            healed = self._attempt_heal(locator, "get_attribute")
+            if healed:
+                element = self.driver.find_element(*healed)
+            else:
+                raise
         element_attribute = element.get_attribute(attribute)
         print(element_attribute)
         return element_attribute
@@ -431,16 +575,33 @@ class BasePage:
 
     @retry_on_exception((TimeoutException,StaleElementReferenceException))
     def js_click(self, locator, timeout=10):
-        element = WebDriverWait(self.driver, timeout, poll_frequency=0.25).until(
-            ec.presence_of_element_located(locator),
-            message=f"Couldn't find locator: {locator}"
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.25).until(
+                ec.presence_of_element_located(locator),
+                message=f"Couldn't find locator: {locator}"
             )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "js_click")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.25).until(
+                    ec.presence_of_element_located(healed),
+                    message=f"Couldn't find healed locator: {healed}"
+                )
+            else:
+                raise
         self.driver.execute_script("arguments[0].click();", element)
         time.sleep(1)
         self.wait_after_interaction()
 
     def scroll_to_element(self, locator):
-        element = self.driver.find_element(*locator)
+        try:
+            element = self.driver.find_element(*locator)
+        except NoSuchElementException:
+            healed = self._attempt_heal(locator, "scroll_to_element")
+            if healed:
+                element = self.driver.find_element(*healed)
+            else:
+                raise
         self.driver.execute_script("arguments[0].scrollIntoView();", element)
 
     def wait_and_find_elements(self, locator, cols, timeout=50):
@@ -563,11 +724,20 @@ class BasePage:
         print("Switched to frame.")
 
     def js_send_keys(self, locator, value, timeout=10):
-        clickable = ec.element_to_be_clickable(locator)
-        element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(clickable,
-                                                                              message="Couldn't find locator: "
-                                                                                      + str(locator)
-                                                                              )
+        try:
+            element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                ec.element_to_be_clickable(locator),
+                message="Couldn't find locator: " + str(locator)
+            )
+        except (TimeoutException, NoSuchElementException):
+            healed = self._attempt_heal(locator, "js_send_keys")
+            if healed:
+                element = WebDriverWait(self.driver, timeout, poll_frequency=0.5).until(
+                    ec.element_to_be_clickable(healed),
+                    message="Couldn't find healed locator: " + str(healed)
+                )
+            else:
+                raise
         self.driver.execute_script("arguments[0].value='" + value + "';", element)
         time.sleep(1)
         self.wait_after_interaction()

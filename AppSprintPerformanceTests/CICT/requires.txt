@@ -12,3 +12,4 @@ pytest-repeat>=0.9.1
 pyotp >=2.6.0
 openpyxl>=3.0.9
 numpy>=1.22.3
+openai

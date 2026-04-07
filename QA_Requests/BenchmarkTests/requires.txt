@@ -15,3 +15,4 @@ Appium-Python-Client == 0.52
 numpy>=1.21.2
 xlsxwriter
 xlrd
+openai
