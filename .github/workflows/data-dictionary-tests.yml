@@ -283,30 +283,26 @@ jobs:
           )
 
           try:
-              # Post text summary first to get a reliable ts for threading
-              main_msg = client.chat_postMessage(
-                  channel=channel,
-                  text=message,
-                  mrkdwn=True
-              )
-              parent_ts = main_msg["ts"]
-              print(f"✅ Summary message posted (ts={parent_ts})")
-
-              # Upload chart to main channel
-              client.files_upload_v2(
+              # Upload chart with summary as initial_comment — single combined message
+              upload_response = client.files_upload_v2(
                   file=file_path,
                   filename="summary_combined.png",
                   title="summary combined",
                   channel=channel,
+                  initial_comment=message
               )
-              print("✅ Chart uploaded to thread")
+              # Get ts of the combined message for threading AI analysis
+              file_shares = upload_response["file"].get("shares", {})
+              all_shares = list(file_shares.get("private", {}).values()) + list(file_shares.get("public", {}).values())
+              parent_ts = all_shares[0][0]["ts"] if all_shares else None
+              print(f"✅ Summary + chart posted (ts={parent_ts})")
 
               # Post AI failure analysis as a thread reply if tests failed
               import pathlib
               ai_report = pathlib.Path("ai_failure_report.md")
               if os.environ.get("JOB_STATUS") != "success" and ai_report.exists():
                   report_text = ai_report.read_text(encoding="utf-8").strip()
-                  if report_text:
+                  if report_text and parent_ts:
                       if len(report_text) > 3000:
                           report_text = report_text[:3000] + " ... [see CI artifact for full report]"
                       try:
