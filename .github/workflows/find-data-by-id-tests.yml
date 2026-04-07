@@ -292,13 +292,12 @@ jobs:
               parent_ts = main_msg["ts"]
               print(f"✅ Summary message posted (ts={parent_ts})")
 
-              # Upload chart as a reply in the same thread
+              # Upload chart to main channel
               client.files_upload_v2(
                   file=file_path,
                   filename="summary_combined.png",
                   title="summary combined",
                   channel=channel,
-                  thread_ts=parent_ts
               )
               print("✅ Chart uploaded to thread")
 
