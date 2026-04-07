@@ -283,43 +283,44 @@ jobs:
               f" 🔗 *Dashboard:* https://dimagi.github.io/dimagi-qa/"
           )
 
-          # Post text summary first to get a reliable ts for threading
-          main_msg = client.chat_postMessage(
-              channel=channel,
-              text=message,
-              mrkdwn=True
-          )
-          parent_ts = main_msg["ts"]
-          print(f"✅ Summary message posted (ts={parent_ts})")
+          try:
+              # Post text summary first to get a reliable ts for threading
+              main_msg = client.chat_postMessage(
+                  channel=channel,
+                  text=message,
+                  mrkdwn=True
+              )
+              parent_ts = main_msg["ts"]
+              print(f"✅ Summary message posted (ts={parent_ts})")
 
-          # Upload chart as a reply in the same thread
-          client.files_upload_v2(
-              file=file_path,
-              filename="summary_combined.png",
-              title="summary combined",
-              channel=channel,
-              thread_ts=parent_ts
-          )
-          print("✅ Chart uploaded to thread")
+              # Upload chart as a reply in the same thread
+              client.files_upload_v2(
+                  file=file_path,
+                  filename="summary_combined.png",
+                  title="summary combined",
+                  channel=channel,
+                  thread_ts=parent_ts
+              )
+              print("✅ Chart uploaded to thread")
 
-          # Post AI failure analysis as a thread reply if tests failed
-          import pathlib
-          ai_report = pathlib.Path("ai_failure_report.md")
-          if os.environ.get("JOB_STATUS") != "success" and ai_report.exists():
-              report_text = ai_report.read_text(encoding="utf-8").strip()
-              if report_text:
-                  if len(report_text) > 3000:
-                      report_text = report_text[:3000] + " ... [see CI artifact for full report]"
-                  try:
-                      client.chat_postMessage(
-                          channel=channel,
-                          thread_ts=parent_ts,
-                          text="🤖 *AI Failure Analysis*\n\n" + report_text,
-                          mrkdwn=True
-                      )
-                      print("✅ AI failure analysis posted as thread reply")
-                  except Exception as thread_err:
-                      print(f"⚠️ Could not post AI thread: {thread_err}")
+              # Post AI failure analysis as a thread reply if tests failed
+              import pathlib
+              ai_report = pathlib.Path("ai_failure_report.md")
+              if os.environ.get("JOB_STATUS") != "success" and ai_report.exists():
+                  report_text = ai_report.read_text(encoding="utf-8").strip()
+                  if report_text:
+                      if len(report_text) > 3000:
+                          report_text = report_text[:3000] + " ... [see CI artifact for full report]"
+                      try:
+                          client.chat_postMessage(
+                              channel=channel,
+                              thread_ts=parent_ts,
+                              text="🤖 *AI Failure Analysis*\n\n" + report_text,
+                              mrkdwn=True
+                          )
+                          print("✅ AI failure analysis posted as thread reply")
+                      except Exception as thread_err:
+                          print(f"⚠️ Could not post AI thread: {thread_err}")
           except Exception as e:
               print(f"❌ Slack error: {e}")
               raise
