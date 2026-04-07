@@ -283,8 +283,8 @@ jobs:
           )
 
           try:
-              # Upload chart with summary as initial_comment — single combined message
-              upload_response = client.files_upload_v2(
+              # Upload chart + summary as one combined message
+              client.files_upload_v2(
                   file=file_path,
                   filename="summary_combined.png",
                   title="summary combined",
@@ -292,14 +292,18 @@ jobs:
                   initial_comment=message
               )
               print("✅ Summary + chart posted")
-              # Match the uploaded file ID in history to get the exact message ts
+              # Wait briefly for Slack to process, then find ts by recency
+              import time
+              time.sleep(2)
               parent_ts = None
               try:
-                  file_id = (upload_response.get("files") or [upload_response.get("file") or {}])[0].get("id")
-                  if file_id:
-                      history = client.conversations_history(channel=channel, limit=10)
-                      for msg in history.get("messages", []):
-                          if any(f.get("id") == file_id for f in msg.get("files", [])):
+                  now = time.time()
+                  history = client.conversations_history(channel=channel, limit=5)
+                  for msg in history.get("messages", []):
+                      if now - float(msg.get("ts", 0)) < 60 and msg.get("files"):
+                          msg_text = msg.get("text", "") or ""
+                          file_comment = (msg.get("files") or [{}])[0].get("initial_comment", {}).get("comment", "") or ""
+                          if env in msg_text or env in file_comment:
                               parent_ts = msg["ts"]
                               break
               except Exception as ts_err:
