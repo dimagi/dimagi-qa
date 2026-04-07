@@ -19,3 +19,4 @@ pytest-order
 imap-tools
 beautifulsoup4
 html5lib
+openai
