@@ -473,14 +473,18 @@ class ExportDataPage(BasePage):
         time.sleep(2)
         self.wait_for_element((By.XPATH, self.update_data.format(export_name)))
         self.js_click((By.XPATH, self.update_data.format(export_name)))
+        time.sleep(1)
         self.wait_till_progress_completes("integration")
         self.wait_for_element((By.XPATH, self.update_data_conf.format(export_name)), 20)
         self.wait_to_click((By.XPATH, self.update_data_conf.format(export_name)))
-
-        self.wait_for_element(self.data_upload_msg)
+        if 'staging' in self.get_current_url():
+            time.sleep(60)
+        else:
+            time.sleep(30)
+        self.wait_for_element(self.data_upload_msg, 100)
         time.sleep(2)
         self.reload_page()
-        time.sleep(2)
+        time.sleep(20)
         return export_name
 
     # Test Case - 26 - Excel Dashboard Integration, case
@@ -529,7 +533,11 @@ class ExportDataPage(BasePage):
         self.wait_for_element((By.XPATH, self.update_data_conf.format(export_name)), 20)
         self.wait_to_click((By.XPATH, self.update_data_conf.format(export_name)))
         # self.wait_and_sleep_to_click((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_case)))
-        self.wait_for_element((By.XPATH, self.data_upload_complete_text.format(export_name)), 50)
+        if 'staging' in self.get_current_url():
+            time.sleep(60)
+        else:
+            time.sleep(30)
+        self.wait_for_element((By.XPATH, self.data_upload_complete_text.format(export_name)), 100)
         if self.is_present((By.XPATH, self.data_upload_complete_text.format(export_name))):
             print("Data uploaded successfully.")
             self.reload_page()
