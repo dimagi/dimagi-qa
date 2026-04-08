@@ -435,7 +435,7 @@ class ExportDataPage(BasePage):
         print("DSE Case Export successful")
 
     # Test Case - 25 - Excel Dashboard Integration, form
-    def excel_dashboard_integration_form(self):
+    def excel_dashboard_integration_form(self, rerun):
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
@@ -454,7 +454,7 @@ class ExportDataPage(BasePage):
         print("Dashboard Feed added!!")
         self.wait_for_element(self.export_name, 200)
         self.clear(self.export_name)
-        export_name = f"{UserData.dashboard_feed_form}_{fetch_random_string()}"
+        export_name = f"{UserData.dashboard_feed_form}_{fetch_random_string()}_{rerun}"
         self.send_keys(self.export_name, export_name + Keys.TAB)
         time.sleep(2)
         # saving export
@@ -477,10 +477,7 @@ class ExportDataPage(BasePage):
         self.wait_till_progress_completes("integration")
         self.wait_for_element((By.XPATH, self.update_data_conf.format(export_name)), 20)
         self.wait_to_click((By.XPATH, self.update_data_conf.format(export_name)))
-        if 'staging' in self.get_current_url():
-            time.sleep(60)
-        else:
-            time.sleep(30)
+        time.sleep(60)
         self.wait_for_element(self.data_upload_msg, 100)
         time.sleep(2)
         self.reload_page()
@@ -489,7 +486,7 @@ class ExportDataPage(BasePage):
 
     # Test Case - 26 - Excel Dashboard Integration, case
 
-    def excel_dashboard_integration_case(self):
+    def excel_dashboard_integration_case(self, rerun):
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
@@ -509,7 +506,7 @@ class ExportDataPage(BasePage):
         print("Dashboard Feed added!!")
         self.wait_for_element(self.export_name, 200)
         self.clear(self.export_name)
-        export_name = f"{UserData.dashboard_feed_case}_{fetch_random_string()}"
+        export_name = f"{UserData.dashboard_feed_case}_{fetch_random_string()}_{rerun}"
         self.send_keys(self.export_name, export_name + Keys.TAB)
         # self.send_keys(self.export_name, UserData.dashboard_feed_case + Keys.TAB)
         time.sleep(2)
@@ -551,7 +548,7 @@ class ExportDataPage(BasePage):
     def check_feed_link(self, name):
         try:
             self.reload_page()
-            time.sleep(10)
+            time.sleep(20)
             self.wait_for_element((By.XPATH, self.copy_dashfeed_link.format(name)), 50)
             self.js_click((By.XPATH, self.copy_dashfeed_link.format(name)))
             time.sleep(4)
