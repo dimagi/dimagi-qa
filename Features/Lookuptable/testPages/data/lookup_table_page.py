@@ -302,11 +302,11 @@ class LookUpTablePage(BasePage):
         self.wait_to_click(self.add_field)
         self.wait_to_clear_and_send_keys(self.field_name, self.dummy_id)
         self.wait_to_click(self.save_table)
-        time.sleep(2)
+        time.sleep(15)
         self.wait_for_element(self.error_msg)
         fail = self.get_text(self.error_msg)
         print(fail)
-        assert "Could not update table because field names were not correctly formatted" in fail
+        assert "Could not update table because field names were not correctly formatted" in fail, f"Message not in {fail}"
         print("error message displayed")
         self.wait_to_click(self.manage_tables_link)
 
