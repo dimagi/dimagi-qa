@@ -82,7 +82,7 @@ class DataDictionaryPage(BasePage):
         self.app_description = (By.XPATH,"//*[@placeholder='Enter app description here']")
         self.edit_icon = (By.XPATH, "//div[contains(@class,'edit-description')]//i[contains(@class,'pencil')]")
         self.save_description = (By.XPATH,
-                                 "//div[.//textarea[@placeholder='Enter app description here']]/following-sibling::div[@class='form-group']/button[contains(@data-bind,'click: save')]/i")
+                                 "//textarea[@placeholder='Enter app description here']/following-sibling::button[contains(@data-bind,'click: save')]/i")
         self.case_data_page_warning = (By.XPATH, "//*[@class='alert alert-warning']")
         self.registration_form = (By.XPATH, "//span[normalize-space()='Registration Form']")
         self.settings_icon = (By.XPATH, "//span[normalize-space()='Registration Form']/parent::a/following-sibling::a")

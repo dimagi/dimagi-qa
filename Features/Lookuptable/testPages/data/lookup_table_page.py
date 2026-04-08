@@ -124,7 +124,7 @@ class LookUpTablePage(BasePage):
         self.preview = (By.XPATH, "//*[@class='preview-toggler js-preview-toggle']")
         self.confirm = (By.XPATH, "//*[contains(text(),'Yes, log in as this user')]")
         self.specific_registration_form = (
-            By.XPATH, "(/html/body/div[1]/div[4]/div/div[1]/nav/ul[1]/li/ul/li[1]/div/a[2])[last()]")
+            By.XPATH, "(//a[contains(@id,'view_form')])[last()]")
         self.revist_lookup_tabble = (By.XPATH, "//*[@class='fd-scrollable fd-scrollable-tree']/div/ul/li/ul/li/a")
         self.value_error = (
             By.XPATH, "//*[@class='fd-scrollable fd-props-scrollable']/form/fieldset/div/div/div[2]/div/div/div/div")
