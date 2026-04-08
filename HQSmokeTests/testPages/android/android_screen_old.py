@@ -112,6 +112,17 @@ class AndroidScreen:
         self.driver.find_element(AppiumBy.XPATH, self.sync_button).click()
         time.sleep(3)
 
+    def verify_app_install(self, code):
+        time.sleep(10)
+        self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
+        self.driver.find_element(AppiumBy.ID, self.profile_code).send_keys(code)
+        self.driver.find_element(AppiumBy.ID, self.start_install).click()
+        time.sleep(3)
+        self.driver.find_element(AppiumBy.XPATH, self.install).click()
+        time.sleep(30)
+        assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Welcome back! Please log in.']").is_displayed(), "App not installed"
+        print("App installed successfully")
+
     def verify_login_with_old_password(self, code, username, password):
         time.sleep(10)
         self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
