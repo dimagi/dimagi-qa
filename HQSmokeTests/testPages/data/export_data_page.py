@@ -124,7 +124,7 @@ class ExportDataPage(BasePage):
         self.update_data_conf = "(//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//button[contains(@data-bind,'click: emailedExport.updateData')])[1]"
         self.update_data_form = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//button[@data-toggle='modal'][1]"
         self.update_data_conf_form = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//button[@data-bind='click: emailedExport.updateData']"
-        self.copy_dashfeed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]//following-sibling::div//*[contains(@data-bind, 'copyLinkRequested')]"
+        self.copy_dashfeed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]//following-sibling::div//button[contains(@data-bind, 'copyLinkRequested')]/i"
         self.dashboard_feed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]//following-sibling::div//input"
         self.check_data = (By.XPATH, "//*[contains(text(), '@odata.context')]")
         self.data_upload_complete_text = "(//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//p[contains(@class,'text-success')][contains(.,'Data update complete')])"
@@ -539,9 +539,10 @@ class ExportDataPage(BasePage):
     def check_feed_link(self, name):
         try:
             self.reload_page()
-            time.sleep(2)
-            self.wait_for_element((By.XPATH, self.copy_dashfeed_link.format(name)))
-            self.wait_to_click((By.XPATH, self.copy_dashfeed_link.format(name)))
+            time.sleep(10)
+            self.wait_for_element((By.XPATH, self.copy_dashfeed_link.format(name)), 50)
+            self.js_click((By.XPATH, self.copy_dashfeed_link.format(name)))
+            time.sleep(4)
             dashboard_feed_link = self.get_attribute((By.XPATH, self.dashboard_feed_link.format(name)), "value")
             print(dashboard_feed_link)
             # self.switch_to_new_tab()
@@ -565,6 +566,10 @@ class ExportDataPage(BasePage):
         except ElementClickInterceptedException:
             self.wait_to_click(self.powerBI_tab_int)
         self.delete_bulk_exports()
+        if 'staging' in self.get_current_url():
+            time.sleep(100)
+        else:
+            time.sleep(30)
         self.wait_and_sleep_to_click(self.add_export_button)
         if 'staging' in self.get_current_url():
             time.sleep(200)
@@ -739,10 +744,15 @@ class ExportDataPage(BasePage):
 
             ActionChains(self.driver).send_keys(Keys.TAB).perform()
         self.wait_to_clear_and_send_keys(self.date_range, self.next_date_range + Keys.TAB)
-        self.wait_and_sleep_to_click(self.prepare_export_button, timeout=10)
+        time.sleep(10)
+        self.js_click(self.prepare_export_button)
         time.sleep(2)
         try:
             self.wait_till_progress_completes("exports")
+            if 'staging' in self.get_current_url():
+                time.sleep(100)
+            else:
+                time.sleep(30)
             self.wait_for_element(self.download_button, 300)
             self.click(self.download_button)
             wait_for_download_to_finish()
