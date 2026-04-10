@@ -213,6 +213,12 @@
 
   <div class="grid2" style="margin-top:22px;">
     <div class="box">
+      <h2>Pass vs Fail by Environment</h2>
+      <div class="muted">Number of passed and failed runs per environment.</div>
+      <canvas id="envBars"></canvas>
+    </div>
+
+    <div class="box">
       <h2>Pass vs Fail by Trigger Type</h2>
       <div class="muted">Distribution of passing and failing runs across workflow triggers.</div>
       <div class="grid2" style="gap:12px;">
@@ -225,12 +231,6 @@
           <div class="pieWrap"><canvas id="failTriggerPie"></canvas></div>
         </div>
       </div>
-    </div>
-
-    <div class="box">
-      <h2>Pass / Fail split per Trigger Type</h2>
-      <div class="muted">Proportion of passed vs failed runs for each workflow trigger.</div>
-      <div class="env-pies-grid" id="triggerPiesContainer"></div>
     </div>
   </div>
 
@@ -590,6 +590,39 @@ function renderFailEnvPie(d) {
     });
   }
 
+  // ---- Pass vs Fail grouped bar chart by Environment
+  function renderEnvBars(d) {
+    const map = {};
+    for (const r of d) {
+      if (!r.env) continue;
+      if (!map[r.env]) map[r.env] = { p: 0, f: 0 };
+      if (r.status === "pass") map[r.env].p++;
+      else map[r.env].f++;
+    }
+
+    const envs = Object.keys(map).sort();
+
+    draw("envBars", {
+      type: "bar",
+      data: {
+        labels: envs.map(envLabel),
+        datasets: [
+          { label: "Passed runs", data: envs.map(e => map[e].p), backgroundColor: PASS_BLUE, ...BAR_OPTS },
+          { label: "Failed runs", data: envs.map(e => map[e].f), backgroundColor: FAIL_RED,  ...BAR_OPTS }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
+        scales: {
+          x: { ticks: AXIS_TICKS },
+          y: { beginAtZero: true, ticks: AXIS_TICKS }
+        }
+      }
+    });
+  }
+
   // ---- Pass by Trigger pie + Fail by Trigger pie
   function renderTriggerAggregatePies(d) {
     const map = {};
@@ -637,72 +670,6 @@ function renderFailEnvPie(d) {
     });
   }
 
-  // ---- Mini pie charts — one per trigger type (dynamically built)
-  function renderTriggerPies(d) {
-    const container = $("triggerPiesContainer");
-
-    // Collect per-trigger pass/fail counts
-    const map = {};
-    for (const r of d) {
-      const tr = r.trigger || "Unknown";
-      if (!map[tr]) map[tr] = { p: 0, f: 0 };
-      if (r.status === "pass") map[tr].p++;
-      else map[tr].f++;
-    }
-
-    const triggers = Object.keys(map).sort();
-
-    // Destroy old trigger pie charts and rebuild the container
-    for (const key of Object.keys(charts)) {
-      if (key.startsWith("triggerPie_")) { charts[key].destroy(); delete charts[key]; }
-    }
-    container.innerHTML = "";
-
-    for (const tr of triggers) {
-      const { p, f } = map[tr];
-      const total = p + f;
-      const canvasId = `triggerPie_${tr.replace(/\W+/g, "_")}`;
-
-      const cell = document.createElement("div");
-      cell.className = "env-pie-cell";
-      cell.innerHTML = `<h3>${tr}</h3><canvas id="${canvasId}"></canvas>`;
-      container.appendChild(cell);
-
-      requestAnimationFrame(() => {
-        if (!$(canvasId)) return;
-        charts[canvasId] = new Chart($(canvasId), {
-          type: "pie",
-          data: {
-            labels: total ? ["Passed", "Failed"] : ["No data"],
-            datasets: [{
-              data: total ? [p, f] : [1],
-              backgroundColor: total ? [PASS_BLUE, FAIL_RED] : ["#e5e7eb"],
-              borderColor: "#fff",
-              borderWidth: 2
-            }]
-          },
-          options: {
-            plugins: {
-              legend: { position: "bottom", labels: { font: { size: 10 }, boxWidth: 10 } },
-              tooltip: {
-                enabled: total > 0,
-                callbacks: {
-                  label: ctx => {
-                    const pct = total ? Math.round(ctx.parsed / total * 100) : 0;
-                    return `${ctx.label}: ${ctx.parsed} (${pct}%)`;
-                  }
-                }
-              }
-            }
-          }
-        });
-      });
-    }
-
-    if (!triggers.length) {
-      container.innerHTML = `<p class="muted" style="padding:8px;">No data for current filters.</p>`;
-    }
-  }
 
   function renderTables(d) {
     const failedBody = $("failedTable");
@@ -755,8 +722,8 @@ function renderFailEnvPie(d) {
     renderPassEnvPie(d);
     renderFailEnvPie(d);
     renderQuarterTrend(d);
+    renderEnvBars(d);
     renderTriggerAggregatePies(d);
-    renderTriggerPies(d);
     renderSuiteBars(d);
     renderTables(d);
   }
