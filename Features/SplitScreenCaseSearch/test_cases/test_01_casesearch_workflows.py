@@ -9,7 +9,7 @@ def test_case_01_add_new_song(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
     webapps.login_as(CaseSearchUserInput.user_2)
-    webapps.open_app(CaseSearchUserInput.case_search_app_name)
+    webapps.open_app(CaseSearchUserInput.linked_case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.add_song)
     casesearch.fill_form()
     webapps.submit_the_form()
