@@ -82,7 +82,9 @@
       flex-grow: 1;
     }
     #passEnvPie,
-    #failEnvPie {
+    #failEnvPie,
+    #passTriggerPie,
+    #failTriggerPie {
       height: 240px !important;
     }
 
@@ -211,9 +213,18 @@
 
   <div class="grid2" style="margin-top:22px;">
     <div class="box">
-      <h2>Pass vs Fail by Environment</h2>
-      <div class="muted">Number of passed and failed runs per environment.</div>
-      <canvas id="envBars"></canvas>
+      <h2>Pass vs Fail by Trigger Type</h2>
+      <div class="muted">Distribution of passing and failing runs across workflow triggers.</div>
+      <div class="grid2" style="gap:12px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Pass by Trigger</div>
+          <div class="pieWrap"><canvas id="passTriggerPie"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Fail by Trigger</div>
+          <div class="pieWrap"><canvas id="failTriggerPie"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <div class="box">
@@ -579,35 +590,49 @@ function renderFailEnvPie(d) {
     });
   }
 
-  // ---- Pass vs Fail grouped bar chart by Environment
-  function renderEnvBars(d) {
+  // ---- Pass by Trigger pie + Fail by Trigger pie
+  function renderTriggerAggregatePies(d) {
     const map = {};
     for (const r of d) {
-      if (!r.env) continue;
-      if (!map[r.env]) map[r.env] = { p: 0, f: 0 };
-      if (r.status === "pass") map[r.env].p++;
-      else map[r.env].f++;
+      const tr = r.trigger || "Unknown";
+      if (!map[tr]) map[tr] = { p: 0, f: 0 };
+      if (r.status === "pass") map[tr].p++;
+      else map[tr].f++;
     }
 
-    const envs = Object.keys(map).sort();
+    const triggers = Object.keys(map).sort();
+    const passVals  = triggers.map(tr => map[tr].p);
+    const failVals  = triggers.map(tr => map[tr].f);
 
-    draw("envBars", {
-      type: "bar",
+    draw("passTriggerPie", {
+      type: "pie",
       data: {
-        labels: envs.map(envLabel),
-        datasets: [
-          { label: "Passed runs", data: envs.map(e => map[e].p), backgroundColor: PASS_BLUE, ...BAR_OPTS },
-          { label: "Failed runs", data: envs.map(e => map[e].f), backgroundColor: FAIL_RED,  ...BAR_OPTS }
-        ]
+        labels: triggers,
+        datasets: [{
+          data: passVals,
+          backgroundColor: triggers.map((_, i) => PASS_COLORS[i % PASS_COLORS.length]),
+          borderColor: "#fff",
+          borderWidth: 2
+        }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } },
-        scales: {
-          x: { ticks: AXIS_TICKS },
-          y: { beginAtZero: true, ticks: AXIS_TICKS }
-        }
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } }
+      }
+    });
+
+    draw("failTriggerPie", {
+      type: "pie",
+      data: {
+        labels: triggers,
+        datasets: [{
+          data: failVals,
+          backgroundColor: triggers.map((_, i) => FAIL_COLORS[i % FAIL_COLORS.length]),
+          borderColor: "#fff",
+          borderWidth: 2
+        }]
+      },
+      options: {
+        plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } }
       }
     });
   }
@@ -730,7 +755,7 @@ function renderFailEnvPie(d) {
     renderPassEnvPie(d);
     renderFailEnvPie(d);
     renderQuarterTrend(d);
-    renderEnvBars(d);
+    renderTriggerAggregatePies(d);
     renderTriggerPies(d);
     renderSuiteBars(d);
     renderTables(d);
