@@ -75,14 +75,14 @@ class DataDictionaryPage(BasePage):
 
         # In App
         self.make_new_version_button = (By.XPATH, "//button[contains(@data-bind,'Make New Version')]")
-        self.case_list = (By.XPATH, "//span[contains(text(),'Case List') and @data-placement='right']")
+        self.case_list = (By.XPATH, "//span[contains(text(),'Case List') and @data-bs-placement='right']")
         self.case_type_warning = (By.XPATH, "//*[@id='deprecated-case-types-warning']")
         self.applications_menu_id = (By.ID, "ApplicationsTab")
         self.case_list_warning = (By.XPATH, "//*[@id='case_type_deprecated_warning']")
         self.app_description = (By.XPATH,"//*[@placeholder='Enter app description here']")
         self.edit_icon = (By.XPATH, "//div[contains(@class,'edit-description')]//i[contains(@class,'pencil')]")
         self.save_description = (By.XPATH,
-                                 "//div[.//textarea[@placeholder='Enter app description here']]/following-sibling::div[@class='form-group']/button[contains(@data-bind,'click: save')]/i")
+                                 "//textarea[@placeholder='Enter app description here']/following-sibling::button[contains(@data-bind,'click: save')]/i")
         self.case_data_page_warning = (By.XPATH, "//*[@class='alert alert-warning']")
         self.registration_form = (By.XPATH, "//span[normalize-space()='Registration Form']")
         self.settings_icon = (By.XPATH, "//span[normalize-space()='Registration Form']/parent::a/following-sibling::a")
@@ -279,6 +279,7 @@ class DataDictionaryPage(BasePage):
         self.accept_pop_up()
         self.wait_to_click(self.make_new_version_button)
         time.sleep(10)
+        self.accept_pop_up()
         assert self.is_present_and_displayed(self.case_type_warning) ,"Property not deprecated"
         warning_message = self.wait_to_get_text(self.case_type_warning)
         print(warning_message)

@@ -11,11 +11,11 @@ import pytest
 @pytest.mark.data
 @pytest.mark.excelDashboardIntegrationForm
 @pytest.mark.p1p2EscapeDefect
-def test_case_25_excel_dashboard_integration_form(driver, settings):
+def test_case_25_excel_dashboard_integration_form(driver, settings, rerun_count):
     home = HomePage(driver, settings)
     home.data_menu()
     export = ExportDataPage(driver)
-    form = export.excel_dashboard_integration_form()
+    form = export.excel_dashboard_integration_form(rerun_count)
     link = export.check_feed_link(form)
     export.verify_duplicate_data_in_dashboard(link, settings['login_username'], settings['login_password'])
 
@@ -23,11 +23,11 @@ def test_case_25_excel_dashboard_integration_form(driver, settings):
 @pytest.mark.data
 @pytest.mark.excelDashboardIntegrationCase
 @pytest.mark.p1p2EscapeDefect
-def test_case_26_excel_dashboard_integration_case(driver, settings):
+def test_case_26_excel_dashboard_integration_case(driver, settings, rerun_count):
     home = HomePage(driver, settings)
     home.data_menu()
     export = ExportDataPage(driver)
-    case = export.excel_dashboard_integration_case()
+    case = export.excel_dashboard_integration_case(rerun_count)
     link = export.check_feed_link(case)
     export.verify_duplicate_data_in_dashboard(link, settings['login_username'], settings['login_password'])
 

@@ -41,12 +41,12 @@ class RolesPermissionPage(BasePage):
         self.manage_shared_exports = (By.XPATH, "//input[@id='edit-shared-exports-checkbox']")
         self.data_checkbox = (By.XPATH, "//input[@id='edit-data-checkbox']")
 
-        self.report_for_p1p2 = (By.XPATH, "//div[contains(@data-bind,'reportPermission')]//label[./span[.='"+UserData.report_for_p1p2+"']]")
+        self.report_for_p1p2 = (By.XPATH, "//div[contains(@class,'form-check')]//label[./span[.='"+UserData.report_for_p1p2+"']]")
         self.role_renamed = (By.XPATH, "//span[text()='" + str(self.role_rename_created) + "']")
         self.role_non_admin = (By.XPATH, "//span[text()='" + str(self.role_non_admin_created) + "']")
         self.role_no_shared_export = "//span[text()='{}']"
         self.confirm_role_delete = (By.XPATH, "//div[@class='btn btn-danger']")
-        self.full_org_access_checkbox = (By.XPATH, "//label[contains(.,'Full Organization Access')]//following-sibling::div//input")
+        self.full_org_access_checkbox = (By.XPATH, "//div[contains(.,'Full Organization Access')]/following-sibling::div[contains(@class,'controls')]//input")
         self.access_all_reports_checkbox = (By.XPATH, "//input[@id='access-all-reports-checkbox']")
         self.edit_data = (By.XPATH, "//div[@id='user-roles-table']/div[@class='panel-body']/div[@class='modal fade in']/div[@class='modal-dialog']/form/div[@class='modal-content']/div[@class='modal-body']/div[@class='form form-horizontal']/fieldset/div[3]/div[@class='form-group'][7]/div[@class='col-sm-2 controls'][1]/div[@class='form-check']/label")
         self.view_data_dictionary = (By.XPATH, "//input[@id='view-data-dict-checkbox']")

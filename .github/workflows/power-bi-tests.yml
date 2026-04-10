@@ -22,6 +22,7 @@ on:
         options:
           - staging
           - production
+          - all
 
 concurrency:
   group: power-bi-tests-${{ github.ref }}
@@ -36,7 +37,11 @@ jobs:
       - id: set-matrix-manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          if [ "${{ inputs.environment }}" = "all" ]; then
+            echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\"]}"
+          else
+            echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          fi
       - id: set-matrix-default
         if: ${{ !contains(github.event_name , 'dispatch') }}
         run: |
