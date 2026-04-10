@@ -82,10 +82,15 @@
       flex-grow: 1;
     }
     #passEnvPie,
-    #failEnvPie,
+    #failEnvPie {
+      height: 240px !important;
+    }
+
     #passTriggerPie,
     #failTriggerPie {
-      height: 240px !important;
+      width: 280px !important;
+      height: 280px !important;
+      margin: auto;
     }
 
     .pieWrap { max-width: 420px; margin: auto; }
@@ -222,13 +227,13 @@
       <h2>Pass vs Fail by Trigger Type</h2>
       <div class="muted">Distribution of passing and failing runs across workflow triggers.</div>
       <div class="grid2" style="gap:12px;">
-        <div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Pass by Trigger</div>
-          <div class="pieWrap"><canvas id="passTriggerPie"></canvas></div>
+          <canvas id="passTriggerPie"></canvas>
         </div>
-        <div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Fail by Trigger</div>
-          <div class="pieWrap"><canvas id="failTriggerPie"></canvas></div>
+          <canvas id="failTriggerPie"></canvas>
         </div>
       </div>
     </div>
@@ -649,6 +654,7 @@ function renderFailEnvPie(d) {
         }]
       },
       options: {
+        maintainAspectRatio: true,
         plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } }
       }
     });
@@ -665,6 +671,7 @@ function renderFailEnvPie(d) {
         }]
       },
       options: {
+        maintainAspectRatio: true,
         plugins: { legend: { position: "bottom", labels: { font: { size: 11 } } } }
       }
     });
