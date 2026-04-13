@@ -8,6 +8,17 @@ from common_utilities.fixtures import *
 
 global driver
 
+@pytest.fixture
+def rerun_count(request) -> int:
+    exec_count = getattr(request.node, "execution_count", 1)  # 1 on first run
+    return max(exec_count - 1, 0)  # 0 for first run, 1 for first rerun, etc.
+
+@pytest.fixture(autouse=True)
+def _inject_values(request, rerun_count):
+    inst = getattr(request, "instance", None)
+    if inst is not None:
+        inst.rerun_count = rerun_count
+
 
 @pytest.fixture(scope="session")
 def environment_settings_hq():

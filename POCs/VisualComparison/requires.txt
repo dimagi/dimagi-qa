@@ -15,3 +15,4 @@ openpyxl
 visual-comparison
 Selenium-Screenshot
 beautifulsoup4
+openai

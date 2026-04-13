@@ -16,6 +16,7 @@ on:
           - production
           - india
           - eu
+          - all
   schedule:
     - cron: '30 5 * * 1-5'
 
@@ -32,7 +33,11 @@ jobs:
       - id: set-matrix-manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          if [ "${{ inputs.environment }}" = "all" ]; then
+            echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\",\"india\"]}"
+          else
+            echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          fi
       - id: set-matrix-default
         if: ${{ github.event_name != 'repository_dispatch' }}
         run: |
@@ -76,7 +81,7 @@ jobs:
           echo "matrix environment: ${{ matrix.environment }}"
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
-          pytest -v --rootdir= ExportTests/testCases -n 2 --dist=loadfile --reruns 1 --html=report_exports_${{ matrix.environment }}.html
+          pytest -v --rootdir= ExportTests/testCases -n 2 --dist=loadfile --reruns 1 --html=report_exports_${{ matrix.environment }}.html --junitxml=test-results-${{ matrix.environment }}.xml
 
       - name: Parse test counts
         id: parse_counts
@@ -107,6 +112,21 @@ jobs:
 
       - name: Fetch artifact ID
         run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
+
+      - name: AI Failure Analysis
+        if: failure()
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python common_utilities/ai_failure_analyst.py test-results-${{ matrix.environment }}.xml
+
+      - name: Upload AI Failure Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-failure-report-${{ matrix.environment }}-${{ github.run_id }}
+          path: ai_failure_report.md
+          retention-days: 7
 
 
       - name: Set email vars
@@ -283,18 +303,52 @@ jobs:
           )
 
           try:
-              response = client.files_upload_v2(
+              # Upload chart + summary as one combined message
+              client.files_upload_v2(
                   file=file_path,
                   filename="summary_combined.png",
                   title="summary combined",
-                  initial_comment=message,
-                  channel=channel
+                  channel=channel,
+                  initial_comment=message
               )
-              if not response.get("ok", False):
-                  raise SlackApiError("Upload failed", response)
-              permalink = response["file"]["permalink"]
-              print(f"✅ Uploaded successfully: {permalink}")
-          except SlackApiError as e:
-              print(f"❌ Slack API error: {e.response['error']}")
+              print("✅ Summary + chart posted")
+              # Wait briefly for Slack to process, then find ts by recency
+              import time
+              time.sleep(2)
+              parent_ts = None
+              try:
+                  now = time.time()
+                  history = client.conversations_history(channel=channel, limit=5)
+                  for msg in history.get("messages", []):
+                      if now - float(msg.get("ts", 0)) < 60 and msg.get("files"):
+                          msg_text = msg.get("text", "") or ""
+                          file_comment = (msg.get("files") or [{}])[0].get("initial_comment", {}).get("comment", "") or ""
+                          if env in msg_text or env in file_comment:
+                              parent_ts = msg["ts"]
+                              break
+              except Exception as ts_err:
+                  print(f"⚠️ Could not get ts for threading: {ts_err}")
+              print(f"✅ Got message ts for threading: {parent_ts}")
+
+              # Post AI failure analysis as a thread reply if tests failed
+              import pathlib
+              ai_report = pathlib.Path("ai_failure_report.md")
+              if os.environ.get("JOB_STATUS") != "success" and ai_report.exists():
+                  report_text = ai_report.read_text(encoding="utf-8").strip()
+                  if report_text and parent_ts:
+                      if len(report_text) > 3000:
+                          report_text = report_text[:3000] + " ... [see CI artifact for full report]"
+                      try:
+                          client.chat_postMessage(
+                              channel=channel,
+                              thread_ts=parent_ts,
+                              text="🤖 *AI Failure Analysis*\n\n" + report_text,
+                              mrkdwn=True
+                          )
+                          print("✅ AI failure analysis posted as thread reply")
+                      except Exception as thread_err:
+                          print(f"⚠️ Could not post AI thread: {thread_err}")
+          except Exception as e:
+              print(f"❌ Slack error: {e}")
               raise
           EOF

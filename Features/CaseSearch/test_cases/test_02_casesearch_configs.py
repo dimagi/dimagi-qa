@@ -330,8 +330,8 @@ def test_case_09_case_search_validations(driver, settings):
     webapps.search_button_on_case_search_page()
     webapps.omni_search(casename)
     """Check including blanks"""
-    base.back()
-    base.back()
+    #base.back()
+    #base.back()
     webapps.clear_selections_on_case_search_page()
     casesearch.select_include_blanks(CaseSearchUserInput.rating)
     webapps.search_button_on_case_search_page()

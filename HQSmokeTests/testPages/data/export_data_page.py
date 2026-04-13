@@ -8,6 +8,7 @@ from openpyxl import load_workbook
 from selenium.webdriver import ActionChains
 
 from HQSmokeTests.testPages.users.org_structure_page import wait_for_download_to_finish
+from common_utilities.generate_random_string import fetch_random_string
 from common_utilities.selenium.base_page import BasePage
 from common_utilities.path_settings import PathSettings
 from HQSmokeTests.userInputs.user_inputs import UserData
@@ -124,8 +125,8 @@ class ExportDataPage(BasePage):
         self.update_data_conf = "(//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//button[contains(@data-bind,'click: emailedExport.updateData')])[1]"
         self.update_data_form = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//button[@data-toggle='modal'][1]"
         self.update_data_conf_form = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//button[@data-bind='click: emailedExport.updateData']"
-        self.copy_dashfeed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]//following-sibling::div//*[contains(@data-bind, 'copyLinkRequested')]"
-        self.dashboard_feed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]//following-sibling::div//input"
+        self.copy_dashfeed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//i[contains(@class,'clipboard')]"
+        self.dashboard_feed_link = "//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//input"
         self.check_data = (By.XPATH, "//*[contains(text(), '@odata.context')]")
         self.data_upload_complete_text = "(//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]/following-sibling::div//p[contains(@class,'text-success')][contains(.,'Data update complete')])"
 
@@ -434,7 +435,7 @@ class ExportDataPage(BasePage):
         print("DSE Case Export successful")
 
     # Test Case - 25 - Excel Dashboard Integration, form
-    def excel_dashboard_integration_form(self):
+    def excel_dashboard_integration_form(self, rerun):
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
@@ -453,7 +454,8 @@ class ExportDataPage(BasePage):
         print("Dashboard Feed added!!")
         self.wait_for_element(self.export_name, 200)
         self.clear(self.export_name)
-        self.send_keys(self.export_name, UserData.dashboard_feed_form + Keys.TAB)
+        export_name = f"{UserData.dashboard_feed_form}_{fetch_random_string()}_{rerun}"
+        self.send_keys(self.export_name, export_name + Keys.TAB)
         time.sleep(2)
         # saving export
         self.scroll_to_bottom()
@@ -469,21 +471,22 @@ class ExportDataPage(BasePage):
             self.wait_for_element(self.add_export_button)
             print("Dashboard Form Feed created!!")
         time.sleep(2)
-        self.wait_for_element((By.XPATH, self.update_data.format(UserData.dashboard_feed_form)))
-        self.js_click((By.XPATH, self.update_data.format(UserData.dashboard_feed_form)))
+        self.wait_for_element((By.XPATH, self.update_data.format(export_name)))
+        self.js_click((By.XPATH, self.update_data.format(export_name)))
+        time.sleep(1)
         self.wait_till_progress_completes("integration")
-        self.wait_for_element((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_form)), 20)
-        self.wait_to_click((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_form)))
-
-        self.wait_for_element(self.data_upload_msg)
+        self.wait_for_element((By.XPATH, self.update_data_conf.format(export_name)), 20)
+        self.wait_to_click((By.XPATH, self.update_data_conf.format(export_name)))
+        time.sleep(60)
+        self.wait_for_element(self.data_upload_msg, 100)
         time.sleep(2)
         self.reload_page()
-        time.sleep(2)
-        return UserData.dashboard_feed_form
+        time.sleep(20)
+        return export_name
 
     # Test Case - 26 - Excel Dashboard Integration, case
 
-    def excel_dashboard_integration_case(self):
+    def excel_dashboard_integration_case(self, rerun):
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         self.delete_bulk_exports()
         self.wait_and_sleep_to_click(self.add_export_button)
@@ -503,7 +506,9 @@ class ExportDataPage(BasePage):
         print("Dashboard Feed added!!")
         self.wait_for_element(self.export_name, 200)
         self.clear(self.export_name)
-        self.send_keys(self.export_name, UserData.dashboard_feed_case + Keys.TAB)
+        export_name = f"{UserData.dashboard_feed_case}_{fetch_random_string()}_{rerun}"
+        self.send_keys(self.export_name, export_name + Keys.TAB)
+        # self.send_keys(self.export_name, UserData.dashboard_feed_case + Keys.TAB)
         time.sleep(2)
         # saving export
         self.scroll_to_bottom()
@@ -519,14 +524,18 @@ class ExportDataPage(BasePage):
             self.wait_for_element(self.add_export_button)
             print("Dashboard Form Feed created!!")
         time.sleep(2)
-        self.wait_for_element((By.XPATH, self.update_data.format(UserData.dashboard_feed_case)))
-        self.js_click((By.XPATH, self.update_data.format(UserData.dashboard_feed_case)))
+        self.wait_for_element((By.XPATH, self.update_data.format(export_name)))
+        self.js_click((By.XPATH, self.update_data.format(export_name)))
         self.wait_till_progress_completes("integration")
-        self.wait_for_element((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_case)), 20)
-        self.wait_to_click((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_case)))
+        self.wait_for_element((By.XPATH, self.update_data_conf.format(export_name)), 20)
+        self.wait_to_click((By.XPATH, self.update_data_conf.format(export_name)))
         # self.wait_and_sleep_to_click((By.XPATH, self.update_data_conf.format(UserData.dashboard_feed_case)))
-        self.wait_for_element((By.XPATH, self.data_upload_complete_text.format(UserData.dashboard_feed_case)), 50)
-        if self.is_present((By.XPATH, self.data_upload_complete_text.format(UserData.dashboard_feed_case))):
+        if 'staging' in self.get_current_url():
+            time.sleep(60)
+        else:
+            time.sleep(30)
+        self.wait_for_element((By.XPATH, self.data_upload_complete_text.format(export_name)), 100)
+        if self.is_present((By.XPATH, self.data_upload_complete_text.format(export_name))):
             print("Data uploaded successfully.")
             self.reload_page()
         else:
@@ -534,14 +543,15 @@ class ExportDataPage(BasePage):
         time.sleep(10)
         self.wait_and_sleep_to_click(self.export_excel_dash_int)
         time.sleep(2)
-        return UserData.dashboard_feed_case
+        return export_name
 
     def check_feed_link(self, name):
         try:
             self.reload_page()
-            time.sleep(2)
-            self.wait_for_element((By.XPATH, self.copy_dashfeed_link.format(name)))
-            self.wait_to_click((By.XPATH, self.copy_dashfeed_link.format(name)))
+            time.sleep(20)
+            self.wait_for_element((By.XPATH, self.copy_dashfeed_link.format(name)), 50)
+            self.js_click((By.XPATH, self.copy_dashfeed_link.format(name)))
+            time.sleep(4)
             dashboard_feed_link = self.get_attribute((By.XPATH, self.dashboard_feed_link.format(name)), "value")
             print(dashboard_feed_link)
             # self.switch_to_new_tab()
@@ -565,6 +575,10 @@ class ExportDataPage(BasePage):
         except ElementClickInterceptedException:
             self.wait_to_click(self.powerBI_tab_int)
         self.delete_bulk_exports()
+        if 'staging' in self.get_current_url():
+            time.sleep(100)
+        else:
+            time.sleep(30)
         self.wait_and_sleep_to_click(self.add_export_button)
         if 'staging' in self.get_current_url():
             time.sleep(200)
@@ -739,10 +753,15 @@ class ExportDataPage(BasePage):
 
             ActionChains(self.driver).send_keys(Keys.TAB).perform()
         self.wait_to_clear_and_send_keys(self.date_range, self.next_date_range + Keys.TAB)
-        self.wait_and_sleep_to_click(self.prepare_export_button, timeout=10)
+        time.sleep(10)
+        self.js_click(self.prepare_export_button)
         time.sleep(2)
         try:
             self.wait_till_progress_completes("exports")
+            if 'staging' in self.get_current_url():
+                time.sleep(100)
+            else:
+                time.sleep(30)
             self.wait_for_element(self.download_button, 300)
             self.click(self.download_button)
             wait_for_download_to_finish()
@@ -758,7 +777,7 @@ class ExportDataPage(BasePage):
         return UserData.case_updated_export_name
 
     def verify_export_has_updated_case_data(self, case_id, case_name, value, export_name):
-        print(case_id, case_name, value)
+        print("Values to be checked: ",case_id, case_name, value)
         newest_file = latest_download_file()
         print("Newest file:" + newest_file)
         if newest_file == export_name:

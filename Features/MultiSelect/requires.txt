@@ -12,3 +12,4 @@ py
 beautifulsoup4
 pytest-metadata
 matplotlib
+openai
