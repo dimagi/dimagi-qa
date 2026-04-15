@@ -90,8 +90,12 @@ class CaseSearchWorkflows(BasePage):
         self.wait_to_clear_and_send_keys((By.XPATH, self.text_area_field.format("Album")), CaseSearchUserInput.album_name)
         new_value = self.wait_to_get_text((By.XPATH, self.text_area_field.format("Name")))
         print(" song name " + new_value)
-        #favourite = random.choice(CaseSearchUserInput.favourite_value)
-        #self.wait_to_click((By.XPATH,self.choose_radio_button.format("Favourite",favourite)))
+        try:
+            favourite = random.choice(CaseSearchUserInput.favourite_value)
+            self.wait_to_click((By.XPATH,self.choose_radio_button.format("Favourite",favourite)))
+        except:
+            print("question is not getting displayed")
+
         self.wait_to_clear_and_send_keys((By.XPATH, self.date_input_field.format("Song Release Date")),CaseSearchUserInput.date_12_30_2022_slash)
         self.wait_to_click((By.XPATH, self.choose_radio_button.format("Genre",CaseSearchUserInput.genre_value)))
         self.wait_to_clear_and_send_keys(self.song_id, CaseSearchUserInput.new_song_id)
