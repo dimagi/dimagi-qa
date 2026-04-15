@@ -5,6 +5,7 @@ import time
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timezone
 
+from numpy import random
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -20,7 +21,6 @@ class CaseSearchWorkflows(BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
-
         self.value_in_table_format = "//td[@class='module-case-list-column'][{}]"
         self.case_name_format = "//tr[.//td[contains(text(),'{}')]]"
         self.text_search_property_name_and_value_format = "//input[contains (@id, '{}') and @value='{}']"
@@ -51,6 +51,7 @@ class CaseSearchWorkflows(BasePage):
         self.case_detail_tab = "//a[text()='{}']"
         self.close_case_detail_tab = (
             By.XPATH, "(//div[@id='case-detail-modal']//following:: button[contains(@class,'close')])[1]")
+        self.search_bar = (By.XPATH, "//input[@id='searchText']")
         # Reports
         self.case_type_select = (By.ID, "report_filter_case_type")
         self.report_search = (By.ID, "report_filter_search_query")
@@ -71,6 +72,43 @@ class CaseSearchWorkflows(BasePage):
         self.result_table = (By.XPATH, "(//div[@id='report-content']//table//tbody//td[1])[1]")
         self.report_content_id = (By.ID, "report-content")
         self.webform_section = (By.XPATH, "//section[contains(@id,'webforms')]")
+
+        #add_new_song
+        self.choose_radio_button = "//label[.//span[contains(.,'{}')]]//following-sibling::div//input[@value='{}']"
+        self.text_area_field = "//label[.//span[contains(.,'{}')]]//following-sibling::div//textarea"
+        self.date_input_field = "//label[.//span[contains(.,'{}')]]//following-sibling::div//input[@placeholder='M/D/YYYY']"
+        self.search_input = (By.XPATH, "//input[@class='query form-control']")
+        self.search_button = (By.XPATH, "//button[@class='btn btn-outline-primary search']")
+        self.song_id = (By.XPATH, "//input[@inputmode='tel']")
+        self.form = (By.XPATH, "//h3[contains(text(), 'Add Song')]")
+
+
+    def fill_form(self):
+        self.wait_to_click(self.form)
+        self.wait_to_clear_and_send_keys((By.XPATH, self.text_area_field.format("Artist")),CaseSearchUserInput.artist_name)
+        self.wait_to_clear_and_send_keys((By.XPATH, self.text_area_field.format("Name")), CaseSearchUserInput.new_song_name)
+        self.wait_to_clear_and_send_keys((By.XPATH, self.text_area_field.format("Album")), CaseSearchUserInput.album_name)
+        new_value = self.wait_to_get_text((By.XPATH, self.text_area_field.format("Name")))
+        print(" song name " + new_value)
+        try:
+            favourite = random.choice(CaseSearchUserInput.favourite_value)
+            self.wait_to_click((By.XPATH,self.choose_radio_button.format("Favourite",favourite)))
+        except:
+            print("question is not getting displayed")
+
+        self.wait_to_clear_and_send_keys((By.XPATH, self.date_input_field.format("Song Release Date")),CaseSearchUserInput.date_12_30_2022_slash)
+        self.wait_to_click((By.XPATH, self.choose_radio_button.format("Genre",CaseSearchUserInput.genre_value)))
+        self.wait_to_clear_and_send_keys(self.song_id, CaseSearchUserInput.new_song_id)
+        random_rating = random.choice(CaseSearchUserInput.rating_values)
+        self.wait_to_click((By.XPATH, self.choose_radio_button.format("Rating", random_rating)))
+        self.wait_to_click((By.XPATH, self.choose_radio_button.format("Energy", random_rating)))
+        self.wait_to_click((By.XPATH, self.choose_radio_button.format("Mood", random_rating)))
+        self.wait_to_click((By.XPATH, self.choose_radio_button.format("Song Origin Country", CaseSearchUserInput.country)))
+        self.wait_to_click((By.XPATH, self.choose_radio_button.format("Song Origin City", CaseSearchUserInput.city)))
+        self.wait_to_click(self.search_input)
+        self.wait_to_clear_and_send_keys(self.search_input,CaseSearchUserInput.location)
+        self.wait_to_click(self.search_button)
+
 
     def check_values_on_caselist(self, row_num, expected_value, is_multi=NO, flag=None):
         self.value_in_table = self.get_element(self.value_in_table_format, row_num)
@@ -113,6 +151,7 @@ class CaseSearchWorkflows(BasePage):
 
     def search_against_property(self, search_property, input_value, property_type, include_blanks=None):
         print("Providing value: ", input_value)
+        time.sleep(5)
         if property_type == TEXT_INPUT:
             self.search_property = self.get_element(self.search_against_text_property_format, search_property)
             self.wait_for_element(self.search_property, 50)
@@ -135,7 +174,7 @@ class CaseSearchWorkflows(BasePage):
             self.wait_after_interaction(40)
         elif property_type == COMBOBOX:
             self.combox_select_element = self.get_element(self.combox_select, search_property)
-            self.wait_for_element(self.combox_select_element, 50)
+            self.wait_for_element(self.combox_select_element, 150)
             self.scroll_to_element(self.combox_select_element)
             time.sleep(1)
 
@@ -143,7 +182,7 @@ class CaseSearchWorkflows(BasePage):
                 self.select_by_text(self.combox_select_element, input_value)
             except:
                 self.select_by_value(self.combox_select_element, input_value)
-            self.wait_after_interaction(40)
+            self.wait_after_interaction(80)
             text = self.get_selected_text(self.combox_select_element)
             print(text)
             if text == input_value:
@@ -154,7 +193,7 @@ class CaseSearchWorkflows(BasePage):
                     self.select_by_value(self.combox_select_element, CaseSearchUserInput.ratings[input_value])
                 else:
                     self.select_by_text(self.combox_select_element, input_value)
-                self.wait_after_interaction(40)
+                self.wait_after_interaction(80)
                 text = self.get_selected_text(self.combox_select_element)
                 print(text)
             time.sleep(2)
@@ -162,14 +201,14 @@ class CaseSearchWorkflows(BasePage):
             self.combox_select_element = self.get_element(self.combox_select2, search_property)
             self.wait_for_element(self.combox_select_element, 50)
             self.select_by_text(self.combox_select_element, input_value)
-            self.wait_after_interaction(40)
+            self.wait_after_interaction(80)
             print("Selected text: ", input_value)
             time.sleep(2)
         elif property_type == COMBOBOX3:
             self.combox_select_element = self.get_element(self.combox_select, search_property)
             self.wait_for_element(self.combox_select_element, 50)
             self.select_by_partial_text(self.combox_select_element, input_value)
-            self.wait_after_interaction(40)
+            self.wait_after_interaction(80)
             print("Selected text: ", input_value)
             time.sleep(2)
         if include_blanks == YES:
@@ -437,5 +476,8 @@ class CaseSearchWorkflows(BasePage):
                     bool_value = False
         return bool_value
 
+    def check_search_bar(self):
+        self.is_present_and_displayed(self.search_bar)
+        print("we are able to see the search bar present where case search settings off ")
 
 

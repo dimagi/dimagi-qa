@@ -17,6 +17,7 @@ on:
           - staging
           - production
           - eu
+          - all
   schedule:
     - cron: '30 7 * * 1-5'
 
@@ -54,7 +55,11 @@ jobs:
       - id: set-matrix-manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          if [ "${{ inputs.environment }}" = "all" ]; then
+            echo "::set-output name=matrix::{\"environment\": [\"production\", \"staging\"]}"
+          else
+            echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
+          fi
       - id: set-matrix-default
         if: ${{ github.event_name != 'repository_dispatch' }}
         run: |
