@@ -1,5 +1,7 @@
 import os
 import time
+from io import StringIO
+
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -807,9 +809,14 @@ class ExportDataPage(BasePage):
     def verify_duplicate_data_in_dashboard(self, link, username, password):
         print(link)
         resp = requests.get(link, auth=(username, password)).text
-        data = pd.read_html(resp, flavor='html5lib')
-        data = (pd.DataFrame(data[0])).reset_index()
-        duplicate = data[data.duplicated()]
+        data = StringIO(resp)
+        df = pd.read_fwf(data)
+        print(df.head())
+        df = df.reset_index(drop=True)
+        duplicate = df[df.duplicated()]
+        # data = pd.read_html(resp, flavor='html5lib')
+        # data = (pd.DataFrame(data[0])).reset_index()
+        # duplicate = data[data.duplicated()]
         if len(duplicate) > 0:
             print(duplicate)
         else:
