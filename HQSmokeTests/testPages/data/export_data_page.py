@@ -798,7 +798,7 @@ class ExportDataPage(BasePage):
         name_in_file = df[UserData.text_value].loc[case_id_row]
         value_in_file = df[UserData.random_value].loc[case_id_row]
         print(case_id_row, name_in_file, value_in_file)
-        assert str(value_in_file) == value and str(name_in_file) == case_name
+        assert float(value_in_file) == float(value) and str(name_in_file) == case_name
         print("Downloaded file has the required data!")
 
     def clean_up_case_data(self):
