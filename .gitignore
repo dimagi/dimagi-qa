@@ -246,7 +246,7 @@ Features/DataDictionary/test_cases/report.html
 
 
 #Ignoring compliled files of Powerbi_integration_exports
-Features/Powerbi_integration_exports/settings.cfg
+P1P2Tests/settings.cfg
 Features/Powerbi_integration_exports/report.html
 Features/Powerbi_integration_exports/test_cases/report.html
 Features/Powerbi_integration_exports/testCases/slack_charts
@@ -255,7 +255,7 @@ Features/Powerbi_integration_exports/testCases/slack_charts
 Features/FindDataById/testCases/test_cases/report.html
 Features/FindDataById/testCases/testCases/slack_charts
 Features/FindDataById/test_cases/report.html
-Features/FindDataById/settings.cfg
+P1P2Tests/settings.cfg
 
 #Ignoring compliled files of QA_Requests
 QA_Requests/BHAStressTest/settings.cfg
@@ -276,7 +276,7 @@ ElasticSearchTests/testCases/report.html
 /ExportTests/testCases/report.html
 ExportTests/report.html
 ExportTests/report_*
-ExportTests/settings.cfg
+P1P2Tests/settings.cfg
 /ExportTests/userInputs/test_data/reassign_cases_*
 /ExportTests/userInputs/test_data/mobile_workers_*
 /ExportTests/userInputs/test_data/import_to_parent_*
@@ -310,13 +310,13 @@ Features/DataDictionary/testCases/report.html
 Features/DataDictionary/testCases/slack_charts
 
 #Ignoring compliled files of Powerbi_integration_exports
-Features/Powerbi_integration_exports/settings.cfg
+P1P2Tests/settings.cfg
 Features/Powerbi_integration_exports/report.html
 Features/Powerbi_integration_exports/testCases/report.html
 Features/Powerbi_integration_exports/testCases/slack_charts
 
 #Ignoring compliled files of FindDataById
-Features/FindDataById/settings.cfg
+P1P2Tests/settings.cfg
 Features/FindDataById/report.html
 Features/FindDataById/testCases/report.html
 Features/FindDataById/testCases/slack_charts

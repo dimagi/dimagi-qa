@@ -1,5 +1,7 @@
 import os
 import time
+from io import StringIO
+
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -796,7 +798,7 @@ class ExportDataPage(BasePage):
         name_in_file = df[UserData.text_value].loc[case_id_row]
         value_in_file = df[UserData.random_value].loc[case_id_row]
         print(case_id_row, name_in_file, value_in_file)
-        assert str(value_in_file) == value and str(name_in_file) == case_name
+        assert float(value_in_file) == float(value) and str(name_in_file) == case_name
         print("Downloaded file has the required data!")
 
     def clean_up_case_data(self):
@@ -807,9 +809,14 @@ class ExportDataPage(BasePage):
     def verify_duplicate_data_in_dashboard(self, link, username, password):
         print(link)
         resp = requests.get(link, auth=(username, password)).text
-        data = pd.read_html(resp, flavor='html5lib')
-        data = (pd.DataFrame(data[0])).reset_index()
-        duplicate = data[data.duplicated()]
+        data = StringIO(resp)
+        df = pd.read_fwf(data)
+        print(df.head())
+        df = df.reset_index(drop=True)
+        duplicate = df[df.duplicated()]
+        # data = pd.read_html(resp, flavor='html5lib')
+        # data = (pd.DataFrame(data[0])).reset_index()
+        # duplicate = data[data.duplicated()]
         if len(duplicate) > 0:
             print(duplicate)
         else:
