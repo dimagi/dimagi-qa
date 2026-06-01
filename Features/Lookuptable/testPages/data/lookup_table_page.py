@@ -93,6 +93,10 @@ class LookUpTablePage(BasePage):
         self.save_button = (By.XPATH, "//span[text()='Save']")
         self.question_display_text_name = "select lookuptable"
         self.lookup_table_data = (By.XPATH, "//a[@class='jstree-anchor'][@aria-level='2']")
+        self.select_case_property_form = (By.XPATH,"//span[@class='select2-selection select2-selection--single']")
+        self.select_case_property_form_level = (By.XPATH,"//select[@name='property-caseProperty']")
+        self.select_case_property_form_level_input = (By.XPATH, "//input[@class='select2-search__field']")
+
         # self.grid = (
         #     By.XPATH, "/html/body/div[1]/div[4]/div/div[2]/div[2]/div/div[1]/div[1]/div[1]/div[4]/div[1]/ul/li/ul/li/a")
         self.select_lookup_table = (By.XPATH, "//*[@name='property-itemsetData']")
@@ -716,7 +720,6 @@ class LookUpTablePage(BasePage):
     def specific_table_upload(self, tablename):
         self.wait_for_element(self.add_module)
         self.wait_to_click(self.add_module)
-        
         self.wait_to_click(self.add_case_list)
         if self.is_present(self.create_case_list_btn):
             self.wait_for_element(self.caselist_span)
@@ -727,9 +730,11 @@ class LookUpTablePage(BasePage):
             self.select_by_value(self.caselist_dropdown, "Case_List")
             self.click(self.create_case_list_btn)
         self.wait_to_click(self.add_questions)
-        
         self.wait_to_click(self.lookup_question)
         self.send_keys(self.question_display_text, self.question_display_text_name)
+        self.wait_to_click(self.select_case_property_form)
+        self.send_keys(self.select_case_property_form_level_input, "name")
+        self.select_by_value(self.select_case_property_form_level, "name")
         self.wait_for_element(self.lookup_table_data)
         self.wait_to_click(self.lookup_table_data)
         # self.wait_to_click(self.grid)
@@ -752,9 +757,11 @@ class LookUpTablePage(BasePage):
             self.select_by_value(self.caselist_dropdown, "Case_List")
             self.click(self.create_case_list_btn)
         self.wait_to_click(self.add_questions)
-        
         self.wait_to_click(self.lookup_question)
         self.send_keys(self.question_display_text, self.question_display_text_name)
+        self.wait_to_click(self.select_case_property_form)
+        self.send_keys(self.select_case_property_form_level_input, "name")
+        self.select_by_value(self.select_case_property_form_level, "name")
         self.wait_for_element(self.lookup_table_data)
         self.wait_to_click(self.lookup_table_data)
         # self.wait_to_click(self.grid)
@@ -798,6 +805,7 @@ class LookUpTablePage(BasePage):
         dropdown_values.__contains__(tablename)
         self.select_by_text(self.select_lookup_table, tablename)
         print(tablename)
+
 
     def formbuilder_4(self):
         self.clear(self.value_field)
