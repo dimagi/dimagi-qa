@@ -59,7 +59,7 @@ class ApplicationPage(BasePage):
         self.menu_settings = (By.XPATH, "//a[@class='appnav-title appnav-title-secondary appnav-responsive']")
         self.menu_settings_content = (By.ID, "js-appmanager-body")
         self.form_settings = (By.XPATH, "(//a[@data-action='View Form'])[1]")
-        self.form_settings_content = (By.XPATH, "//div[@class='tabbable appmanager-tabs-container']")
+        self.form_settings_content = (By.ID, "case-configuration-tab")
 
         # Form XML
         self.download_xml = (By.XPATH, "//a[contains(i/following-sibling::text(), 'Download')]/i")
@@ -158,6 +158,7 @@ class ApplicationPage(BasePage):
 
 
     def form_builder_exploration(self):
+        time.sleep(20)
         self.wait_to_click(self.menu_settings)
         self.wait_for_element(self.menu_settings_content)
         assert self.is_displayed(self.menu_settings_content)
