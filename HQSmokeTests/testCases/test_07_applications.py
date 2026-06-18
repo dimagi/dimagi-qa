@@ -33,6 +33,7 @@ def test_case_36_form_builder_explore(driver, settings):
         2. Click through the settings pages of both the forms and the menus.
     """
     load = ApplicationPage(driver)
+    load.create_new_application()
     load.form_builder_exploration()
 
 
