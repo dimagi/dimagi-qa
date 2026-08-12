@@ -420,7 +420,9 @@ class ReportPage(BasePage):
         self.send_keys(self.other_recipients, UserData.p1p2_user)
         self.wait_to_click((By.XPATH, self.recipient_value.format(UserData.p1p2_user)))
         selected_hour = self.get_selected_text(self.start_hour)
+        time.sleep(2)
         self.wait_to_click(self.submit_id)
+        time.sleep(20)
         assert self.is_visible_and_displayed(self.success_alert)
         print("Scheduled Report Created Successfully")
         return selected_hour, UserData.p1p2_user
