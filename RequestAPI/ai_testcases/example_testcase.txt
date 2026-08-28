@@ -1,0 +1,23 @@
+Suite: <Suite name - e.g. CaseSearch, HQSmokeTests, ExportTests, P1P2Tests>
+
+Test 1: <Short name for first test>
+Tags: <comma separated tags e.g. smoke, report, users>
+1. <First step>
+2. <Second step>
+3. <Third step>
+4. <Add as many steps as needed>
+Expected Result: <What should happen>
+
+Test 2: <Short name for second test>
+Tags: <comma separated tags>
+1. <First step>
+2. <Second step>
+3. <Third step>
+Expected Result: <What should happen>
+
+Test 3: <Short name for third test>
+Tags: <comma separated tags>
+1. <First step>
+2. <Second step>
+3. <Third step>
+Expected Result: <What should happen>

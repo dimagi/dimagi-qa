@@ -1,0 +1,31 @@
+Suite: CaseSearch
+
+Test 1: Search by song name and submit Play Song form
+1. Login as user-1
+2. Open the Music App
+3. Open the Songs (Normal) menu
+4. Clear selections on the case search page
+5. Search for a case by song name using text input
+6. Click the search button
+7. Select the case and continue to forms
+8. Open the Play Song form
+9. Submit the form
+Expected Result: Form submits successfully and user is returned to the app home screen
+
+Test 2: Search with no results shows empty list
+1. Login as user-1
+2. Open the Music App
+3. Open the Songs (Normal) menu
+4. Search for a non-existent song name
+5. Click the search button
+Expected Result: Case list is empty with appropriate message
+
+Test 3: Search using combobox filter
+1. Login as user-2
+2. Open the Music App
+3. Open the Songs (Normal) menu
+4. Clear selections on the case search page
+5. Filter cases using a combobox property
+6. Click the search button
+7. Verify only matching cases appear in the list
+Expected Result: Filtered case list shows only relevant results
