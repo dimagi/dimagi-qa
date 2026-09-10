@@ -121,7 +121,12 @@ class BasePage:
             else:
                 raise
         element.clear()
+        element.click()
+        time.sleep(2)
         element.send_keys(user_input)
+        time.sleep(2)
+        element.send_keys(Keys.TAB)
+        time.sleep(1)
         # self.wait_after_interaction()
 
     def wait_to_get_text(self, locator, timeout=10):
