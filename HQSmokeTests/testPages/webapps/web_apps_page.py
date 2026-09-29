@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
 
 from common_utilities.selenium.base_page import BasePage
-from common_utilities.generate_random_string import fetch_random_string, fetch_random_digit
+from common_utilities.generate_random_string import fetch_random_string, fetch_random_digit, fetch_phone_number
 from HQSmokeTests.userInputs.user_inputs import UserData
 
 
@@ -22,6 +22,7 @@ class WebAppsPage(BasePage):
         self.text_value = "text_" + fetch_random_string()
         self.form_text_value = "cond_alert_" + fetch_random_string()
         self.random_value = fetch_random_digit()
+        self.phone_text_value = fetch_phone_number()
 
         self.login_as_css = (By.CLASS_NAME, "js-restore-as-item")
         self.login_user = (By.XPATH, "//*[text()='" + UserData.login_as + "']")
@@ -30,10 +31,19 @@ class WebAppsPage(BasePage):
         self.home_button = (By.XPATH, "//li[contains(@class,'home')]")
         self.apps_links = (By.XPATH, "//*[@class='fcc fcc-flower appicon-icon']")
         self.web_app_link = (By.XPATH, "//div[@class='appicon-title']//*[text()='" + UserData.reassign_cases_application + "']")
+        self.dnd_web_app_link = (By.XPATH,
+                             "//div[@class='appicon-title']//*[text()='" + UserData.dnd_application + "']")
         self.case_list_link = (By.XPATH, "//*[text()='" + UserData.case_list_name + "']")
         self.update_case_change_link = (By.XPATH, "//*[text()='" + UserData.update_case_change_link + "']")
         self.case_register_form = (By.XPATH, "//*[text()='" + UserData.case_register_form + "']")
         self.case_update_form = (By.XPATH, "//*[text()='" + UserData.case_update_form + "']")
+
+        self.dnd_update_case_change_link = (By.XPATH, "//*[text()='" + UserData.case_dnd_list_name + "']")
+        self.dnd_case_register_form = (By.XPATH, "//*[text()='" + UserData.form_name + "']")
+        self.dnd_case_update_form = (By.XPATH, "//*[text()='" + UserData.update_form_name + "']")
+
+        self.enter_contact_area = (By.XPATH,
+                                "//label[.//div[.//span[contains(text(),'Change Text')]]]/following-sibling::div[@data-bind='css: controlWidth']//div/textarea")
         self.enter_text_area = (By.XPATH, "//label[.//div[.//span[contains(text(),'Enter text')]]]/following-sibling::div[@data-bind='css: controlWidth']//div/textarea")
         self.enter_value_area = (By.XPATH, "//label[.//div[.//span[contains(text(),'Enter a random value')]]]/following-sibling::div[@data-bind='css: controlWidth']//div/textarea")
         self.update_value_area = (By.XPATH, "//label[.//div[.//span[contains(text(),'Update')]]]/following-sibling::div[@data-bind='css: controlWidth']//div/textarea")
@@ -134,20 +144,20 @@ class WebAppsPage(BasePage):
         self.driver.get(case_link)
 
     def submit_case_change_register_form_no_value(self):
-        self.scroll_to_element(self.web_app_link)
+        self.scroll_to_element(self.dnd_web_app_link)
         time.sleep(3)
         # self.wait_for_element(self.web_app_link)
-        self.js_click(self.web_app_link)
-        self.wait_for_element(self.update_case_change_link)
-        self.js_click(self.update_case_change_link)
-        self.wait_for_element(self.case_register_form)
-        self.js_click(self.case_register_form)
-        self.wait_to_clear_and_send_keys(self.enter_text_area, self.form_text_value)
+        self.js_click(self.dnd_web_app_link)
+        self.wait_for_element(self.dnd_update_case_change_link)
+        self.js_click(self.dnd_update_case_change_link)
+        self.wait_for_element(self.dnd_case_register_form)
+        self.js_click(self.dnd_case_register_form)
+        self.wait_to_clear_and_send_keys(self.enter_contact_area, self.phone_text_value)
         self.js_click(self.form_submit_button)
         self.wait_for_ajax()
         time.sleep(5)
         self.wait_for_element(self.success_message)
         assert self.is_displayed(self.success_message), "Form not submitted"
         print("Form successfully submitted")
-        print(self.form_text_value)
-        return self.form_text_value
+        print(self.phone_text_value)
+        return self.phone_text_value

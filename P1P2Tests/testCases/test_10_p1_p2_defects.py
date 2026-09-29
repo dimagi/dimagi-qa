@@ -153,31 +153,61 @@ def test_case_83_data_forwarding_add_edit(driver, settings):
 
 @pytest.mark.data
 @pytest.mark.p1p2EscapeDefect
-@pytest.mark.xfail
+@pytest.mark.skip(reason=(
+    "QA-8653: this Conditional Alert's case-type filter matched every "
+    "existing case of the shared `reassign` case type on save (6,684+ in "
+    "qa-automation-prod), sending one 'Owner' email per matching case and "
+    "bouncing heavily at AWS SES. Reworked below to use a dedicated "
+    "DoNotDelete app / case_dnd case type AND an added caseid-equals filter "
+    "scoping the rule to the exact case this test submits, instead of "
+    "matching every case_dnd case missing the target property (which would "
+    "still reproduce the same bounce pattern more slowly, one more matching "
+    "case per run). Neither the case_dnd switch nor the caseid-scoping has "
+    "been run/verified live yet - do not remove this skip until it has "
+    "been, or the mass-bounce risk could come right back."
+))
 def test_case_93_cond_alert_on_form_submit(driver, settings, rerun_count):
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
     menu.messaging_menu()
     msg.remove_all_cond_alert()
-    menu.messaging_menu()
-    cond_alert, subject = msg.create_cond_alert_for_doesnot_have_value(rerun_count)
+
+    # Submit the case and look up its case_id BEFORE creating the rule (this
+    # part reordered from the original rule-then-case flow) so the rule below
+    # can be scoped to this exact case_id instead of matching every case_dnd
+    # case that's ever missing the target property. CommCareHQ evaluates a
+    # rule against currently-matching cases as soon as it's saved, so a rule
+    # filtered on this case's own id still fires for it despite the case
+    # already existing by then - it just does so via the save-time evaluation
+    # path instead of the "new case matches an existing rule" path.
     menu.web_apps_menu()
     webapps = WebAppsPage(driver)
     webapps.verify_apps_presence()
     case_name = webapps.submit_case_change_register_form_no_value()
+
     menu = HomePage(driver, settings)
-    menu.applications_menu(UserData.reassign_cases_application)
-    load = ApplicationPage(driver)
-    code = load.get_app_code(UserData.reassign_cases_application)
-    mobile = AndroidScreen(settings)
-    mobile.verify_app_install(code)
-    mobile.close_android_driver()
     menu.reports_menu()
     report = ReportPage(driver)
     case_id = report.get_case_id_from_case_list_explorer(case_name)
-    export = ExportDataPage(driver)
-    menu.data_menu()
-    export.check_for_case_id(case_id)
-    email = EmailVerification(settings)
-    email.verify_email_sent(subject, settings['url'], sleep="YES")
+
+    menu.messaging_menu()
+    cond_alert, subject = msg.create_cond_alert_for_doesnot_have_value(rerun_count, case_id=case_id)
+    try:
+        menu.applications_menu(UserData.dnd_application)
+        load = ApplicationPage(driver)
+        code = load.get_app_code(UserData.dnd_application)
+        mobile = AndroidScreen(settings)
+        mobile.verify_app_install(code)
+        mobile.close_android_driver()
+        export = ExportDataPage(driver)
+        menu.data_menu()
+        export.check_for_case_id(case_id)
+        email = EmailVerification(settings)
+        email.verify_email_sent(subject, settings['url'], sleep="YES")
+    finally:
+        # Removing the rule immediately (rather than waiting for the next
+        # day's remove_all_cond_alert()) limits how long it stays active and
+        # able to re-fire, e.g. via the "restart rule" retry path.
+        menu.messaging_menu()
+        msg.remove_cond_alert(cond_alert)
 

@@ -60,6 +60,15 @@ class MessagingPage(BasePage):
         self.select_match_type = (By.XPATH, "//select[@data-bind='value: match_type']")
         self.case_property_value = (By.XPATH, "//input[contains(@data-bind,'value: property_value')]")
         self.case_property_input = (By.XPATH, "//input[@class='select2-search__field']")
+        # Second (AND-ed) filter row locators, for scoping a rule to one exact
+        # case via "caseid equals <value>" instead of relying solely on a
+        # domain-wide "has no value" filter. Indexed [2] assuming the knockout
+        # repeat-template renders identical data-bind markup per row, matching
+        # the first row's locators above. NOT YET VERIFIED against a live run.
+        self.select_case_property_row2 = (
+        By.XPATH, "(//select[@data-bind='value: valueObservable, autocompleteSelect2: casePropertyNames'])[2]")
+        self.select_match_type_row2 = (By.XPATH, "(//select[@data-bind='value: match_type'])[2]")
+        self.case_property_value_row2 = (By.XPATH, "(//input[contains(@data-bind,'value: property_value')])[2]")
         self.continue_button_rule_tab = (
         By.XPATH, "//button[@data-bind='click: handleRuleNavContinue, enable: ruleTabValid']")
         self.cond_alert_created = "//a[text()='{}']"
@@ -660,7 +669,18 @@ class MessagingPage(BasePage):
             print("No Conditional alerts are present")
 
 
-    def create_cond_alert_for_doesnot_have_value(self, rerun):
+    def create_cond_alert_for_doesnot_have_value(self, rerun, case_id):
+        if not case_id:
+            # case_id used to default to None, with the caseid-equals filter
+            # below only added `if case_id:` - any caller that left it out (or
+            # a future one that forgets to pass it) silently got the old
+            # broad "has no value" rule back, the exact one that mass-emailed
+            # every case owner. Required now, and this raises instead of
+            # quietly under-scoping the rule.
+            raise ValueError(
+                "create_cond_alert_for_doesnot_have_value requires a case_id to scope the rule to - "
+                "omitting it would recreate the mass-bounce bug this scoping exists to prevent."
+            )
         cond_alert_no_value_name_input = f"{self.cond_alert_no_value_name_input}{rerun}"
         self.wait_to_click(self.cond_alerts)
         self.remove_alert_with_same_name(cond_alert_no_value_name_input)
@@ -669,7 +689,7 @@ class MessagingPage(BasePage):
         self.wait_to_click(self.continue_button_basic_tab)
         time.sleep(2)
         self.wait_to_click(self.case_type)
-        self.select_by_text(self.case_type, UserData.case_reassign)
+        self.select_by_text(self.case_type, UserData.case_dnd)
         time.sleep(3)
         self.wait_to_click(self.select_filter)
         self.wait_to_click(self.case_property_filter)
@@ -681,6 +701,30 @@ class MessagingPage(BasePage):
         time.sleep(2)
         self.select_by_text(self.select_case_property, UserData.alert_case_property_random_value)
         self.select_by_text(self.select_match_type, UserData.alert_no_value)
+        # This "has no value" filter alone is only scoped by case type. Even
+        # after moving to the dedicated case_dnd type, it still matches EVERY
+        # case_dnd case missing this property, not just the one this test
+        # submits - each run registers another matching case, so run N emails
+        # the owners of all N-1 earlier runs' cases too. Same bounce pattern
+        # as the original `reassign` bug, just growing slower on a smaller
+        # case type instead of a shared one with 6,684+ cases already in it.
+        # AND in a second condition scoping the rule to the exact case_id this
+        # test just created. `caseid` is a system property available on any
+        # case type, so this narrows matches down to one case regardless of
+        # how many other case_dnd cases have accumulated from prior runs.
+        # NOT YET VERIFIED against a live run: reuses select_filter /
+        # case_property_filter to add the second row the same way the first
+        # row was added above, and assumes the resulting row 2 repeats row 1's
+        # data-bind markup (see select_case_property_row2 etc.). If either
+        # locator turns out ambiguous or wrong with two rows present, this
+        # will raise rather than silently under-scope the rule - confirm and
+        # adjust on the first real run.
+        self.wait_to_click(self.select_filter)
+        self.wait_to_click(self.case_property_filter)
+        time.sleep(2)
+        self.select_by_text(self.select_case_property_row2, "caseid")
+        self.select_by_text(self.select_match_type_row2, "equals")
+        self.send_keys(self.case_property_value_row2, case_id)
         self.wait_to_click(self.continue_button_rule_tab)
         self.wait_for_element(self.recipients_select_cond_alert)
         self.select_by_value(self.recipients_select_cond_alert, "Owner")
