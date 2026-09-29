@@ -18,19 +18,70 @@ from HQSmokeTests.userInputs.user_inputs import UserData
 """"Contains test page elements and functions related to the app installation and form submission on mobile"""
 
 
-import os, json, subprocess
+import json, subprocess
+import os
+import tempfile
 
-import os, requests
+import requests
+
+
+def _latest_apk_asset(owner, repo):
+    """Resolve the latest release's actual .apk asset via the Releases API -
+    always whatever GitHub currently calls "latest", never a pinned version.
+
+    The old code hardcoded asset_name="app-commcare-release.apk" and handed
+    BrowserStack the .../releases/latest/download/<name> URL directly to
+    fetch itself. That fixed filename stopped matching once commcare-android
+    started suffixing release APK filenames with their version (e.g.
+    "app-commcare-release_2.64.1.apk" was the actual asset as of 2026-09-29,
+    but this code never hardcodes that or any other version - the next
+    release will suffix with whatever its own version is instead, and this
+    still finds it). The old fixed-name URL 302-redirected to a real
+    download URL that then 404'd; BrowserStack still "saw a URL" and tried
+    to fetch+unzip whatever came back (a 404 HTML page), which is exactly
+    the BROWSERSTACK_APP_UNZIP_FAILED error - not a BrowserStack-side
+    problem at all.
+    """
+    resp = requests.get(f"https://api.github.com/repos/{owner}/{repo}/releases/latest", timeout=30)
+    resp.raise_for_status()
+    release = resp.json()
+    apk_asset = next((a for a in release.get("assets", []) if a["name"].endswith(".apk")), None)
+    if not apk_asset:
+        raise RuntimeError(
+            f"No .apk asset found in {owner}/{repo}'s latest release ({release.get('tag_name')})"
+        )
+    return apk_asset["name"], apk_asset["browser_download_url"]
+
 
 def bstack_upload_github_latest(bs_user: str, bs_key: str,
                                 owner="dimagi", repo="commcare-android",
-                                asset_name="app-commcare-release.apk",
                                 custom_id: str | None = None) -> str:
-    """Uploads the latest release APK from GitHub to BrowserStack and returns bs://..."""
-    gh_url = f"https://github.com/{owner}/{repo}/releases/latest/download/{asset_name}"
-    data = {"custom_id": custom_id} if custom_id else {}
-    r = requests.post("https://api-cloud.browserstack.com/app-automate/upload",
-                      auth=(bs_user, bs_key), data={**data, "url": gh_url}, timeout=180)
+    """Downloads the latest release APK from GitHub and uploads its actual
+    bytes to BrowserStack, returning bs://...
+
+    Uploads the real file (multipart) rather than handing BrowserStack a URL
+    to fetch itself - see _latest_apk_asset's docstring for why the URL
+    approach broke. This matches the proven pattern already used for this
+    exact BrowserStack endpoint in the sibling commcare-mobile QA repo
+    (scripts/appium_browserstack_client.py's upload_app), which uploads by
+    local file path against this same api-automate/upload endpoint.
+    """
+    asset_name, download_url = _latest_apk_asset(owner, repo)
+    apk_resp = requests.get(download_url, timeout=300)
+    apk_resp.raise_for_status()
+
+    tmp_path = os.path.join(tempfile.gettempdir(), asset_name)
+    with open(tmp_path, "wb") as f:
+        f.write(apk_resp.content)
+
+    try:
+        data = {"custom_id": custom_id} if custom_id else {}
+        with open(tmp_path, "rb") as f:
+            r = requests.post("https://api-cloud.browserstack.com/app-automate/upload",
+                              auth=(bs_user, bs_key), data=data, files={"file": f}, timeout=180)
+    finally:
+        os.remove(tmp_path)
+
     # Success → prefer returned app_url
     if r.status_code in (200, 201):
         app_url = r.json().get("app_url")
@@ -59,7 +110,6 @@ class AndroidScreen:
             bs_user, bs_key,
             owner="dimagi",
             repo="commcare-android",
-            asset_name="app-commcare-release.apk",
             custom_id="commcare-latest"  # optional: stable alias for your caps
             )
 
