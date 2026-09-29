@@ -669,7 +669,7 @@ class MessagingPage(BasePage):
         self.wait_to_click(self.continue_button_basic_tab)
         time.sleep(2)
         self.wait_to_click(self.case_type)
-        self.select_by_text(self.case_type, UserData.case_reassign)
+        self.select_by_text(self.case_type, UserData.case_dnd)
         time.sleep(3)
         self.wait_to_click(self.select_filter)
         self.wait_to_click(self.case_property_filter)

@@ -8,9 +8,11 @@ class UserData:
 
     # Pre-setup application and case names
     village_application = "Village Health"
+    dnd_application = 'DoNotDelete'
     reassign_cases_application = 'Reassign Cases'
     case_pregnancy = "pregnancy"
     case_reassign = "reassign"
+    case_dnd = "case_dnd"
     case_reassign_change = "reassign_change"
     model_type_case = "case"
     model_type_form = "form"
@@ -37,7 +39,9 @@ class UserData:
     #  web app
     app_type = "Applications"
     case_list_name = 'Case List'
+    case_dnd_list_name = 'Case Change'
     form_name = 'Registration Form'
+    update_form_name = 'Followup Form'
     login_as = 'henry'
     update_case_change_link = "Case Change"
     case_register_form = "Case Register"

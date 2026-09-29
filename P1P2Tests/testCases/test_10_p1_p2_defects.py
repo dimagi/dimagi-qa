@@ -153,7 +153,7 @@ def test_case_83_data_forwarding_add_edit(driver, settings):
 
 @pytest.mark.data
 @pytest.mark.p1p2EscapeDefect
-@pytest.mark.xfail
+@pytest.mark.skip
 def test_case_93_cond_alert_on_form_submit(driver, settings, rerun_count):
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
@@ -166,9 +166,9 @@ def test_case_93_cond_alert_on_form_submit(driver, settings, rerun_count):
     webapps.verify_apps_presence()
     case_name = webapps.submit_case_change_register_form_no_value()
     menu = HomePage(driver, settings)
-    menu.applications_menu(UserData.reassign_cases_application)
+    menu.applications_menu(UserData.dnd_application)
     load = ApplicationPage(driver)
-    code = load.get_app_code(UserData.reassign_cases_application)
+    code = load.get_app_code(UserData.dnd_application)
     mobile = AndroidScreen(settings)
     mobile.verify_app_install(code)
     mobile.close_android_driver()

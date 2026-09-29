@@ -1064,7 +1064,8 @@ class ReportPage(BasePage):
         ActionChains(self.driver).send_keys(Keys.TAB).perform()
 
     def get_case_id_from_case_list_explorer(self, text):
-        query = "case_name = '" + text + "'"
+        # query = "case_name = '" + text + "'"
+        query = "case_dnd_change = '" + text + "'"
         self.wait_to_click(self.case_list_explorer_rep)
         time.sleep(5)
         self.wait_for_element(self.apply_id, 100)
@@ -1072,7 +1073,7 @@ class ReportPage(BasePage):
         time.sleep(2)
         self.set_ace_editor_text(self.query_textarea, query)
         time.sleep(2)
-        self.select_by_text(self.case_type_dropdown, UserData.case_reassign_change)
+        self.select_by_text(self.case_type_dropdown, UserData.case_dnd)
         time.sleep(2)
         self.scroll_to_element(self.apply_id)
         self.js_click(self.apply_id)
