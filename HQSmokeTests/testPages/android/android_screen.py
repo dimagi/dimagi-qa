@@ -39,14 +39,24 @@ def _latest_apk_asset(owner, repo):
     to fetch+unzip whatever came back (a 404 HTML page), which is exactly
     the BROWSERSTACK_APP_UNZIP_FAILED error - not a BrowserStack-side
     problem at all.
+
+    Matches on the "app-commcare-release" prefix (not just any ".apk"): a
+    release can ship more than one APK (e.g. different flavors/ABIs), and
+    matching the first ".apk" found regardless of name risked silently
+    uploading the wrong one.
     """
     resp = requests.get(f"https://api.github.com/repos/{owner}/{repo}/releases/latest", timeout=30)
     resp.raise_for_status()
     release = resp.json()
-    apk_asset = next((a for a in release.get("assets", []) if a["name"].endswith(".apk")), None)
+    apk_asset = next(
+        (a for a in release.get("assets", [])
+         if a["name"].startswith("app-commcare-release") and a["name"].endswith(".apk")),
+        None
+    )
     if not apk_asset:
         raise RuntimeError(
-            f"No .apk asset found in {owner}/{repo}'s latest release ({release.get('tag_name')})"
+            f"No app-commcare-release*.apk asset found in {owner}/{repo}'s latest release "
+            f"({release.get('tag_name')})"
         )
     return apk_asset["name"], apk_asset["browser_download_url"]
 
