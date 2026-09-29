@@ -1076,10 +1076,26 @@ class ReportPage(BasePage):
         self.select_by_text(self.case_type_dropdown, UserData.case_dnd)
         time.sleep(2)
         self.scroll_to_element(self.apply_id)
-        self.js_click(self.apply_id)
-        time.sleep(5)
-        self.wait_for_element(self.result_table, 300)
-        assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+        # Case List Explorer is backed by an ES index with its own indexing
+        # lag. This is now called only ~5s after the case's form was
+        # submitted (previously ~9min later, after the alert-creation waits
+        # that used to come first) - the case may genuinely not be indexed
+        # yet on the first Apply, so re-apply the query a few times rather
+        # than waiting once on a result table that can legitimately load
+        # with zero matching rows.
+        for attempt in range(6):
+            self.js_click(self.apply_id)
+            time.sleep(5)
+            self.wait_for_element(self.result_table, 300)
+            assert self.is_visible_and_displayed(self.report_content_id, 120), "Report not loaded"
+            if self.is_present(self.view_case_link):
+                break
+            print(f"Case not indexed by Case List Explorer yet (attempt {attempt + 1}/6), retrying...")
+            time.sleep(15)
+        else:
+            raise TimeoutException(
+                f"Case list explorer never returned a matching row for query {query!r} after 6 attempts"
+            )
         print("Report loaded successfully!")
         form_link = self.get_attribute(self.view_case_link, "href")
         print("View Form Link: ", form_link)
