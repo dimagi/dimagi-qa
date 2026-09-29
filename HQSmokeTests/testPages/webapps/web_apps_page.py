@@ -152,12 +152,12 @@ class WebAppsPage(BasePage):
         self.js_click(self.dnd_update_case_change_link)
         self.wait_for_element(self.dnd_case_register_form)
         self.js_click(self.dnd_case_register_form)
-        self.wait_to_clear_and_send_keys(self.enter_contact_area, self.form_case_name_input)
+        self.wait_to_clear_and_send_keys(self.enter_contact_area, self.phone_text_value)
         self.js_click(self.form_submit_button)
         self.wait_for_ajax()
         time.sleep(5)
         self.wait_for_element(self.success_message)
         assert self.is_displayed(self.success_message), "Form not submitted"
         print("Form successfully submitted")
-        print(self.form_case_name_input)
-        return self.form_case_name_input
+        print(self.phone_text_value)
+        return self.phone_text_value

@@ -19,8 +19,6 @@ from HQSmokeTests.userInputs.user_inputs import UserData
 
 
 import json, subprocess
-import os
-import tempfile
 
 import requests
 
@@ -64,23 +62,23 @@ def bstack_upload_github_latest(bs_user: str, bs_key: str,
     approach broke. This matches the proven pattern already used for this
     exact BrowserStack endpoint in the sibling commcare-mobile QA repo
     (scripts/appium_browserstack_client.py's upload_app), which uploads by
-    local file path against this same api-automate/upload endpoint.
+    file - the difference here is uploading the downloaded bytes straight
+    from memory rather than through a shared on-disk temp file: hq-smoke and
+    p1p2's Android tests run in parallel (-n 4/-n 2), and every parallel
+    AndroidScreen() call used the exact same fixed path
+    (tempfile.gettempdir()/asset_name, same asset_name every time since it's
+    just whatever GitHub's latest release is named) - one run's os.remove()
+    mid-write from another was a real race, the kind of flakiness this fix
+    is trying to remove, not add.
     """
     asset_name, download_url = _latest_apk_asset(owner, repo)
     apk_resp = requests.get(download_url, timeout=300)
     apk_resp.raise_for_status()
 
-    tmp_path = os.path.join(tempfile.gettempdir(), asset_name)
-    with open(tmp_path, "wb") as f:
-        f.write(apk_resp.content)
-
-    try:
-        data = {"custom_id": custom_id} if custom_id else {}
-        with open(tmp_path, "rb") as f:
-            r = requests.post("https://api-cloud.browserstack.com/app-automate/upload",
-                              auth=(bs_user, bs_key), data=data, files={"file": f}, timeout=180)
-    finally:
-        os.remove(tmp_path)
+    data = {"custom_id": custom_id} if custom_id else {}
+    r = requests.post("https://api-cloud.browserstack.com/app-automate/upload",
+                      auth=(bs_user, bs_key), data=data,
+                      files={"file": (asset_name, apk_resp.content)}, timeout=180)
 
     # Success → prefer returned app_url
     if r.status_code in (200, 201):

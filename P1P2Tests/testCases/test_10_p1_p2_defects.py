@@ -153,7 +153,15 @@ def test_case_83_data_forwarding_add_edit(driver, settings):
 
 @pytest.mark.data
 @pytest.mark.p1p2EscapeDefect
-@pytest.mark.skip
+@pytest.mark.skip(reason=(
+    "QA-8653: this Conditional Alert's case-type filter matched every "
+    "existing case of the shared `reassign` case type on save (6,684+ in "
+    "qa-automation-prod), sending one 'Owner' email per matching case and "
+    "bouncing heavily at AWS SES. Reworked below to use a dedicated "
+    "DoNotDelete app / case_dnd case type instead, but that rework has NOT "
+    "been run/verified live yet - do not remove this skip until it has "
+    "been, or the mass-bounce risk could come right back."
+))
 def test_case_93_cond_alert_on_form_submit(driver, settings, rerun_count):
     menu = HomePage(driver, settings)
     msg = MessagingPage(driver)
