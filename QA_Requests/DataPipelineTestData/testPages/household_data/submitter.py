@@ -18,30 +18,47 @@ def full_username(username, domain):
     return username if "@" in username else f"{username}@{domain}.commcarehq.org"
 
 
-def lookup_user_ids(base_url, domain, workers, password, cache_file):
-    """Map each mobile worker to its user id, via a (small) OTA restore. Cached after the first run."""
+RESTORE_WAIT_SECONDS = 600
+
+
+def lookup_user_ids(base_url, domain, workers, password, cache_file, known=None):
+    """Map each mobile worker to its user id.
+
+    Uses ids from settings.cfg or the local cache first; otherwise falls back to an OTA restore,
+    which can take a while to generate once the worker owns thousands of cases."""
     cache_file = Path(cache_file)
     cached = json.loads(cache_file.read_text()) if cache_file.exists() else {}
+    cached.update(known or {})
     for worker in workers:
         if worker in cached:
             continue
-        auth = (full_username(worker, domain), password)
-        for _ in range(10):
-            response = requests.get(f"{base_url}phone/restore/", params={"version": "2.0", "items": "true"},
-                                    auth=auth, timeout=120)
-            if response.status_code == 202:  # restore is being generated asynchronously
-                time.sleep(int(response.headers.get("Retry-After", 5)))
-                continue
-            break
-        if response.status_code != 200:
-            raise RuntimeError(f"Could not log in as {worker} (HTTP {response.status_code}). "
-                               "Check mobile_workers and mobile_password in settings.cfg.")
-        match = re.search(r"<uuid>([^<]+)</uuid>", response.text)
-        if not match:
-            raise RuntimeError(f"No user id found in the restore for {worker}.")
-        cached[worker] = match.group(1)
+        cached[worker] = _user_id_from_restore(base_url, full_username(worker, domain), password)
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
         cache_file.write_text(json.dumps(cached, indent=2))
     return {w: cached[w] for w in workers}
+
+
+def _user_id_from_restore(base_url, username, password):
+    deadline = time.monotonic() + RESTORE_WAIT_SECONDS
+    while True:
+        response = requests.get(f"{base_url}phone/restore/", params={"version": "2.0"},
+                                auth=(username, password), timeout=300)
+        if response.status_code != 202:  # 202: restore is still being generated
+            break
+        if time.monotonic() > deadline:
+            raise RuntimeError(f"HQ was still generating the restore for {username} after "
+                               f"{RESTORE_WAIT_SECONDS}s. Add its id to mobile_worker_ids in settings.cfg "
+                               "instead of waiting for a restore.")
+        time.sleep(int(response.headers.get("Retry-After", 10)))
+    if response.status_code in (401, 403):
+        raise RuntimeError(f"Could not log in as {username} (HTTP {response.status_code}). "
+                           "Check mobile_workers and the mobile worker password.")
+    if response.status_code != 200:
+        raise RuntimeError(f"Restore for {username} failed with HTTP {response.status_code}.")
+    match = re.search(r"<uuid>([^<]+)</uuid>", response.text)
+    if not match:
+        raise RuntimeError(f"No user id found in the restore for {username}.")
+    return match.group(1)
 
 
 class ProgressLog:

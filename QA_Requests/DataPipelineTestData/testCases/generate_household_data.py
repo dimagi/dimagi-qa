@@ -41,7 +41,7 @@ def load_settings():
             "Copy settings-sample.cfg to settings.cfg and populate "
             "it with values for the environment you want to use."
         )
-    settings = ConfigParser()
+    settings = ConfigParser(interpolation=None)
     settings.read(path)
     settings = settings["default"]
     match = re.search(r"/a/([^/]+)", settings["url"])
@@ -53,8 +53,16 @@ def load_settings():
     return settings
 
 
-def plan_end_day(seed, end_date=None):
-    """Pin the plan's last day per seed, so a resumed run on a later day rebuilds the same plan."""
+def parse_user_ids(settings):
+    """Optional `mobile_worker_ids = name:user_id, ...` from settings.cfg (saves a restore per worker)."""
+    pairs = (p.split(":", 1) for p in settings.get("mobile_worker_ids", "").split(",") if ":" in p)
+    return {name.strip(): user_id.strip() for name, user_id in pairs}
+
+
+def plan_end_day(seed, end_date=None, persist=True):
+    """Pin the plan's last day per seed, so a resumed run on a later day rebuilds the same plan.
+
+    Dry runs pass persist=False so they never fix the date a later real run will use."""
     anchor = OUTPUT_DIR / f"plan_end_day_seed_{seed}.txt"
     if end_date:
         end_day = date.fromisoformat(end_date)
@@ -62,8 +70,9 @@ def plan_end_day(seed, end_date=None):
         return date.fromisoformat(anchor.read_text().strip())
     else:
         end_day = date.today() - timedelta(days=1)
-    OUTPUT_DIR.mkdir(exist_ok=True)
-    anchor.write_text(end_day.isoformat())
+    if persist:
+        OUTPUT_DIR.mkdir(exist_ok=True)
+        anchor.write_text(end_day.isoformat())
     return end_day
 
 
@@ -106,7 +115,7 @@ def run():
     args = parse_args()
     settings = load_settings()
     workers = [w.strip() for w in settings["mobile_workers"].split(",") if w.strip()]
-    end_day = plan_end_day(args.seed, args.end_date)
+    end_day = plan_end_day(args.seed, args.end_date, persist=not args.dry_run)
     events = build_plan(workers, args.count, args.seed, args.days, end_day)
     summarise(events, workers)
     print(f"Seed {args.seed}, end date {end_day}: "
@@ -120,7 +129,7 @@ def run():
         raise RuntimeError("No mobile worker password: set DIMAGI_MOBILE_PASSWORD or mobile_password in settings.cfg")
     base_url = settings["url"].rstrip("/") + "/"
     user_ids = lookup_user_ids(base_url, settings["domain"], workers, settings["mobile_password"],
-                               OUTPUT_DIR / "user_ids.json")
+                               OUTPUT_DIR / "user_ids.json", known=parse_user_ids(settings))
     progress = ProgressLog(OUTPUT_DIR / f"submitted_seed_{args.seed}.log")
     pending = [e for e in events if e.instance_id not in progress.done]
     if args.limit:
@@ -141,10 +150,16 @@ def run():
 
     def submit_all(worker, worker_events):
         consecutive = 0
+        failed_cases = set()
         username = full_username(worker, settings["domain"])
         for event in worker_events:
             if stop.is_set():
                 return
+            if event.case_id in failed_cases:
+                # e.g. a follow-up whose registration failed: it would hit a case that doesn't exist
+                with lock:
+                    stats["skipped"] += 1
+                continue
             xml = build_form_xml(event, username, user_ids[worker], settings["app_version"])
             ok, detail = submitter.submit(worker, xml)
             with lock:
@@ -152,13 +167,14 @@ def run():
                 if not ok:
                     with failed_log.open("a") as f:
                         f.write(f"{event.instance_id}\t{event.kind}\t{worker}\t{detail}\n")
-                done = stats["ok"] + stats["failed"]
+                done = stats["ok"] + stats["failed"] + stats["skipped"]
                 if done % 250 == 0 or done == len(pending):
                     print(f"  {done}/{len(pending)} submitted ({stats['failed']} failed)")
             if ok:
                 progress.add(event.instance_id)
                 consecutive = 0
             else:
+                failed_cases.add(event.case_id)
                 consecutive += 1
                 if consecutive >= MAX_CONSECUTIVE_FAILURES:
                     print(f"Stopping: {worker} had {consecutive} failures in a row. Last error: {detail}")
@@ -170,9 +186,11 @@ def run():
     for future in futures:
         future.result()  # re-raise anything a worker thread hit
 
-    print(f"Done: {stats['ok']} submitted, {stats['failed']} failed.")
-    if stats["failed"]:
-        print(f"Failures are listed in {failed_log}; re-run the same command to retry them.")
+    print(f"Done: {stats['ok']} submitted, {stats['failed']} failed, "
+          f"{stats['skipped']} skipped because an earlier form for the same case failed.")
+    if stats["failed"] or stats["skipped"]:
+        print(f"Failures are listed in {failed_log}; re-run the same command to retry them "
+              "(skipped forms are retried too).")
 
 
 if __name__ == "__main__":

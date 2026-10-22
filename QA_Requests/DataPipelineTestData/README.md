@@ -34,6 +34,8 @@ pip install -r requires.txt
   `DIMAGI_MOBILE_PASSWORD` environment variable (the repository secret of the same name in CI)
   or as `mobile_password` in `settings.cfg`. The environment variable takes precedence.
 - If the app is rebuilt, update `app_version` to the latest build number.
+- `mobile_worker_ids` maps each worker to its HQ user ID. A worker missing from it is looked up
+  through a restore, which gets slow once the worker owns thousands of cases.
 
 ### Running
 
@@ -53,6 +55,18 @@ python generate_household_data.py
 Options: `--count` (households, default 10000), `--days` (date spread, default 180),
 `--delay` (seconds between submissions per worker) and `--seed` (see below).
 
+### About the dates
+
+The forms' completion times (`timeStart`/`timeEnd`) and the cases' open/modified dates are
+backdated across the 180 days. HQ always sets a form's **received on** date to the moment it is
+submitted, so every form from one run shares that run's received date. Filters and exports based on
+*received on* / *submission date* will not show the spread; use the form completion time or the
+case dates instead.
+
+If a form fails, the later forms for the same household in that run (e.g. the follow-ups of a
+failed registration) are skipped rather than sent against a case that doesn't exist. Re-running
+the same command retries both.
+
 ### Running on GitHub Actions
 
 The [QA-8710 Data Pipeline Test Data](../../.github/workflows/qa-8710-data-pipeline-test-data.yml)
@@ -65,6 +79,9 @@ workflow runs the same script. It is **manual only**: it never runs on a push, p
   and that `end_date`: the same forms are rebuilt, and HQ
   treats the ones it already received as duplicates without applying them again.
 - The run's `OutputFiles` (progress and failure logs) are uploaded as an artifact.
+- CI runs don't keep the progress log between runs, so a resumed CI run re-sends every form of the
+  plan. The result is still correct (HQ discards the repeats as duplicates), just slower than a
+  local resume.
 
 ### Refilling after Bulk Actions deletes
 
