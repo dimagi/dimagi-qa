@@ -1,5 +1,6 @@
 """Submits form XML to the CommCare HQ receiver as the owning mobile worker."""
 import json
+import random
 import re
 import threading
 import time
@@ -7,7 +8,10 @@ from pathlib import Path
 
 import requests
 
-RETRY_STATUSES = {429, 500, 502, 503, 504}
+# 423: HQ is still processing an earlier attempt of the same form (e.g. after a timeout);
+# resending is safe because a form that already went through comes back as a duplicate.
+RETRY_STATUSES = {423, 429, 500, 502, 503, 504}
+MAX_BACKOFF = 120
 
 
 def full_username(username, domain):
@@ -56,7 +60,7 @@ class ProgressLog:
 
 
 class Submitter:
-    def __init__(self, base_url, app_id, domain, password, max_retries=5, delay=0.0):
+    def __init__(self, base_url, app_id, domain, password, max_retries=8, delay=0.0):
         self.url = f"{base_url}receiver/{app_id}/"
         self.domain = domain
         self.password = password
@@ -92,5 +96,16 @@ class Submitter:
                 detail = f"HTTP {response.status_code}: {response.text[:300]}"
                 if response.status_code not in RETRY_STATUSES:
                     return False, detail
-            time.sleep(min(2 ** attempt, 60))
+                retry_after = _retry_after(response)
+                if retry_after is not None:
+                    time.sleep(retry_after + random.uniform(0, 2))
+                    continue
+            # jitter keeps the worker threads from retrying in lockstep
+            time.sleep(min(2 ** attempt * random.uniform(0.5, 1.5), MAX_BACKOFF))
         return False, detail
+
+
+def _retry_after(response):
+    """Seconds the server asked us to wait (429/503 Retry-After), if it said."""
+    value = response.headers.get("Retry-After", "")
+    return min(int(value), MAX_BACKOFF) if value.isdigit() else None
