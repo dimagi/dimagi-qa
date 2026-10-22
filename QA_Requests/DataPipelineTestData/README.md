@@ -31,7 +31,7 @@ pip install -r requires.txt
 
 - Copy `settings-sample.cfg` to `settings.cfg`.
 - Provide the password shared by all the mobile workers listed in `mobile_workers`, either as the
-  `DIMAGI_MOBILE_PASSWORD` environment variable (the repository secret of the same name in CI)
+  `DIMAGIQA_MOBILE_PASSWORD` environment variable (the repository secret of the same name in CI)
   or as `mobile_password` in `settings.cfg`. The environment variable takes precedence.
 - If the app is rebuilt, update `app_version` to the latest build number.
 - `mobile_worker_ids` maps each worker to its HQ user ID. A worker missing from it is looked up
@@ -74,7 +74,7 @@ workflow runs the same script. It is **manual only**: it never runs on a push, p
 
 - Go to Actions → **QA-8710 Data Pipeline Test Data** → Run workflow.
 - Inputs: `count`, `seed`, `end_date`, `limit` (e.g. `20` for a smoke check) and `dry_run`.
-- The mobile worker password comes from the `DIMAGI_MOBILE_PASSWORD` repository secret.
+- The mobile worker password comes from the `DIMAGIQA_MOBILE_PASSWORD` repository secret.
 - The log prints the plan's end date. To resume a run that stopped, run again with the same `seed`
   and that `end_date`: the same forms are rebuilt, and HQ
   treats the ones it already received as duplicates without applying them again.

@@ -61,7 +61,7 @@ jobs:
       - name: Generate data
         working-directory: QA_Requests/DataPipelineTestData/testCases
         env:
-          DIMAGI_MOBILE_PASSWORD: ${{ secrets.DIMAGI_MOBILE_PASSWORD }}
+          DIMAGIQA_MOBILE_PASSWORD: ${{ secrets.DIMAGIQA_MOBILE_PASSWORD }}
           COUNT: ${{ inputs.count }}
           SEED: ${{ inputs.seed }}
           END_DATE: ${{ inputs.end_date }}

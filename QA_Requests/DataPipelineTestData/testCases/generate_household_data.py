@@ -48,8 +48,8 @@ def load_settings():
     if not match:
         raise RuntimeError("settings.cfg url must look like https://<server>/a/<project-space>/")
     settings["domain"] = match.group(1)
-    # in CI the shared mobile worker password comes from the DIMAGI_MOBILE_PASSWORD secret
-    settings["mobile_password"] = os.environ.get("DIMAGI_MOBILE_PASSWORD") or settings.get("mobile_password", "")
+    # in CI the shared mobile worker password comes from the DIMAGIQA_MOBILE_PASSWORD secret
+    settings["mobile_password"] = os.environ.get("DIMAGIQA_MOBILE_PASSWORD") or settings.get("mobile_password", "")
     return settings
 
 
@@ -126,7 +126,7 @@ def run():
         return
 
     if not settings["mobile_password"]:
-        raise RuntimeError("No mobile worker password: set DIMAGI_MOBILE_PASSWORD or mobile_password in settings.cfg")
+        raise RuntimeError("No mobile worker password: set DIMAGIQA_MOBILE_PASSWORD or mobile_password in settings.cfg")
     base_url = settings["url"].rstrip("/") + "/"
     user_ids = lookup_user_ids(base_url, settings["domain"], workers, settings["mobile_password"],
                                OUTPUT_DIR / "user_ids.json", known=parse_user_ids(settings))
