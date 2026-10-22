@@ -35,6 +35,9 @@ class ManageFormsPage(BasePage):
         self.date_range_type = "//li[@data-range-key='{}']"
         self.users_field = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]")
         self.users_list_item = "//ul[@role='listbox']/li[contains(.,'{}')][1]"
+        # Exact match, so "[Deactivated Web Users]" is never picked instead of "[Web Users]"
+        self.users_list_item_exact = "//ul[@role='listbox']/li[normalize-space(.)='{}']"
+        self.selected_users = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]/ancestor::span[contains(@class,'select2-selection--multiple')]//li[contains(@class,'select2-selection__choice')]")
         self.village_app = (By.XPATH, "//option[text()='Village Health']")
         self.select_archive_restore = (By.XPATH, "//select[@name='archive_or_restore']")
         self.check_data = (By.XPATH, "//tr[@class = 'form-data-question ']")
@@ -56,10 +59,7 @@ class ManageFormsPage(BasePage):
             self.send_keys(self.date_range_manage_forms, UserData.eu_date_having_submission)
         else:
             self.send_keys(self.date_range_manage_forms, UserData.india_date_having_submission)
-        self.remove_default_users()
-        web_user = str(UserData.web_user).strip("[]")
-        self.send_keys(self.users_field, web_user)
-        self.wait_to_click((By.XPATH, self.users_list_item.format(web_user)), 30)
+        self.select_web_users_filter()
         # Report Apply
         self.wait_and_sleep_to_click(self.apply_button)
         time.sleep(5)
@@ -98,14 +98,14 @@ class ManageFormsPage(BasePage):
     def get_archived_forms(self):
         self.wait_and_sleep_to_click(self.manage_forms_link)
         self.wait_for_element(self.date_range_manage_forms, 150)
-        self.remove_default_users()
-        web_user = str(UserData.web_user).strip("[]")
-        self.send_keys(self.users_field, web_user)
-        self.wait_to_click((By.XPATH, self.users_list_item.format(web_user)), 30)
+        self.select_web_users_filter()
         self.wait_and_sleep_to_click(self.archived_restored_dropdown)
         self.wait_and_sleep_to_click(self.archived_forms_option)
         self.wait_and_sleep_to_click(self.apply_button)
         self.reload_page()
+        self.wait_for_element(self.users_field, 150)
+        assert self.get_selected_users() == [UserData.web_user], \
+            f"Submitted By filter changed after reload: {self.get_selected_users()}"
         self.wait_for_element(self.view_form_link, 200)
 
     def view_archived_forms(self):
@@ -141,6 +141,24 @@ class ManageFormsPage(BasePage):
 
             count = self.find_elements(self.remove_buttons)
         ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+
+    def get_selected_users(self):
+        # The chip's title holds the label; its text also includes the "×" remove button
+        return [(chip.get_attribute("title") or chip.text).replace("×", "").strip()
+                for chip in self.find_elements(self.selected_users)]
+
+    def select_web_users_filter(self):
+        web_user = str(UserData.web_user)
+        for attempt in range(2):
+            self.remove_default_users()
+            self.send_keys(self.users_field, web_user.strip("[]"))
+            self.wait_to_click((By.XPATH, self.users_list_item_exact.format(web_user)), 30)
+            ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+            selected = self.get_selected_users()
+            print("Submitted By filter:", selected)
+            if selected == [web_user]:
+                return
+        assert False, f"Submitted By filter should be only {web_user}, got {selected}"
 
 
     def weekly_archive_forms(self, app, form, date_range, sub_time):

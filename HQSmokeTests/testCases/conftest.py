@@ -6,11 +6,18 @@ from pathlib import Path
 import pytest_html
 
 from common_utilities.fixtures import *
+from common_utilities.path_settings import PathSettings
 from datetime import datetime
 
 """"This file provides fixture functions for driver initialization"""
 
 global driver
+
+# Give each xdist worker its own download folder so parallel tests can't pick up each other's files
+_xdist_worker = os.environ.get("PYTEST_XDIST_WORKER")
+if _xdist_worker:
+    PathSettings.DOWNLOAD_PATH = PathSettings.DOWNLOAD_PATH / "downloads" / _xdist_worker
+    PathSettings.DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
 
 @pytest.fixture
 def rerun_count(request) -> int:

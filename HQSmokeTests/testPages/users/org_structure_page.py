@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 
 """"Contains test page elements and functions related to the User's Organization structure module"""
 
-def wait_for_download_to_finish(timeout=60, file_extension=".xlsx"):
+def wait_for_download_to_finish(timeout=60, file_extension=".xlsx", name_contains=None, newer_than=None):
     timeout = float(timeout)
     download_dir = Path(PathSettings.DOWNLOAD_PATH)
     start_time = time.time()
@@ -25,6 +25,11 @@ def wait_for_download_to_finish(timeout=60, file_extension=".xlsx"):
 
         # Files that match the desired extension (e.g., .xml, .xlsx)
         completed_files = [f for f in all_files if f.name.endswith(file_extension)]
+        # Optionally ignore files from other downloads (wrong name, or already present before the click)
+        if name_contains:
+            completed_files = [f for f in completed_files if name_contains in f.name]
+        if newer_than:
+            completed_files = [f for f in completed_files if f.stat().st_mtime >= newer_than]
 
         # Chrome creates temp files ending with .crdownload while downloading
         downloading_files = [f for f in all_files if f.name.endswith('.crdownload')]

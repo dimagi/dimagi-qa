@@ -157,24 +157,25 @@ class WebUsersPage(BasePage):
         time.sleep(5)
         try:
             self.wait_for_element(self.download_users_btn)
-            self.js_click(self.download_users_btn)
-            time.sleep(2)
-            wait_for_download_to_finish()
         except TimeoutException:
             print("TIMEOUT ERROR: Still preparing for download..Celery might be down..")
             assert False
-        # verify_downloaded_workers
-        newest_file = latest_download_file()
-        print(newest_file)
-        if '_users_' in newest_file:
-            self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
-        else:
+        # Only accept a _users_ file that appears after the click, not an older or unrelated download
+        click_time = time.time() - 1
+        self.js_click(self.download_users_btn)
+        try:
+            newest_file = wait_for_download_to_finish(name_contains="_users_", newer_than=click_time)
+        except TimeoutError:
             print("Not the expected file. Downloading again...")
+            click_time = time.time() - 1
             self.js_click(self.download_users_btn)
-            time.sleep(2)
-            wait_for_download_to_finish()
-            newest_file = latest_download_file()
-            self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
+            try:
+                newest_file = wait_for_download_to_finish(name_contains="_users_", newer_than=click_time)
+            except TimeoutError:
+                assert False, "Web users download (_users_*.xlsx) did not finish in the download folder"
+        # verify_downloaded_workers
+        print(newest_file)
+        self.assert_downloaded_file(newest_file, "_users_"), "Download Not Completed!"
         print("File download successful")
 
     def upload_web_users(self):
