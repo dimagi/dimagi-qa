@@ -32,6 +32,7 @@ class UserData:
     default_mw_role = "Mobile Worker Default"
     user_group = "automation_user"
     web_user = "[Web Users]"
+    active_web_user = "[Active Web Users]"
 
     # Phone Number
     area_code = "91"

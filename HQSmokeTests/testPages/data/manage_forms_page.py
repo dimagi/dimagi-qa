@@ -35,7 +35,7 @@ class ManageFormsPage(BasePage):
         self.date_range_type = "//li[@data-range-key='{}']"
         self.users_field = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]")
         self.users_list_item = "//ul[@role='listbox']/li[contains(.,'{}')][1]"
-        # Exact match, so "[Deactivated Web Users]" is never picked instead of "[Web Users]"
+        # Exact match, so "[Deactivated Web Users]" is never picked instead of "[Active Web Users]"
         self.users_list_item_exact = "//ul[@role='listbox']/li[normalize-space(.)='{}']"
         self.selected_users = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]/ancestor::span[contains(@class,'select2-selection--multiple')]//li[contains(@class,'select2-selection__choice')]")
         self.village_app = (By.XPATH, "//option[text()='Village Health']")
@@ -104,7 +104,7 @@ class ManageFormsPage(BasePage):
         self.wait_and_sleep_to_click(self.apply_button)
         self.reload_page()
         self.wait_for_element(self.users_field, 150)
-        assert self.get_selected_users() == [UserData.web_user], \
+        assert self.get_selected_users() == [UserData.active_web_user], \
             f"Submitted By filter changed after reload: {self.get_selected_users()}"
         self.wait_for_element(self.view_form_link, 200)
 
@@ -148,7 +148,7 @@ class ManageFormsPage(BasePage):
                 for chip in self.find_elements(self.selected_users)]
 
     def select_web_users_filter(self):
-        web_user = str(UserData.web_user)
+        web_user = UserData.active_web_user
         for attempt in range(2):
             self.remove_default_users()
             self.send_keys(self.users_field, web_user.strip("[]"))
