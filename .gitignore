@@ -212,6 +212,10 @@ QA_Requests/PerfTickets/testCases/OutputFiles/
 QA_Requests/MultiSelectPerf/settings.cfg
 QA_Requests/MultiSelectPerf/OutputFiles/*
 
+#Ignoring generated files of QA-8710 data generation
+QA_Requests/DataPipelineTestData/settings.cfg
+QA_Requests/DataPipelineTestData/testCases/OutputFiles/
+
 #Ignoring compliled files of CaseSearch
 Features/CaseSearch/settings.cfg
 Features/CaseSearch/report.html
