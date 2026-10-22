@@ -1,0 +1,83 @@
+# QA-8710: generates household test data in the marketing-advanced-plan project space on staging,
+# for trying out the CommCare Data Pipeline and the Bulk Actions API.
+# Manual only: this workflow has no push, pull_request or schedule trigger on purpose.
+
+name: QA-8710 Data Pipeline Test Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Number of households (cases) to register'
+        required: true
+        default: '10000'
+      seed:
+        description: 'Data seed. Same seed + end date = same forms; use a new seed for a fresh batch (refill)'
+        required: true
+        default: '1'
+      end_date:
+        description: 'Last day of the data (YYYY-MM-DD). Leave empty for yesterday; reuse the date from an earlier run to resume it'
+        required: false
+        default: ''
+      limit:
+        description: 'Submit at most this many forms (e.g. 20 for a smoke check). Leave empty for all'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Only build the plan and sample XML, submit nothing'
+        required: true
+        default: false
+        type: boolean
+
+# never run two loads at once, and never cancel a load that is already running
+concurrency:
+  group: qa-8710-data-pipeline-test-data
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate household data (seed ${{ inputs.seed }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    defaults:
+      run:
+        working-directory: QA_Requests/DataPipelineTestData
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requires.txt
+
+      - name: Create settings.cfg
+        run: cp settings-sample.cfg settings.cfg
+
+      - name: Generate data
+        working-directory: QA_Requests/DataPipelineTestData/testCases
+        env:
+          DIMAGIQA_MOBILE_PASSWORD: ${{ secrets.DIMAGIQA_MOBILE_PASSWORD }}
+          COUNT: ${{ inputs.count }}
+          SEED: ${{ inputs.seed }}
+          END_DATE: ${{ inputs.end_date }}
+          LIMIT: ${{ inputs.limit }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=(--count "$COUNT" --seed "$SEED")
+          if [ -n "$END_DATE" ]; then args+=(--end-date "$END_DATE"); fi
+          if [ -n "$LIMIT" ]; then args+=(--limit "$LIMIT"); fi
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python -u generate_household_data.py "${args[@]}"
+
+      - name: Upload run output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-8710-output-seed-${{ inputs.seed }}-run-${{ github.run_number }}
+          path: QA_Requests/DataPipelineTestData/testCases/OutputFiles/
+          if-no-files-found: ignore
