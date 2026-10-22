@@ -13,6 +13,7 @@ from HQSmokeTests.testPages.users.org_structure_page import wait_for_download_to
 from common_utilities.generate_random_string import fetch_random_string
 from common_utilities.selenium.base_page import BasePage
 from common_utilities.path_settings import PathSettings
+from HQSmokeTests.testPages.data.submitted_by_filter import SubmittedByFilterMixin
 from HQSmokeTests.userInputs.user_inputs import UserData
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, \
     ElementClickInterceptedException, NoSuchElementException
@@ -50,7 +51,7 @@ def latest_download_file(type=".xlsx"):
         print("Current directory is-", os.getcwd())
 
 
-class ExportDataPage(BasePage):
+class ExportDataPage(SubmittedByFilterMixin, BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -79,11 +80,8 @@ class ExportDataPage(BasePage):
         self.export_form_data_link = (By.LINK_TEXT, 'Export Form Data')
         self.export_case_data_link = (By.LINK_TEXT, 'Export Case Data')
         self.export_form_case_data_button = "//td[2][//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]]//following-sibling::td//a[contains(.,'Export')]"
-        self.web_users_option = (By.XPATH, "//li/span[.='[Web Users]']")
         self.all_data_option = (By.XPATH, "//li/span[.='[All Data]']")
         self.users_field = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]")
-        self.user_selected = "(//span[contains(@class, 'choice') and contains(.,'{}')])[1]"
-        self.users_list_item = "//ul[@role='listbox']/li[contains(.,'{}')][1]"
         self.users_list = (By.XPATH, "//ul[contains(@class,'select2-results__options')]/li")
         self.user_from_list = "//li[contains(.,'{}')]"
         self.prepare_export_button = (By.XPATH, "//button[contains(@class,'btn btn-primary')]/i[contains(@data-bind,'Export') and contains(@class,'down')]")
@@ -212,14 +210,8 @@ class ExportDataPage(BasePage):
             self.wait_to_click((By.XPATH, self.export_form_case_data_button.format(name)))
             time.sleep(2)
         self.date_filter()
-        web_user = str(UserData.web_user).strip("[]")
         if flag == None:
-            if not self.is_present((By.XPATH, self.user_selected.format(web_user))):
-                print("Web User option is not already selected")
-                self.send_keys(self.users_field, web_user)
-                self.wait_to_click((By.XPATH, self.users_list_item.format(web_user)), 30)
-            else:
-                print("Web User option is already selected")
+            self.select_submitted_by_option(UserData.active_web_user, clear_existing=False)
         self.wait_and_sleep_to_click(self.prepare_export_button, timeout=10)
         try:
             self.wait_till_progress_completes("exports")
@@ -737,15 +729,7 @@ class ExportDataPage(BasePage):
         self.wait_to_click(self.export_button)
         time.sleep(3)
         self.wait_for_element(self.prepare_export_button)
-        if self.is_present(self.web_users_option):
-            print("Web Users is already selected")
-        else:
-            web_user = str(UserData.web_user).strip("[]")
-            self.send_keys(self.users_field, web_user)
-            self.wait_to_click((By.XPATH, self.user_from_list.format(web_user)))
-            print("Selecting Web Users")
-
-            ActionChains(self.driver).send_keys(Keys.TAB).perform()
+        self.select_submitted_by_option(UserData.active_web_user, clear_existing=False)
         if self.is_present(self.all_data_option):
             print("Web Users is already selected")
         else:
@@ -872,15 +856,7 @@ class ExportDataPage(BasePage):
         self.wait_and_sleep_to_click((By.XPATH, self.export_form_case_data_button.format(name)))
         self.wait_for_element(self.prepare_export_button)
         if type == "form":
-            if self.is_present(self.web_users_option):
-                print("Web Users is already selected")
-            else:
-                web_user = str(UserData.web_user).strip("[]")
-                self.send_keys(self.users_field, web_user)
-                self.wait_to_click((By.XPATH, self.user_from_list.format(web_user)))
-                print("Selecting Web Users")
-
-                ActionChains(self.driver).send_keys(Keys.TAB).perform()
+            self.select_submitted_by_option(UserData.active_web_user, clear_existing=False)
         else:
             if self.is_present(self.all_data_option):
                 print("Web Users is already selected")

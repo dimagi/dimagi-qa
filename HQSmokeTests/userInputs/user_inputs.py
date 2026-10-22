@@ -21,7 +21,6 @@ class UserData:
     new_app_login = "apptest"
     app_password = "Pass@123"
     two_fa_user = "2fa.commcare.user@gmail.com"
-    web_user = "[Web Users]"
     all_data = "[All Data]"
     mobile_testuser = "mobile_testuser"
     copied_to_user = "mobile_testuser \"DO NOT DELETE! DO NOT DELETE!\""
@@ -31,7 +30,6 @@ class UserData:
     appiumtest_owner_id_prod = "appiumtest@qa-automation-prod.commcarehq.org"
     default_mw_role = "Mobile Worker Default"
     user_group = "automation_user"
-    web_user = "[Web Users]"
     active_web_user = "[Active Web Users]"
 
     # Phone Number
