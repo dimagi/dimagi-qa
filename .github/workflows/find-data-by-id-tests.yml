@@ -6,6 +6,12 @@ name: Find Data by ID Tests
 on:
   schedule:
     - cron: '0 5 * * 6'
+  push:
+    branches-ignore:
+      - master   # run on all branches except master
+  pull_request:
+    branches-ignore:
+      - master   # ignore PRs targeting master
   workflow_dispatch:
     inputs:
       environment:
