@@ -59,13 +59,19 @@ def is_list_sorted_new_to_old(time_list):
 
 
 class ReportPage(BasePage):
+    # Every report the suite creates starts with one of these; cleanup deletes all matching reports
+    REPORT_FORM_PREFIX = "report form "
+    REPORT_CASE_PREFIX = "report case "
+    SAVED_REPORT_PREFIX = "saved form "
+    # Upper bound on deletions per cleanup call so a large backlog can't stall a run
+    MAX_CLEANUP_DELETES = 100
 
     def __init__(self, driver):
         super().__init__(driver)
 
-        self.report_name_form = "report form " + fetch_random_string()
-        self.report_name_case = "report case " + fetch_random_string()
-        self.report_name_saved = "saved form " + fetch_random_string()
+        self.report_name_form = self.REPORT_FORM_PREFIX + fetch_random_string()
+        self.report_name_case = self.REPORT_CASE_PREFIX + fetch_random_string()
+        self.report_name_saved = self.SAVED_REPORT_PREFIX + fetch_random_string()
 
         # Mobile Worker Reports
         self.reports_menu_id = (By.ID, "ProjectReportsTab")
@@ -130,11 +136,10 @@ class ReportPage(BasePage):
         self.save_confirm = (By.XPATH, '//div[@class = "btn btn-primary"]')
         self.saved_reports_menu_link = (By.LINK_TEXT, 'My Saved Reports')
         self.saved_report_created = "//a[text()='{}']"
-        self.delete_saved = (By.XPATH,
-                             "(//a[text()='" + self.report_name_saved + "']//following::button[@class='btn btn-danger add-spinner-on-click'])[1]")
-        self.delete_saved_report_link = "(//a[text()='{}']//following::button[@class='btn btn-danger add-spinner-on-click'])[1]"
-        self.all_saved_reports = (
-        By.XPATH, "//td[a[contains(.,'Saved')]]//following-sibling::td/button[contains(@data-bind,'delete')]")
+        # Delete buttons of the user's own saved reports created by the suite (bootstrap3 and bootstrap5 markup)
+        self.test_saved_report_delete = (
+            By.XPATH, "//table[contains(@data-bind,'visible: reportConfigs()')]//tr[td/a[starts-with(normalize-space(.),'"
+                      + self.SAVED_REPORT_PREFIX + "')]]//button[contains(@data-bind,'deleteConfig')]")
 
         self.favorite_button = (By.XPATH, "//button[contains(.,'Favorites')]")
         self.empty_fav_list = (By.XPATH, '//a[.="You don\'t have any favorites"]')
@@ -221,10 +226,7 @@ class ReportPage(BasePage):
         self.communication_type_select = (By.XPATH, "//label[.='Communication Type']/following-sibling::div/select")
 
         # Report Case
-        self.report_case_links = (By.XPATH, "//li/a[contains(@title,'report case')]")
-        self.report_case_link = "(//li/a[contains(@title,'{}')])[1]"
-        self.report_form_links = (By.XPATH, "//li/a[contains(@title,'report form')]")
-        self.report_form_link = "(//li/a[contains(@title,'{}')])[1]"
+        self.report_builder_links = "//li/a[starts-with(normalize-space(@title),'{}')]"
 
         # Configurable Report
         self.configurable_report = (By.LINK_TEXT, "Configurable Reports")
@@ -442,18 +444,15 @@ class ReportPage(BasePage):
         print(recipient_text)
         assert user in recipient_text, "Recipient is not present"
 
-    def delete_scheduled_and_saved_reports(self):
+    def open_saved_reports_tab(self):
         self.wait_for_element(self.saved_reports_menu_link, 400)
         self.js_click(self.saved_reports_menu_link)
-        try:
-            if self.is_present(self.delete_saved):
-                self.click(self.delete_saved)
-                print("Deleted Saved Report")
-            else:
-                print("Not such report found!")
-        except NoSuchElementException:
-            print("Not such report found!")
-        self.wait_to_click(self.scheduled_reports_menu_xpath)
+
+    def delete_scheduled_and_saved_reports(self):
+        self.open_saved_reports_tab()
+        # Scheduled reports go first so no schedule still points at a saved report being deleted
+        self.wait_for_element(self.scheduled_reports_menu_xpath, 120)
+        self.js_click(self.scheduled_reports_menu_xpath)
         try:
             if self.is_present(self.select_all):
                 self.wait_to_click(self.select_all)
@@ -465,60 +464,55 @@ class ReportPage(BasePage):
                 print("No reports available")
         except TimeoutException:
             print("No reports available")
+        self.delete_saved_reports()
 
     def delete_saved_reports(self):
-        self.wait_to_click(self.saved_reports_menu_link)
-        list = self.find_elements(self.all_saved_reports)
-        if len(list) > 0:
-            for items in list:
-                self.wait_to_click(items)
-                print("Deleted Saved Report")
-                list = self.find_elements(self.all_saved_reports)
-        else:
-            print("No saved test reports")
+        self.open_saved_reports_tab()
+        deleted = 0
+        while deleted < self.MAX_CLEANUP_DELETES:
+            # Plain driver lookup: finding nothing is the expected end state and must not trigger self-healing
+            buttons = self.driver.find_elements(*self.test_saved_report_delete)
+            if not buttons:
+                break
+            self.driver.execute_script("arguments[0].click();", buttons[0])
+            # deleteConfig reloads the page once the delete succeeds
+            WebDriverWait(self.driver, 60).until(ec.staleness_of(buttons[0]),
+                                                 message="Saved report delete did not reload the page")
+            deleted += 1
+            self.open_saved_reports_tab()
+        remaining = len(self.driver.find_elements(*self.test_saved_report_delete))
+        print(f"Deleted {deleted} test saved report(s), {remaining} left")
+
+    def delete_report_builder_reports(self, prefix):
+        start_url = self.driver.current_url
+        links_locator = (By.XPATH, self.report_builder_links.format(prefix))
+        deleted = 0
+        while deleted < self.MAX_CLEANUP_DELETES:
+            links = self.driver.find_elements(*links_locator)
+            if not links:
+                break
+            name = links[0].get_attribute("title")
+            self.driver.get(links[0].get_attribute("href"))
+            try:
+                self.wait_to_click(self.edit_report_id)
+            except TimeoutException:
+                self.reload_page()
+                self.wait_to_click(self.edit_report_id)
+            delete_button = self.find_element(self.delete_report_xpath)
+            self.wait_to_click(self.delete_report_xpath)
+            WebDriverWait(self.driver, 60).until(ec.staleness_of(delete_button),
+                                                 message="Report delete did not leave the edit page")
+            print("Deleted report: " + name)
+            deleted += 1
+            self.driver.get(start_url)
+        remaining = len(self.driver.find_elements(*links_locator))
+        print(f"Deleted {deleted} '{prefix.strip()}' report(s), {remaining} left")
 
     def delete_report_case_links(self):
-        list = self.find_elements(self.report_case_links)
-        print(len(list))
-        print(list)
-        if len(list) > 0:
-            for i in range(len(list))[::-1]:
-                text = list[i].text
-                print(i, text)
-                self.wait_for_element((By.XPATH, self.report_case_link.format(text)))
-                self.wait_to_click((By.XPATH, self.report_case_link.format(text)))
-                self.wait_to_click(self.edit_report_id)
-                self.wait_to_click(self.delete_report_xpath)
-                print("Deleted Saved Report")
-
-                self.reload_page()
-                time.sleep(2)
-                list = self.find_elements(self.report_case_links)
-
-        else:
-            print("Report deleted successfully!")
+        self.delete_report_builder_reports(self.REPORT_CASE_PREFIX)
 
     def delete_report_form_links(self):
-        list = self.find_elements(self.report_form_links)
-        print(len(list))
-        print(list)
-        if len(list) > 0:
-            for i in range(len(list))[::-1]:
-                text = list[i].text
-                print(i, text)
-                self.wait_for_element((By.XPATH, self.report_form_link.format(text)))
-                self.wait_to_click((By.XPATH, self.report_form_link.format(text)))
-                self.wait_to_click(self.edit_report_id)
-                self.wait_to_click(self.delete_report_xpath)
-                print("Deleted Saved Report")
-
-                self.reload_page()
-                time.sleep(2)
-                list = self.find_elements(self.report_form_links)
-
-        else:
-            print("Report deleted successfully!")
-
+        self.delete_report_builder_reports(self.REPORT_FORM_PREFIX)
 
     def get_last_7_days_date_range(self):
         # Get today's date

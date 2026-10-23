@@ -113,6 +113,7 @@ def test_case_19_saved_report(driver, settings):
     load.delete_scheduled_and_saved_reports()
     report.reports_menu()
     load.saved_report()
+    load.delete_saved_reports()
 
 @pytest.mark.report
 @pytest.mark.scheduledReport
