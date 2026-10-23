@@ -4,12 +4,13 @@ from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 
 from common_utilities.selenium.base_page import BasePage
+from HQSmokeTests.testPages.data.submitted_by_filter import SubmittedByFilterMixin
 from HQSmokeTests.userInputs.user_inputs import UserData
 
 """"Contains test page elements and functions related to the Manage Forms module"""
 
 
-class ManageFormsPage(BasePage):
+class ManageFormsPage(SubmittedByFilterMixin, BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -56,10 +57,7 @@ class ManageFormsPage(BasePage):
             self.send_keys(self.date_range_manage_forms, UserData.eu_date_having_submission)
         else:
             self.send_keys(self.date_range_manage_forms, UserData.india_date_having_submission)
-        self.remove_default_users()
-        web_user = str(UserData.web_user).strip("[]")
-        self.send_keys(self.users_field, web_user)
-        self.wait_to_click((By.XPATH, self.users_list_item.format(web_user)), 30)
+        self.select_submitted_by_option(UserData.active_web_user)
         # Report Apply
         self.wait_and_sleep_to_click(self.apply_button)
         time.sleep(5)
@@ -98,14 +96,14 @@ class ManageFormsPage(BasePage):
     def get_archived_forms(self):
         self.wait_and_sleep_to_click(self.manage_forms_link)
         self.wait_for_element(self.date_range_manage_forms, 150)
-        self.remove_default_users()
-        web_user = str(UserData.web_user).strip("[]")
-        self.send_keys(self.users_field, web_user)
-        self.wait_to_click((By.XPATH, self.users_list_item.format(web_user)), 30)
+        self.select_submitted_by_option(UserData.active_web_user)
         self.wait_and_sleep_to_click(self.archived_restored_dropdown)
         self.wait_and_sleep_to_click(self.archived_forms_option)
         self.wait_and_sleep_to_click(self.apply_button)
         self.reload_page()
+        self.wait_for_element(self.users_field, 150)
+        selected = self.get_selected_users()
+        assert selected == [UserData.active_web_user], f"Submitted By filter changed after reload: {selected}"
         self.wait_for_element(self.view_form_link, 200)
 
     def view_archived_forms(self):
