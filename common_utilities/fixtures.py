@@ -22,6 +22,12 @@ from collections import OrderedDict
 
 failed_items = OrderedDict()
 
+import time
+
+LOGIN_PAGE_LOAD_TIMEOUT = 120  # seconds
+DEFAULT_PAGE_LOAD_TIMEOUT = 300  # Chrome/Selenium default
+LOGIN_RETRY_DELAY = 15  # seconds
+
 
 @pytest.fixture(scope="module", autouse=True)
 def driver(settings, browser):
@@ -79,15 +85,34 @@ def driver(settings, browser):
             firefox_options.set_preference("browser.download.panel.shown", False)
             firefox_options.set_preference("security.mixed_content.block_active_content", False
                                            )  # allow mixed content if needed
-    if browser == "chrome":
-        web_driver = webdriver.Chrome(options=chrome_options)
-        print("Chrome version:", web_driver.capabilities['browserVersion'])
-    elif browser == "firefox":
-        web_driver = webdriver.Firefox(options=firefox_options)
-    else:
-        print("Provide valid browser")
-    login = LoginPage(web_driver, settings["url"])
-    login.login(settings["login_username"], settings["login_password"])
+    # A hung login page (e.g. "Timed out receiving message from renderer") used to
+    # leak the Chrome process and fail every test in the module. Quit the broken
+    # browser and retry once with a fresh one; cap the login page load so a hang
+    # costs LOGIN_PAGE_LOAD_TIMEOUT seconds instead of Chrome's 300 s default.
+    login_attempts = 2
+    for attempt in range(1, login_attempts + 1):
+        if browser == "chrome":
+            web_driver = webdriver.Chrome(options=chrome_options)
+            print("Chrome version:", web_driver.capabilities['browserVersion'])
+        elif browser == "firefox":
+            web_driver = webdriver.Firefox(options=firefox_options)
+        else:
+            raise ValueError(f"Provide valid browser, got: {browser}")
+        try:
+            web_driver.set_page_load_timeout(LOGIN_PAGE_LOAD_TIMEOUT)
+            login = LoginPage(web_driver, settings["url"])
+            login.login(settings["login_username"], settings["login_password"])
+            web_driver.set_page_load_timeout(DEFAULT_PAGE_LOAD_TIMEOUT)
+            break
+        except (TimeoutException, WebDriverException) as e:
+            print(f"[WARN] Login attempt {attempt}/{login_attempts} failed: {type(e).__name__}: {e.msg if hasattr(e, 'msg') else e}")
+            try:
+                web_driver.quit()
+            except Exception:
+                pass
+            if attempt == login_attempts:
+                raise
+            time.sleep(LOGIN_RETRY_DELAY)
     yield web_driver
     web_driver.quit()
 
