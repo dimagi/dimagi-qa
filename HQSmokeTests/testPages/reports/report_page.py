@@ -19,6 +19,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
+SCHEDULED_REPORT_SUBMIT_TIMEOUT = 600  # seconds; staging needs ~300+ for save + redirect
+SCHEDULED_REPORT_SLOW_WARNING = 60  # seconds; log a warning above this
+DEFAULT_PAGE_LOAD_TIMEOUT = 300  # Chrome/Selenium default
+
 """"Contains test page elements and functions related to the Reports module"""
 
 def parse_time(time_str):
@@ -421,11 +425,38 @@ class ReportPage(BasePage):
         self.wait_to_click((By.XPATH, self.recipient_value.format(UserData.p1p2_user)))
         selected_hour = self.get_selected_text(self.start_hour)
         time.sleep(2)
-        self.wait_to_click(self.submit_id)
-        time.sleep(20)
-        assert self.is_visible_and_displayed(self.success_alert)
+        self.submit_scheduled_report()
         print("Scheduled Report Created Successfully")
         return selected_hour, UserData.p1p2_user
+
+    def submit_scheduled_report(self, timeout=SCHEDULED_REPORT_SUBMIT_TIMEOUT):
+        """Submit the scheduled report form and wait for HQ's success message.
+
+        On staging, saving a scheduled report is slow on the server: the POST
+        took ~164 s and the saved reports page it redirects to another 120+ s
+        (measured 2026-11-05). Together that exceeds Chrome's 300 s page load
+        limit ("Timed out receiving message from renderer"), which failed this
+        test daily. Allow a longer page load for this one step, and print a
+        warning with the elapsed time when it is slow so it stays visible.
+        """
+        submit = WebDriverWait(self.driver, 30).until(ec.element_to_be_clickable(self.submit_id))
+        self.driver.set_page_load_timeout(timeout)
+        started = time.time()
+        try:
+            submit.click()
+            # Commands issued while the redirect is pending block until the page
+            # loads, bounded by the page load timeout set above.
+            WebDriverWait(self.driver, timeout, poll_frequency=2).until(
+                ec.visibility_of_element_located(self.success_alert),
+                message=f"Scheduled report success message not shown within {timeout}s"
+            )
+        finally:
+            self.driver.set_page_load_timeout(DEFAULT_PAGE_LOAD_TIMEOUT)
+        elapsed = time.time() - started
+        print(f"Scheduled report saved in {elapsed:.0f}s")
+        if elapsed > SCHEDULED_REPORT_SLOW_WARNING:
+            print(f"[WARN] Saving a scheduled report took {elapsed:.0f}s "
+                  f"(over {SCHEDULED_REPORT_SLOW_WARNING}s) on {self.driver.current_url}")
 
     def verify_scheduled_report(self, time, user):
         self.wait_for_element(self.my_scheduled_reports)
