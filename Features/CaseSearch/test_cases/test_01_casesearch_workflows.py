@@ -5,6 +5,12 @@ from Features.CaseSearch.test_pages.casesearch_page import CaseSearchWorkflows
 from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUserInput
 from common_utilities.selenium.webapps import WebApps
 
+# Web Apps (Formplayer) on prod is slow for a while after a deploy, and the
+# deploy-triggered runs failed these steps on the default 20-30 s waits
+# (Nov 2 and Nov 5, 2026) while later runs passed. Give them more time.
+POST_DEPLOY_CASELIST_TIMEOUT = 90  # seconds
+POST_DEPLOY_SUBMIT_TIMEOUT = 90  # seconds
+
 """"Contains all case search workflow related test cases"""
 
 
@@ -92,14 +98,15 @@ def test_case_05_skip_to_default_search(driver, settings):
     webapps.open_app(CaseSearchUserInput.case_search_app_name)
     webapps.open_menu(CaseSearchUserInput.skip_default_menu)
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.four,
-                                        expected_value=CaseSearchUserInput.ratings.get(CaseSearchUserInput.five_star))
+                                        expected_value=CaseSearchUserInput.ratings.get(CaseSearchUserInput.five_star),
+                                        timeout=POST_DEPLOY_CASELIST_TIMEOUT)
     if 'www' in settings['url']:
         case_name = webapps.omni_search(CaseSearchUserInput.song_just_babe)
     else:
         case_name = webapps.omni_search(CaseSearchUserInput.song_123)
     webapps.select_case_and_continue(case_name)
     webapps.open_form(CaseSearchUserInput.play_song_form)
-    webapps.submit_the_form()
+    webapps.submit_the_form(success_timeout=POST_DEPLOY_SUBMIT_TIMEOUT)
 
 def test_case_06_case_search_settings_off(driver, settings):
     webapps = WebApps(driver, settings)

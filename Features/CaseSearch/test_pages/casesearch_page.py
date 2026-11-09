@@ -110,9 +110,9 @@ class CaseSearchWorkflows(BasePage):
         self.wait_to_click(self.search_button)
 
 
-    def check_values_on_caselist(self, row_num, expected_value, is_multi=NO, flag=None):
+    def check_values_on_caselist(self, row_num, expected_value, is_multi=NO, flag=None, timeout=30):
         self.value_in_table = self.get_element(self.value_in_table_format, row_num)
-        self.wait_for_element(self.value_in_table)
+        self.wait_for_element(self.value_in_table, timeout)
         values_ = self.find_elements_texts(self.value_in_table)
         print(expected_value, values_)  # added for debugging
         if is_multi == YES:

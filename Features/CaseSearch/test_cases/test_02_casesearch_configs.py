@@ -8,6 +8,11 @@ from Features.CaseSearch.user_inputs.casesearch_user_inputs import CaseSearchUse
 from common_utilities.selenium.base_page import BasePage
 from common_utilities.selenium.webapps import WebApps
 
+# Web Apps (Formplayer) on prod is slow for a while after a deploy, and the
+# deploy-triggered runs failed these steps on the default 20-30 s waits
+# (Nov 2 and Nov 5, 2026) while later runs passed. Give them more time.
+POST_DEPLOY_CASELIST_TIMEOUT = 90  # seconds
+
 """"Contains all case search configurations related test cases"""
 
 
@@ -110,7 +115,8 @@ def test_case_03_date_range_format(driver, settings):
                                            property_type=TEXT_INPUT)
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.six,
-                                            expected_value=CaseSearchUserInput.date_30_12_2022)
+                                            expected_value=CaseSearchUserInput.date_30_12_2022,
+                                        timeout=POST_DEPLOY_CASELIST_TIMEOUT)
     # Date Range Search Again with Enter on keyboard
     webapps.search_again_cases()
     webapps.clear_selections_on_case_search_page()
@@ -125,7 +131,8 @@ def test_case_03_date_range_format(driver, settings):
                                         expected_value=casesearch.parse_date(
                                             input_date=date,
                                             input_format=CaseSearchUserInput.dates.get("MM/DD/YYYY"),
-                                            output_format=CaseSearchUserInput.dates.get("DD/MM/YYYY")))
+                                            output_format=CaseSearchUserInput.dates.get("DD/MM/YYYY")),
+                                        timeout=POST_DEPLOY_CASELIST_TIMEOUT)
 
 
 
