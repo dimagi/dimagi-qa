@@ -301,7 +301,7 @@ class WebApps(BasePage):
         print("resubmitted form")
 
 
-    def submit_the_form(self):
+    def submit_the_form(self, success_timeout=20):
         time.sleep(1)
         # self.wait_for_element(self.form_submit)
         print("clicking on the submit button")
@@ -327,7 +327,7 @@ class WebApps(BasePage):
             print("form submitted successfully")
         time.sleep(0.5)
         try:
-            self.wait_for_element(self.form_submission_successful, timeout=20)
+            self.wait_for_element(self.form_submission_successful, timeout=success_timeout)
             assert self.is_present(self.form_submission_successful)
         except AssertionError:
             if self.is_displayed(self.form_500_error):
@@ -335,7 +335,7 @@ class WebApps(BasePage):
                 self.wait_after_interaction()
                 self.wait_for_element(self.form_submit)
                 self.wait_to_click(self.form_submit)
-                self.wait_for_element(self.form_submission_successful, timeout=20)
+                self.wait_for_element(self.form_submission_successful, timeout=success_timeout)
                 assert self.is_present(self.form_submission_successful)
             else:
                 raise AssertionError
