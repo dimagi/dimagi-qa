@@ -87,8 +87,10 @@ class DataDictionaryPage(BasePage):
         self.registration_form = (By.XPATH, "//span[normalize-space()='Registration Form']")
         self.settings_icon = (By.XPATH, "//span[normalize-space()='Registration Form']/parent::a/following-sibling::a")
         self.description_text = (By.XPATH, "//div[@data-content='Testing the age property description']")
+        # Match the App Summary link itself, not its wrapper: the form page moved it out of
+        # 'appmanager-page-actions' in HQ's Bootstrap 5 migration, while app/menu pages kept it.
         self.app_summary_button = (By.XPATH,
-                                   "//*[@class='appmanager-page-actions']/a/i[@class = 'fa-regular fa-rectangle-list']")
+                                   "//a[.//i[contains(@class,'fa-rectangle-list')]][contains(normalize-space(.),'App Summary')]")
         self.case_summary_button = (By.XPATH, "//*[@class='fcc fcc-fd-external-case appnav-primary-icon']")
         self.description_property = (By.XPATH, "//*[contains(text(),'Testing the age property description')]")
 
