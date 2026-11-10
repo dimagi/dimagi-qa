@@ -129,7 +129,9 @@ class ImportCasesPage(BasePage):
             text = str(filename).split("\\")
             file = text[-1]
         print(file)
-        self.wait_to_clear_and_send_keys(self.choose_file, filename)
+        # File inputs reject the click done by wait_to_clear_and_send_keys
+        # (InvalidArgumentException); send the path directly, like the other uploads.
+        self.send_keys(self.choose_file, str(filename))
         self.wait_to_click(self.next_step)
         self.is_visible_and_displayed(self.case_type)
         self.select_by_text(self.case_type, UserData.child_type)

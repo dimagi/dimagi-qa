@@ -776,7 +776,10 @@ class MobileWorkerPage(BasePage):
             self.wait_to_click(self.bulk_upload_btn)
             self.edit_username_in_excel(self.to_be_edited_file, self.username_cell, self.renamed_file)
             
-            self.wait_to_clear_and_send_keys(self.choose_file, self.renamed_file)
+            # File inputs reject the click done by wait_to_clear_and_send_keys
+            # (InvalidArgumentException); send the path directly, like the other uploads.
+            self.wait_for_element(self.choose_file)
+            self.send_keys(self.choose_file, str(self.renamed_file))
             self.wait_and_sleep_to_click(self.upload)
             self.wait_for_element(self.successfully_uploaded, 150)
         except (TimeoutException, NoSuchElementException):

@@ -4,6 +4,7 @@ import time
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 from common_utilities.selenium.base_page import BasePage
 from common_utilities.generate_random_string import fetch_random_string
@@ -91,8 +92,13 @@ class ApplicationPage(BasePage):
 
         # Form Field Edit
         self.add_new_form = (By.XPATH,"//a[@class='appnav-secondary js-add-new-item']")
-        self.edit_form_name_icon = (By.XPATH, "//a[@href='#edit-form-name-modal']")
-        self.edit_form_name_text =(By.XPATH,"//input[@data-bind='value: name']")
+        # HQ removed its own form-rename modal (May 2026); the form builder's
+        # "Edit Form Details" pencil and dialog replace it.
+        self.edit_form_name_icon = (By.XPATH, "//button[contains(@class,'fd-edit-form-details-button')]")
+        self.edit_form_name_text = (By.XPATH, "//input[contains(@class,'fd-form-name')]")
+        self.form_details_update_button = (By.XPATH, "//div[contains(@class,'modal')]//button[normalize-space()='Update']")
+        self.form_builder_save_button = (By.XPATH, "//div[contains(@class,'fd-save-button')]//span[normalize-space()='Save']")
+        self.form_builder_saved = (By.XPATH, "//div[contains(@class,'fd-save-button')]//span[normalize-space()='Saved']")
         self.form_edit_app = (By.XPATH,"//a[contains(text(),'"+ UserData.reassign_cases_application+"')]")
         self.form_name_save_button = (By.XPATH, "//button[contains(text(),'Save')]")
         self.reg_form_head_text = (By.XPATH, "//span[@class='fd-head-text']")
@@ -297,6 +303,24 @@ class ApplicationPage(BasePage):
 
 
 
+    def rename_form_in_form_builder(self, new_name, timeout=60):
+        """Rename the open form through the form builder's Edit Form Details dialog.
+
+        The builder heading changes on Update, but HQ's form name label
+        (.variable-form_name) only follows once the form is saved, so save and
+        wait for both to show the new name before the caller compares them.
+        """
+        self.wait_to_click(self.edit_form_name_icon)
+        self.wait_to_clear_and_send_keys(self.edit_form_name_text, new_name)
+        self.wait_to_click(self.form_details_update_button)
+        self.wait_to_click(self.form_builder_save_button)
+        self.wait_for_element(self.form_builder_saved, timeout)
+        WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+            lambda d: d.find_element(*self.reg_form_variable_name).text.strip()
+            == d.find_element(*self.reg_form_head_text).text.strip(),
+            message=f"HQ form name label did not update to the form builder name after renaming to {new_name!r}"
+        )
+
     def create_application_with_verifications(self, app_p1p2_name):
         time.sleep(2)
         self.switch_to_default_content()
@@ -318,9 +342,7 @@ class ApplicationPage(BasePage):
             self.select_by_value(self.caselist_dropdown, "Case_List")
             self.wait_to_click(self.create_case_list_btn)
         self.wait_for_element(self.add_questions)
-        self.wait_to_click(self.edit_form_name_icon)
-        self.wait_to_clear_and_send_keys(self.edit_form_name_text, self.reg_form_name)
-        self.wait_to_click(self.form_name_save_button)
+        self.rename_form_in_form_builder(self.reg_form_name)
 
         assert self.check_for_html_char(self.get_text(self.reg_form_head_text)), "html characters are present"
         assert self.check_for_html_char(self.get_text(self.reg_form_variable_name)), "html characters are present"
@@ -341,9 +363,7 @@ class ApplicationPage(BasePage):
         time.sleep(2)
         assert self.is_present_and_displayed(self.form_settings_tab)
         self.wait_to_click((By.XPATH, self.form_link.format("Followup Form")))
-        self.wait_to_click(self.edit_form_name_icon)
-        self.wait_to_clear_and_send_keys(self.edit_form_name_text, self.followup_form_name)
-        self.wait_to_click(self.form_name_save_button)
+        self.rename_form_in_form_builder(self.followup_form_name)
 
         assert self.check_for_html_char(self.get_text(self.reg_form_head_text)), "html characters are present"
         assert self.check_for_html_char(self.get_text(self.reg_form_variable_name)), "html characters are present"
