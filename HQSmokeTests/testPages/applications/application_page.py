@@ -4,6 +4,7 @@ import time
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
 from common_utilities.selenium.base_page import BasePage
@@ -99,6 +100,11 @@ class ApplicationPage(BasePage):
         self.form_details_update_button = (By.XPATH, "//div[contains(@class,'modal')]//button[normalize-space()='Update']")
         self.form_builder_save_button = (By.XPATH, "//div[contains(@class,'fd-save-button')]//span[normalize-space()='Save']")
         self.form_builder_saved = (By.XPATH, "//div[contains(@class,'fd-save-button')]//span[normalize-space()='Saved']")
+        # Form builder "Case Management" field of the selected question (a select2 dropdown of case properties)
+        self.case_property_select = (By.XPATH, "//fieldset[@data-slug='caseManagement']//select")
+        self.case_property_dropdown = (By.XPATH, "//fieldset[@data-slug='caseManagement']//span[contains(@class,'select2-selection')]")
+        self.select2_open_search = (By.XPATH, "//span[contains(@class,'select2-container--open')]//input[contains(@class,'select2-search__field')]")
+        self.build_errors = (By.XPATH, "//div[@id='build-errors-wrapper']//div[contains(@class,'alert')]")
         self.form_edit_app = (By.XPATH,"//a[contains(text(),'"+ UserData.reassign_cases_application+"')]")
         self.form_name_save_button = (By.XPATH, "//button[contains(text(),'Save')]")
         self.reg_form_head_text = (By.XPATH, "//span[@class='fd-head-text']")
@@ -321,6 +327,42 @@ class ApplicationPage(BasePage):
             message=f"HQ form name label did not update to the form builder name after renaming to {new_name!r}"
         )
 
+    def map_question_to_case_property(self, case_property, timeout=30):
+        """Save the selected question to a case property through the form builder's Case Management field.
+
+        HQ no longer maps the first question of a registration form to the case
+        name automatically, so a new app cannot be built until a question is
+        saved to the "name" case property.
+        """
+        self.wait_for_element(self.case_property_dropdown, timeout)
+        self.wait_to_click(self.case_property_dropdown)
+        self.wait_for_element(self.select2_open_search)
+        self.send_keys(self.select2_open_search, case_property + Keys.ENTER)
+        WebDriverWait(self.driver, timeout, poll_frequency=1).until(
+            lambda d: d.find_element(*self.case_property_select).get_attribute("value") == case_property,
+            message=f"Question was not saved to the {case_property!r} case property"
+        )
+
+    def make_new_version_and_release(self, timeout=180):
+        """Make a new version and mark it Released.
+
+        Waits for the new build to show up in the versions list. If HQ refuses
+        the build, fail with HQ's build error instead of a missing-button timeout.
+        """
+        self.wait_to_click(self.make_new_version_button)
+
+        def build_done(d):
+            if d.find_elements(*self.release_button):
+                return True
+            errors = [e.text.strip() for e in d.find_elements(*self.build_errors) if e.is_displayed()]
+            return errors or False
+
+        result = WebDriverWait(self.driver, timeout, poll_frequency=2).until(
+            build_done, message="New version did not appear in the versions list"
+        )
+        assert result is True, f"Make New Version failed: {' | '.join(result)}"
+        self.wait_to_click(self.release_button)
+
     def create_application_with_verifications(self, app_p1p2_name):
         time.sleep(2)
         self.switch_to_default_content()
@@ -353,6 +395,7 @@ class ApplicationPage(BasePage):
         self.wait_for_element(self.question_display_text)
         self.send_keys(self.question_display_text, "Location")
         self.wait_to_clear_and_send_keys(self.question_ID_field, "location_id")
+        self.map_question_to_case_property("name")
         self.wait_to_click(self.save_button)
 
         if self.is_present(self.override_btn):
@@ -387,11 +430,7 @@ class ApplicationPage(BasePage):
         print("New App created successfully!")
         self.wait_to_click((By.XPATH, self.field_edit_app_name.format(app_p1p2_name)))
 
-        self.wait_to_click(self.make_new_version_button)
-        time.sleep(2)
-        self.reload_page()
-        self.wait_for_element(self.release_button)
-        self.wait_to_click(self.release_button)
+        self.make_new_version_and_release()
         print("Sleeping for the installation code to generate")
         time.sleep(2)
         return app_p1p2_name
