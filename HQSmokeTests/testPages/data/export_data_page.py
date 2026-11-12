@@ -1002,6 +1002,13 @@ class ExportDataPage(SubmittedByFilterMixin, BasePage):
         print(link)
         self.driver.get(link)
         self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
+        # The new parent link can take a little while to show after the import finishes
+        for _ in range(3):
+            if self.is_present(self.related_cases_tab):
+                break
+            time.sleep(20)
+            self.reload_page()
+            self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
         assert self.is_present(self.related_cases_tab), "Parent not reassigned"
         self.validate_child_case_data()
 
