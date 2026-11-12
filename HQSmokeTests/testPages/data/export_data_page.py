@@ -79,7 +79,8 @@ class ExportDataPage(SubmittedByFilterMixin, BasePage):
         # Export Form and Case data variables
         self.export_form_data_link = (By.LINK_TEXT, 'Export Form Data')
         self.export_case_data_link = (By.LINK_TEXT, 'Export Case Data')
-        self.export_form_case_data_button = "//td[2][//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]]//following-sibling::td//a[contains(.,'Export')]"
+        # ".//" keeps the name match inside the row's own cell; "//" matched every row and clicked the first export
+        self.export_form_case_data_button = "//td[2][.//*[contains(@data-bind,'hasEmailedExport')][.//span[.='{}']]]//following-sibling::td//a[contains(.,'Export')]"
         self.all_data_option = (By.XPATH, "//li/span[.='[All Data]']")
         self.users_field = (By.XPATH, "(//textarea[@class='select2-search__field'])[1]")
         self.users_list = (By.XPATH, "//ul[contains(@class,'select2-results__options')]/li")
@@ -1001,6 +1002,13 @@ class ExportDataPage(SubmittedByFilterMixin, BasePage):
         print(link)
         self.driver.get(link)
         self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
+        # The new parent link can take a little while to show after the import finishes
+        for _ in range(3):
+            if self.is_present(self.related_cases_tab):
+                break
+            time.sleep(20)
+            self.reload_page()
+            self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
         assert self.is_present(self.related_cases_tab), "Parent not reassigned"
         self.validate_child_case_data()
 

@@ -1035,6 +1035,8 @@ class ReportPage(BasePage):
         self.wait_to_click(self.case_list_explorer_rep)
         self.wait_for_element(self.apply_id, 100)
         assert self.case_list_explorer_TITLE in self.driver.title, "This is not the Case List Explorer page."
+        # The report filters render after the "Loading Report" spinner, which can take minutes on staging
+        self.wait_for_element(self.case_type_dropdown, 200)
         self.select_by_value(self.case_type_dropdown, UserData.case_reassign)
         return UserData.case_reassign
 
