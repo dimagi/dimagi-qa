@@ -2,6 +2,31 @@ name: Notify hourly load test result
 description: >-
   Upload one hourly BHA load test scenario's report, and send its result
   email and Slack message.
+inputs:
+  title:
+    description: Scenario name used in the email, e.g. "Admit Client".
+    required: true
+  workflow-name:
+    description: Name shown in the Slack message.
+    required: true
+  artifact-name:
+    description: Name of the uploaded report artifact.
+    required: true
+  report-dir:
+    description: Directory holding the scenario's hour_*.html report.
+    required: true
+  status:
+    description: Job status to report (success, failure or cancelled).
+    required: true
+  environment:
+    description: Environment the load test ran against.
+    required: true
+  mail-username:
+    required: true
+  mail-password:
+    required: true
+  slack-webhook-url:
+    required: true
 runs:
   using: composite
   steps:
@@ -10,11 +35,12 @@ runs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_PREFIX }}-${{ env.MT_HOUR }}
-          path:  /home/runner/work/dimagi-qa/dimagi-qa/hour_*.html
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.report-dir }}/hour_*.html
           retention-days: 2
 
       - name: Fetch artifact ID
+        shell: bash
         run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
 
 
@@ -23,14 +49,14 @@ runs:
         id: configure_email
         uses: actions/github-script@v6
         env:
-            JOB_STATUS: ${{ job.status }}
-            CC_ENV: ${{ matrix.environment }}
+            JOB_STATUS: ${{ inputs.status }}
+            CC_ENV: ${{ inputs.environment }}
         with:
           script: |
             const { promises: fs } = require('fs')
 
             const {JOB_STATUS, NOW, CC_ENV, GITHUB_HEAD_REF} = process.env
-            const prefix = `[${CC_ENV}] ${{ env.SCENARIO_TITLE }} Locust Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
+            const prefix = `[${CC_ENV}] ${{ inputs.title }} Locust Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
             const suffix = `at ${NOW}`
 
             let subject = `${prefix} on "deploy_success" ${suffix}`
@@ -44,7 +70,7 @@ runs:
             }
 
             let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
-            let testSuite = 'BHA ${{ env.SCENARIO_TITLE }} Hourly Load Tests for ${{ env.MT_HOUR }} hrs'
+            let testSuite = 'BHA ${{ inputs.title }} Hourly Load Tests for ${{ env.MT_HOUR }} hrs'
             let bodyContent = await fs.readFile(bodyFile, 'utf8')
             bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
                 .replace(/{{runNumber}}/g, context.runNumber)
@@ -69,31 +95,31 @@ runs:
         with:
           server_address: smtp.gmail.com
           server_port: 465
-          username: ${{secrets.DIMAGIQA_MAIL_USERNAME}}
-          password: ${{secrets.DIMAGIQA_MAIL_PASSWORD}}
+          username: ${{ inputs.mail-username }}
+          password: ${{ inputs.mail-password }}
           subject: ${{ fromJSON(steps.configure_email.outputs.result).subject }}
           to: ${{ fromJSON(steps.configure_email.outputs.result).receivers }}
-          from: <${{secrets.DIMAGIQA_MAIL_USERNAME}}>
+          from: <${{ inputs.mail-username }}>
           html_body: ${{ fromJSON(steps.configure_email.outputs.result).body }}
           convert_markdown: true
-          attachments: ${{ github.workspace }}/hour_*.html
+          attachments: ${{ github.workspace }}/${{ inputs.report-dir }}/hour_*.html
           in_reply_to: ${{ fromJSON(steps.configure_email.outputs.result).reference }}
 
       - name: Set slack vars
-        if: ${{ (success() || failure()) && !cancelled() }}
+        if: ${{ inputs.status != 'cancelled' }}
         id: configure_slack
         uses: actions/github-script@v6
         env:
-            JOB_STATUS: ${{ job.status }}
-            CC_ENV: ${{ matrix.environment }}
+            JOB_STATUS: ${{ inputs.status }}
+            CC_ENV: ${{ inputs.environment }}
             CC_EVENT: ${{ github.event_name }}
         with:
           result-encoding: string
           script: |
             const {CC_ENV, JOB_STATUS, CC_EVENT} = process.env
-            let SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_BHA }}'
+            let SLACK_WEBHOOK_URL = '${{ inputs.slack-webhook-url }}'
             if (CC_ENV == 'production') {
-              SLACK_WEBHOOK_URL = '${{ secrets.SLACK_WEBHOOK_URL_BHA }}'
+              SLACK_WEBHOOK_URL = '${{ inputs.slack-webhook-url }}'
               console.log("Slack notification")
             } else {
               SLACK_WEBHOOK_URL = ' '
@@ -105,7 +131,7 @@ runs:
       - name: Post to Slack channel on Failure
         id: slack_fail
         uses: slackapi/slack-github-action@v1.23.0
-        if: ${{ steps.configure_slack.outputs.result != ' ' && failure() }}
+        if: ${{ steps.configure_slack.outputs.result != ' ' && inputs.status == 'failure' }}
         with:
           payload: |
             {
@@ -117,7 +143,7 @@ runs:
             					"type": "section",
             					"text": {
             						"type": "mrkdwn",
-            						"text": " Hola :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered for ${{ env.MT_HOUR }} hrs!\n"
+            						"text": " Hola :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ inputs.workflow-name }}* were just triggered for ${{ env.MT_HOUR }} hrs!\n"
             					}
             				},
             				{
@@ -125,7 +151,7 @@ runs:
             					"elements": [
             						{
             							"type": "mrkdwn",
-            							"text": "*Environment: *\n ${{ matrix.environment }}  \n"
+            							"text": "*Environment: *\n ${{ inputs.environment }}  \n"
             						},
             						{
             							"type": "mrkdwn",
@@ -133,7 +159,7 @@ runs:
             						},
             						{
             							"type": "mrkdwn",
-            							"text": "*Status: *\n ${{ job.status }}  :x:"
+            							"text": "*Status: *\n ${{ inputs.status }}  :x:"
             						}
             					]
             				},
@@ -167,7 +193,7 @@ runs:
       - name: Post to Slack channel on Success
         id: slack_pass
         uses: slackapi/slack-github-action@v1.23.0
-        if: ${{ steps.configure_slack.outputs.result != ' ' && success() }}
+        if: ${{ steps.configure_slack.outputs.result != ' ' && inputs.status == 'success' }}
         with:
           payload: |
             {
@@ -179,7 +205,7 @@ runs:
             					"type": "section",
             					"text": {
             						"type": "mrkdwn",
-            						"text": " Hola :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ github.workflow }}* were just triggered for ${{ env.MT_HOUR }} hrs!\n"
+            						"text": " Hola :alphabet-yellow-q::alphabet-yellow-a: 👋 \n*${{ inputs.workflow-name }}* were just triggered for ${{ env.MT_HOUR }} hrs!\n"
             					}
             				},
             				{
@@ -187,7 +213,7 @@ runs:
             					"elements": [
             						{
             							"type": "mrkdwn",
-            							"text": "*Environment: *\n ${{ matrix.environment }}  \n"
+            							"text": "*Environment: *\n ${{ inputs.environment }}  \n"
             						},
             						{
             							"type": "mrkdwn",
@@ -195,7 +221,7 @@ runs:
             						},
             						{
             							"type": "mrkdwn",
-            							"text": "*Status: *\n ${{ job.status }}  :white_check_mark:"
+            							"text": "*Status: *\n ${{ inputs.status }}  :white_check_mark:"
             						}
             					]
             				},
