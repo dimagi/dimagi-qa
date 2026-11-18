@@ -43,6 +43,15 @@ jobs:
     name: LoadTest on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
     timeout-minutes: 1440
+    env:
+      SCENARIO_TITLE: Send Referrals
+      ARTIFACT_PREFIX: hourly-locust-reports-send-referrals
+      LOCUSTFILE: LocustScripts/update-scripts/commcarehq-hourly-send_refferals-mw-login.py
+      USER_DETAILS: LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_worker_credentials_send_refferals_hourly.json
+      APP_CONFIG: LocustScripts/update-scripts/project-config/co-carecoordination-perf/app_config_send_referrals.json
+      HOST: https://www.commcarehq.org
+      APP_ID: 5abfe7d62fd54e7cb7e6038f8a68e0ea
+      BUILD_ID: b9a1ef9ff5ba4b61957f1e0524f0dd03
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.13
@@ -55,7 +64,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r LocustScripts/requirements.txt
 
-      - name: Hourly Send Referrals Load test with Locust
+      - name: Hourly ${{ env.SCENARIO_TITLE }} Load test with Locust
         continue-on-error: true
         env:
           DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
@@ -68,13 +77,13 @@ jobs:
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
           python LocustScripts/update-scripts/run_24hr_locust_schedule.py \
-            --locust-file LocustScripts/update-scripts/commcarehq-hourly-send_refferals-mw-login.py \
-            --user-details LocustScripts/update-scripts/project-config/co-carecoordination-perf/mobile_worker_credentials_send_refferals_hourly.json \
-            --app-config LocustScripts/update-scripts/project-config/co-carecoordination-perf/app_config_send_referrals.json \
-            --host https://www.commcarehq.org \
+            --locust-file "$LOCUSTFILE" \
+            --user-details "$USER_DETAILS" \
+            --app-config "$APP_CONFIG" \
+            --host "$HOST" \
             --domain co-carecoordination-perf \
-            --app-id 5abfe7d62fd54e7cb7e6038f8a68e0ea \
-            --build-id b9a1ef9ff5ba4b61957f1e0524f0dd03
+            --app-id "$APP_ID" \
+            --build-id "$BUILD_ID"
 
       - name: Echo current Mountain Time hour
         run: |
@@ -96,7 +105,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: hourly-locust-reports-send-referrals-${{ env.MT_HOUR }}
+          name: ${{ env.ARTIFACT_PREFIX }}-${{ env.MT_HOUR }}
           path:  /home/runner/work/dimagi-qa/dimagi-qa/hour_*.html
           retention-days: 2
 
@@ -116,7 +125,7 @@ jobs:
             const { promises: fs } = require('fs')
 
             const {JOB_STATUS, NOW, CC_ENV, GITHUB_HEAD_REF} = process.env
-            const prefix = `[${CC_ENV}] Send Referrals Locust Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
+            const prefix = `[${CC_ENV}] ${{ env.SCENARIO_TITLE }} Locust Tests - ${JOB_STATUS.toUpperCase()} - Run #${context.runNumber}`
             const suffix = `at ${NOW}`
 
             let subject = `${prefix} on "deploy_success" ${suffix}`
@@ -130,7 +139,7 @@ jobs:
             }
 
             let actionRunLink = context.payload.repository.html_url + `/actions/runs/${context.runId}`
-            let testSuite = 'BHA Send Referrals Hourly Load Tests for ${{ env.MT_HOUR }} hrs'
+            let testSuite = 'BHA ${{ env.SCENARIO_TITLE }} Hourly Load Tests for ${{ env.MT_HOUR }} hrs'
             let bodyContent = await fs.readFile(bodyFile, 'utf8')
             bodyContent = bodyContent.replace(/{{actionRunLink}}/g, actionRunLink)
                 .replace(/{{runNumber}}/g, context.runNumber)
