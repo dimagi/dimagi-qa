@@ -5,7 +5,8 @@
 # gets its hourly HTML report and its log, so their output stays separate.
 # The logs are printed one scenario at a time once all three have finished.
 #
-# Exits non-zero if any scenario failed.
+# Each scenario's result (success or failure) is written to the step's
+# outputs, keyed by scenario name. Exits non-zero if any scenario failed.
 set -uo pipefail
 
 # The locustfiles import modules from the repository root (common_utilities),
@@ -60,7 +61,10 @@ for i in "${!SCENARIOS[@]}"; do
     echo "::group::$scenario (exit status $status)"
     cat "reports/$scenario/locust.log"
     echo "::endgroup::"
-    if (( status != 0 )); then
+    if (( status == 0 )); then
+        echo "$scenario=success" >> "${GITHUB_OUTPUT:-/dev/null}"
+    else
+        echo "$scenario=failure" >> "${GITHUB_OUTPUT:-/dev/null}"
         failed=1
     fi
 done

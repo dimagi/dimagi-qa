@@ -57,6 +57,7 @@ jobs:
           pip install -r LocustScripts/requirements.txt
 
       - name: Hourly BHA Load tests with Locust
+        id: load-tests
         continue-on-error: true
         env:
           DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
@@ -85,6 +86,8 @@ jobs:
           MT_HOUR=$(python -c "import pytz; from datetime import datetime; print(datetime.now(pytz.timezone('US/Mountain')).strftime('%H'))")
           echo "MT_HOUR=$MT_HOUR" >> $GITHUB_ENV
 
+      # Each scenario reports its own result. If the tests didn't finish
+      # (e.g. the run was cancelled), they fall back to the job's status.
       - name: Report Admit Client results
         if: ${{ always() }}
         uses: ./.github/actions/locust-hourly-notify
@@ -93,7 +96,7 @@ jobs:
           workflow-name: Hourly Admit Client Load test
           artifact-name: hourly-locust-reports-${{ env.MT_HOUR }}
           report-dir: reports/admit-client
-          status: ${{ job.status }}
+          status: ${{ steps.load-tests.outputs.admit-client || job.status }}
           environment: ${{ matrix.environment }}
           mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
@@ -107,7 +110,7 @@ jobs:
           workflow-name: Hourly Send Referrals Load test
           artifact-name: hourly-locust-reports-send-referrals-${{ env.MT_HOUR }}
           report-dir: reports/send-referrals
-          status: ${{ job.status }}
+          status: ${{ steps.load-tests.outputs.send-referrals || job.status }}
           environment: ${{ matrix.environment }}
           mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
@@ -121,7 +124,7 @@ jobs:
           workflow-name: Hourly Update Bed Avail Load test
           artifact-name: hourly-locust-reports-bed-avail-${{ env.MT_HOUR }}
           report-dir: reports/update-bed-avail
-          status: ${{ job.status }}
+          status: ${{ steps.load-tests.outputs.update-bed-avail || job.status }}
           environment: ${{ matrix.environment }}
           mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
