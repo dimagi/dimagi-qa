@@ -43,7 +43,7 @@ jobs:
       cancel-in-progress: true
     name: LoadTest on '${{ matrix.environment }}'
     runs-on: ubuntu-latest
-    timeout-minutes: 1440
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.13
