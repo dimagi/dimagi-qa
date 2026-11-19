@@ -1,6 +1,6 @@
 name: Notify hourly load test result
 description: >-
-  Upload one hourly BHA load test scenario's report, and send its result
+  Upload one hourly BHA load test scenario's report and log, and send its result
   email and Slack message.
 inputs:
   title:
@@ -13,7 +13,7 @@ inputs:
     description: Name of the uploaded report artifact.
     required: true
   report-dir:
-    description: Directory holding the scenario's hour_*.html report.
+    description: Directory holding the scenario's hour_*.html report and locust.log.
     required: true
   status:
     description: Job status to report (success, failure or cancelled).
@@ -36,7 +36,9 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
-        path: ${{ inputs.report-dir }}/hour_*.html
+        path: |
+          ${{ inputs.report-dir }}/hour_*.html
+          ${{ inputs.report-dir }}/locust.log
         retention-days: 2
 
     - name: Fetch artifact ID
