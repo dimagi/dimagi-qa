@@ -19,29 +19,14 @@ on:
         options:
           - production
 jobs:
-  set_matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix-manual.outputs.matrix || steps.set-matrix-default.outputs.matrix }}
-    steps:
-      - id: set-matrix-manual
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: |
-          echo "::set-output name=matrix::{\"environment\": [\"${{ inputs.environment }}\"]}"
-      - id: set-matrix-default
-        if: ${{ !contains(github.event_name , 'dispatch') }}
-        run: |
-          echo "::set-output name=matrix::{\"environment\": [\"production\"]}"
-
   build:
-    needs: set_matrix
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.set_matrix.outputs.matrix) }}
+    env:
+      # Scheduled runs have no inputs, so they use production.
+      ENVIRONMENT: ${{ inputs.environment || 'production' }}
     concurrency:
-      group: ${{ github.workflow }}-${{ matrix.environment }}
+      group: ${{ github.workflow }}-${{ inputs.environment || 'production' }}
       cancel-in-progress: true
-    name: LoadTest on '${{ matrix.environment }}'
+    name: LoadTest on '${{ inputs.environment || 'production' }}'
     runs-on: ubuntu-latest
     timeout-minutes: 70
     steps:
@@ -60,13 +45,13 @@ jobs:
         id: load-tests
         continue-on-error: true
         env:
-          DIMAGIQA_ENV: ${{ matrix.environment }}  #${{ secrets.DIMAGIQA_URL }}
+          DIMAGIQA_ENV: ${{ env.ENVIRONMENT }}  #${{ secrets.DIMAGIQA_URL }}
           DIMAGIQA_LOCUST_PASSWORD: ${{ secrets.DIMAGIQA_LOCUST_PASSWORD }}
           DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
         run: |
           echo "client_payload: ${{ toJson(github.event.client_payload) }}"
-          echo "matrix environment: ${{ matrix.environment }}"
+          echo "environment: ${{ env.ENVIRONMENT }}"
           echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
           echo ${{env.NOW}}
           bash LocustScripts/update-scripts/run_hourly_bha_load_tests.sh
@@ -97,7 +82,7 @@ jobs:
           artifact-name: hourly-locust-reports-${{ env.MT_HOUR }}
           report-dir: reports/admit-client
           status: ${{ steps.load-tests.outputs.admit-client || job.status }}
-          environment: ${{ matrix.environment }}
+          environment: ${{ env.ENVIRONMENT }}
           mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_BHA }}
@@ -111,7 +96,7 @@ jobs:
           artifact-name: hourly-locust-reports-send-referrals-${{ env.MT_HOUR }}
           report-dir: reports/send-referrals
           status: ${{ steps.load-tests.outputs.send-referrals || job.status }}
-          environment: ${{ matrix.environment }}
+          environment: ${{ env.ENVIRONMENT }}
           mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_BHA }}
@@ -125,7 +110,7 @@ jobs:
           artifact-name: hourly-locust-reports-bed-avail-${{ env.MT_HOUR }}
           report-dir: reports/update-bed-avail
           status: ${{ steps.load-tests.outputs.update-bed-avail || job.status }}
-          environment: ${{ matrix.environment }}
+          environment: ${{ env.ENVIRONMENT }}
           mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
           mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_BHA }}
