@@ -175,7 +175,7 @@ runs:
           						"type": "button",
           						"text": {
           							"type": "plain_text",
-          							"text": "Click to Downlaod",
+          							"text": "Click to Download",
           							"emoji": true
           						},
           						"value": "click_me_123",
