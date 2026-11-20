@@ -1,0 +1,26 @@
+name: Forward HQ deploy to CommCare mobile suite
+
+# commcare-cloud sends deploy_success only to dimagi-qa after each HQ deploy.
+# This passes CommCare production deploys on to dimagi-qa-commcare-mobile,
+# which runs its core suite on the same event.
+on:
+  repository_dispatch:
+    types: [deploy_success]
+
+jobs:
+  forward:
+    # Formplayer deploys and other environments are skipped.
+    if: github.event.client_payload.component == 'commcare' && github.event.client_payload.environment == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deploy_success to dimagi-qa-commcare-mobile
+        env:
+          GH_TOKEN: ${{ secrets.COMMCARE_MOBILE_DISPATCH_TOKEN }}
+          COMPONENT: ${{ github.event.client_payload.component }}
+          ENVIRONMENT: ${{ github.event.client_payload.environment }}
+        run: |
+          gh api repos/dimagi/dimagi-qa-commcare-mobile/dispatches \
+            -f event_type=deploy_success \
+            -f "client_payload[component]=$COMPONENT" \
+            -f "client_payload[environment]=$ENVIRONMENT"
+          echo "Forwarded $COMPONENT/$ENVIRONMENT deploy to dimagi-qa-commcare-mobile."
