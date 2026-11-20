@@ -12,6 +12,8 @@ jobs:
     # Formplayer deploys and other environments are skipped.
     if: github.event.client_payload.component == 'commcare' && github.event.client_payload.environment == 'production'
     runs-on: ubuntu-latest
+    # Only the dispatch token is used; the default GITHUB_TOKEN gets no rights.
+    permissions: {}
     steps:
       - name: Dispatch deploy_success to dimagi-qa-commcare-mobile
         env:
