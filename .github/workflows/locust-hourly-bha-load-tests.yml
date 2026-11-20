@@ -23,9 +23,11 @@ jobs:
     env:
       # Scheduled runs have no inputs, so they use production.
       ENVIRONMENT: ${{ inputs.environment || 'production' }}
+    # A run that overlaps the next hour finishes (including its three
+    # notifications) before the next one starts, rather than being cancelled.
     concurrency:
       group: ${{ github.workflow }}-${{ inputs.environment || 'production' }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     name: LoadTest on '${{ inputs.environment || 'production' }}'
     runs-on: ubuntu-latest
     timeout-minutes: 70
