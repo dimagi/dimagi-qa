@@ -1,0 +1,118 @@
+# Runs the three hourly BHA load test scenarios (Admit Client, Send Referrals
+# and Update Bed Availability) in parallel on one runner, and reports each
+# scenario's result separately, as their individual workflows used to.
+
+name: Hourly BHA Load tests
+
+on:
+  schedule:
+    - cron: '0 6-23 * * 1-5'
+    - cron: '0 0-5 * * 2-6'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run tests against'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+jobs:
+  build:
+    env:
+      # Scheduled runs have no inputs, so they use production.
+      ENVIRONMENT: ${{ inputs.environment || 'production' }}
+    # A run that overlaps the next hour finishes (including its three
+    # notifications) before the next one starts, rather than being cancelled.
+    concurrency:
+      group: ${{ github.workflow }}-${{ inputs.environment || 'production' }}
+      cancel-in-progress: false
+    name: LoadTest on '${{ inputs.environment || 'production' }}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r LocustScripts/requirements.txt
+
+      - name: Hourly BHA Load tests with Locust
+        id: load-tests
+        continue-on-error: true
+        env:
+          DIMAGIQA_ENV: ${{ env.ENVIRONMENT }}  #${{ secrets.DIMAGIQA_URL }}
+          DIMAGIQA_LOCUST_PASSWORD: ${{ secrets.DIMAGIQA_LOCUST_PASSWORD }}
+          DIMAGIQA_MAIL_USERNAME: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+          DIMAGIQA_MAIL_PASSWORD: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+        run: |
+          echo "client_payload: ${{ toJson(github.event.client_payload) }}"
+          echo "environment: ${{ env.ENVIRONMENT }}"
+          echo "NOW=$(date +'%m-%d %H:%M')" >> $GITHUB_ENV
+          echo ${{env.NOW}}
+          bash LocustScripts/update-scripts/run_hourly_bha_load_tests.sh
+
+      - name: Echo current Mountain Time hour
+        run: |
+          python -c "
+          import pytz
+          from datetime import datetime
+          mt = pytz.timezone('US/Mountain')
+          now = datetime.now(mt)
+          print('Current Mountain Time hour:', now.strftime('%H'))
+          "
+
+      - name: Set MT hour to env
+        run: |
+          MT_HOUR=$(python -c "import pytz; from datetime import datetime; print(datetime.now(pytz.timezone('US/Mountain')).strftime('%H'))")
+          echo "MT_HOUR=$MT_HOUR" >> $GITHUB_ENV
+
+      # Each scenario reports its own result. If the tests didn't finish
+      # (e.g. the run was cancelled), they fall back to the job's status.
+      - name: Report Admit Client results
+        if: ${{ always() }}
+        uses: ./.github/actions/locust-hourly-notify
+        with:
+          title: Admit Client
+          workflow-name: Hourly Admit Client Load test
+          artifact-name: hourly-locust-reports-${{ env.MT_HOUR }}
+          report-dir: reports/admit-client
+          status: ${{ steps.load-tests.outputs.admit-client || job.status }}
+          environment: ${{ env.ENVIRONMENT }}
+          mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+          mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_BHA }}
+
+      - name: Report Send Referrals results
+        if: ${{ always() }}
+        uses: ./.github/actions/locust-hourly-notify
+        with:
+          title: Send Referrals
+          workflow-name: Hourly Send Referrals Load test
+          artifact-name: hourly-locust-reports-send-referrals-${{ env.MT_HOUR }}
+          report-dir: reports/send-referrals
+          status: ${{ steps.load-tests.outputs.send-referrals || job.status }}
+          environment: ${{ env.ENVIRONMENT }}
+          mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+          mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_BHA }}
+
+      - name: Report Update Bed Availability results
+        if: ${{ always() }}
+        uses: ./.github/actions/locust-hourly-notify
+        with:
+          title: Update Bed Availability
+          workflow-name: Hourly Update Bed Avail Load test
+          artifact-name: hourly-locust-reports-bed-avail-${{ env.MT_HOUR }}
+          report-dir: reports/update-bed-avail
+          status: ${{ steps.load-tests.outputs.update-bed-avail || job.status }}
+          environment: ${{ env.ENVIRONMENT }}
+          mail-username: ${{ secrets.DIMAGIQA_MAIL_USERNAME }}
+          mail-password: ${{ secrets.DIMAGIQA_MAIL_PASSWORD }}
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_BHA }}
