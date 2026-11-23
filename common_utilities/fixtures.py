@@ -14,6 +14,7 @@ import base64
 import ast
 import json
 import os
+import time
 
 """"This file provides fixture functions for driver initialization"""
 
@@ -21,8 +22,6 @@ global driver
 from collections import OrderedDict
 
 failed_items = OrderedDict()
-
-import time
 
 LOGIN_PAGE_LOAD_TIMEOUT = 120  # seconds
 DEFAULT_PAGE_LOAD_TIMEOUT = 300  # Chrome/Selenium default
@@ -108,8 +107,8 @@ def driver(settings, browser):
             print(f"[WARN] Login attempt {attempt}/{login_attempts} failed: {type(e).__name__}: {e.msg if hasattr(e, 'msg') else e}")
             try:
                 web_driver.quit()
-            except Exception:
-                pass
+            except WebDriverException as quit_error:
+                print(f"[WARN] Could not quit the browser after the failed login: {quit_error}")
             if attempt == login_attempts:
                 raise
             time.sleep(LOGIN_RETRY_DELAY)
