@@ -395,7 +395,7 @@ class ApplicationPage(BasePage):
         self.wait_for_element(self.question_display_text)
         self.send_keys(self.question_display_text, "Location")
         self.wait_to_clear_and_send_keys(self.question_ID_field, "location_id")
-        self.map_question_to_case_property("name")
+        self.map_question_to_case_property(UserData.case_name_property)
         self.wait_to_click(self.save_button)
 
         if self.is_present(self.override_btn):

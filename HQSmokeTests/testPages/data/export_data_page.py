@@ -18,6 +18,7 @@ from HQSmokeTests.userInputs.user_inputs import UserData
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, \
     ElementClickInterceptedException, NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 
 """"Contains test page elements and functions related to the exports module"""
@@ -1002,15 +1003,19 @@ class ExportDataPage(SubmittedByFilterMixin, BasePage):
         print(link)
         self.driver.get(link)
         self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
-        # The new parent link can take a little while to show after the import finishes
-        for _ in range(3):
-            if self.is_present(self.related_cases_tab):
-                break
-            time.sleep(20)
-            self.reload_page()
-            self.wait_for_element((By.XPATH, self.case_id_value.format(parent_id)))
-        assert self.is_present(self.related_cases_tab), "Parent not reassigned"
+        # The new parent link can take a little while to show after the import
+        # finishes, so reload the case page until the Related Cases tab appears.
+        try:
+            WebDriverWait(self.driver, 90, poll_frequency=15).until(self._related_cases_tab_after_reload)
+        except TimeoutException:
+            raise AssertionError("Parent not reassigned: no Related Cases tab on the parent case after 90 s")
         self.validate_child_case_data()
+
+    def _related_cases_tab_after_reload(self, driver):
+        if driver.find_elements(*self.related_cases_tab):
+            return True
+        driver.refresh()
+        return False
 
     def add_repeat_form_exports(self, app, case, form, export_name):
         self.wait_for_element(self.add_export_button, 100)

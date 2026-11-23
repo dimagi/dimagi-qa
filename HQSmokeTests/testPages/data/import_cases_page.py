@@ -122,23 +122,22 @@ class ImportCasesPage(BasePage):
         sheet.title = sheet_name
         workbook.save(filename=renamed_file)
 
-    def click_confirm_import(self, timeout=60):
-        """Click Confirm Import and make sure the import was submitted.
+    def click_confirm_import(self, timeout=180):
+        """Click Confirm Import once and wait for the page to move on.
 
-        On a slow server the first click can be lost and the page stays on the
-        column matching step, so click the button again if it is still there.
+        Never click it again: if the first submit is only slow, a second click
+        would start a duplicate import on the shared domain.
         """
         self.wait_to_click(self.confirm_import)
-        for _ in range(2):
-            try:
-                WebDriverWait(self.driver, timeout, poll_frequency=2).until(
-                    lambda d: not d.find_elements(*self.confirm_import_button)
-                )
-                return
-            except TimeoutException:
-                print("Still on the column matching page, clicking Confirm Import again")
-                self.js_click(self.confirm_import_button)
-        assert not self.driver.find_elements(*self.confirm_import_button), "Confirm Import did not submit the import"
+        try:
+            WebDriverWait(self.driver, timeout, poll_frequency=2).until(
+                lambda d: not d.find_elements(*self.confirm_import_button)
+            )
+        except TimeoutException:
+            raise AssertionError(
+                f"Still on the column matching page {timeout} s after clicking Confirm Import; "
+                "the import was not submitted"
+            )
 
     def import_parent_child_excel(self, filename):
         self.wait_to_click(self.import_cases_menu)

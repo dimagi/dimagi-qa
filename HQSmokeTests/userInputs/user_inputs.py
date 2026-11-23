@@ -101,6 +101,10 @@ class UserData:
     app_status = "Application Status: Requested export excel data"
     location_list = ['Delhi', 'Boston', 'Cape Town']
 
+    """Applications"""
+    # Every case needs a question saved to this case property, or the build fails.
+    case_name_property = "name"
+
     """Data Forwarding"""
     http_req_methods = ['DELETE','POST','PUT']
     payload_format = ['XML','JSON']
