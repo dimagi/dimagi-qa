@@ -236,22 +236,21 @@ class WebApps(BasePage):
         else:
             print("Split Screen Case Search enabled")
         self.case = self.get_element(self.case_name_format, case_name)
-        if self.is_displayed(self.last_page) and self.is_displayed(self.case) == False:
+        found = self.is_displayed(self.case)
+        if not found and self.is_displayed(self.last_page):
+            # No search box (split screen): page through the list until the case shows up.
             total_pages = int(self.get_attribute(self.last_page, "data-id")) - 1
             for page in range(total_pages):
                 self.wait_to_click(self.next_page)
                 time.sleep(5)
                 self.wait_after_interaction(100)
-                if displayed == YES:
-                    assert self.is_displayed(self.case)
+                found = self.is_displayed(self.case)
+                if found or displayed == NO:
                     break
-                elif displayed == NO:
-                    assert not self.is_displayed(self.case)
-        else:
-            if displayed == YES:
-                assert self.is_displayed(self.case)
-            elif displayed == NO:
-                assert not self.is_displayed(self.case)
+        if displayed == YES:
+            assert found, f"Case '{case_name}' is not in the case list"
+        elif displayed == NO:
+            assert not found, f"Case '{case_name}' should not be in the case list"
         return case_name
 
     def select_case(self, case_name):
