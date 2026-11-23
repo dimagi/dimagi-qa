@@ -49,7 +49,7 @@ start update-bed-avail \
     --locust-file "$SCRIPTS/commcarehq-hourly-update-bed-availability-mw-login.py" \
     --user-details "$CONFIG/mobile_worker_credentials_update_bed_avail_hourly.json" \
     --app-config "$CONFIG/app_config_update_bed_avail.json" \
-    --host https://www.commcarehq.org/ \
+    --host https://www.commcarehq.org \
     --app-id 5abfe7d62fd54e7cb7e6038f8a68e0ea \
     --build-id b9a1ef9ff5ba4b61957f1e0524f0dd03
 
