@@ -1,5 +1,6 @@
 from appium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 
 from HQSmokeTests.userInputs.user_inputs import UserData
@@ -123,6 +124,21 @@ class AndroidScreen:
         assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@text='Welcome back! Please log in.']").is_displayed(), "App not installed"
         print("App installed successfully")
 
+    def wait_and_click_log_out(self, timeout=180):
+        """Wait for login to finish, then log out.
+
+        Logging in syncs the user's data first, which can take well over the
+        old fixed 40 seconds on the device farm, so poll for the log out option.
+        """
+        try:
+            WebDriverWait(self.driver, timeout, poll_frequency=5).until(
+                lambda d: d.find_elements(AppiumBy.XPATH, self.log_out)
+            )
+        except TimeoutException:
+            texts = [e.text for e in self.driver.find_elements(AppiumBy.CLASS_NAME, "android.widget.TextView") if e.text]
+            raise TimeoutException(f"Login did not finish within {timeout}s. Screen shows: {texts[:15]}")
+        self.driver.find_element(AppiumBy.XPATH, self.log_out).click()
+
     def verify_login_with_old_password(self, code, username, password):
         time.sleep(10)
         self.driver.find_element(AppiumBy.XPATH, self.enter_code).click()
@@ -138,8 +154,7 @@ class AndroidScreen:
         self.driver.find_element(AppiumBy.ID, self.username).send_keys(username)
         self.driver.find_element(AppiumBy.ID, self.password).send_keys(password)
         self.driver.find_element(AppiumBy.ID, self.login).click()
-        time.sleep(40)
-        self.driver.find_element(AppiumBy.XPATH, self.log_out).click()
+        self.wait_and_click_log_out()
         print("Successfully logged in and logged out with old password:", username, password)
         time.sleep(3)
         assert self.driver.find_element(AppiumBy.XPATH,
@@ -155,8 +170,7 @@ class AndroidScreen:
         self.driver.find_element(AppiumBy.ID, self.username).send_keys(username)
         self.driver.find_element(AppiumBy.ID, self.password).send_keys(password)
         self.driver.find_element(AppiumBy.ID, self.login).click()
-        time.sleep(40)
-        self.driver.find_element(AppiumBy.XPATH, self.log_out).click()
+        self.wait_and_click_log_out()
         print("Successfully logged in and logged out with new password :", username, password)
         time.sleep(3)
 

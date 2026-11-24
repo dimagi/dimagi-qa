@@ -3,8 +3,9 @@ import os
 import time
 
 from openpyxl import load_workbook
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 from common_utilities.selenium.base_page import BasePage
 from common_utilities.generate_random_string import fetch_random_string
@@ -31,9 +32,12 @@ class ImportCasesPage(BasePage):
         self.choose_file = (By.ID, "file")
         self.next_step = (By.XPATH, "(//button[@type='submit' and contains(@class,'primary')])[1]")
         self.confirm_import = (By.XPATH, "//button[@type='submit'][contains(.,'Confirm Import')]/i")
+        self.confirm_import_button = (By.XPATH, "//button[@type='submit'][contains(.,'Confirm Import')]")
         self.case_type = (By.XPATH, "//select[@id='case_type']")
         self.case_type_option_value = (By.XPATH, "//option[@value='pregnancy']")
-        self.success = "(//span[text()='{}']//preceding::span[contains(@class,'success')])[1]"
+        # Only the newest row of Recent Imports (the upload just made). Matching any row
+        # let an older import of the same file report success before this one had run.
+        self.success = "(//tr[td][.//span[@data-bind='text: upload_file_name']])[1][.//span[@data-bind='text: upload_file_name' and text()='{}']]//span[contains(@class,'success')]"
         self.create_new_cases = (By.XPATH, "//input[@id='create_new_cases']")
         self.alert_msg = (By.XPATH, "//div[contains(@class,'alert alert-dismissible')]")
         self.value_hints = "//ul[contains(@data-bind,'valuesHints')]/li[.='{}']"
@@ -98,7 +102,7 @@ class ImportCasesPage(BasePage):
         self.scroll_to_bottom()
         self.scroll_to_element(self.confirm_import)
         time.sleep(2)
-        self.wait_to_click(self.confirm_import)
+        self.click_confirm_import()
         print("Imported case!")
         if flag is None:
             self.wait_for_element((By.XPATH, self.success.format(self.file_new_name)),400)
@@ -118,6 +122,23 @@ class ImportCasesPage(BasePage):
         sheet.title = sheet_name
         workbook.save(filename=renamed_file)
 
+    def click_confirm_import(self, timeout=180):
+        """Click Confirm Import once and wait for the page to move on.
+
+        Never click it again: if the first submit is only slow, a second click
+        would start a duplicate import on the shared domain.
+        """
+        self.wait_to_click(self.confirm_import)
+        try:
+            WebDriverWait(self.driver, timeout, poll_frequency=2).until(
+                lambda d: not d.find_elements(*self.confirm_import_button)
+            )
+        except TimeoutException:
+            raise AssertionError(
+                f"Still on the column matching page {timeout} s after clicking Confirm Import; "
+                "the import was not submitted"
+            )
+
     def import_parent_child_excel(self, filename):
         self.wait_to_click(self.import_cases_menu)
         self.wait_for_element(self.choose_file)
@@ -129,7 +150,9 @@ class ImportCasesPage(BasePage):
             text = str(filename).split("\\")
             file = text[-1]
         print(file)
-        self.wait_to_clear_and_send_keys(self.choose_file, filename)
+        # File inputs reject the click done by wait_to_clear_and_send_keys
+        # (InvalidArgumentException); send the path directly, like the other uploads.
+        self.send_keys(self.choose_file, str(filename))
         self.wait_to_click(self.next_step)
         self.is_visible_and_displayed(self.case_type)
         self.select_by_text(self.case_type, UserData.child_type)
@@ -138,9 +161,9 @@ class ImportCasesPage(BasePage):
         self.wait_for_element(self.next_step)
         time.sleep(2)
         self.scroll_to_element(self.confirm_import)
-        self.wait_to_click(self.confirm_import)
+        self.click_confirm_import()
         print("Imported case!")
-        self.wait_for_element((By.XPATH, self.success.format(file)), 100)
+        self.wait_for_element((By.XPATH, self.success.format(file)), 300)
         print("Import Completed")
 
     def validate_data_dictionary_warning(self, list_warning):
