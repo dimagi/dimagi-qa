@@ -94,7 +94,6 @@ class MobileWorkerPage(BasePage):
             By.XPATH, "//button[@type='submit'][contains(.,'Create')]/preceding-sibling::button[text()='Cancel']")
         self.new_user_created_xpath = (By.XPATH,
                                        "//*[@class='success']//a[contains(@data-bind,'attr: {href: edit_url}, visible: user_id')]//following-sibling::strong")
-        self.NEW = (By.XPATH, "//span[@class='text-success']")
         self.edit_user_field_xpath = (By.XPATH, "//a[contains(.,'Edit User Fields')]")
         self.add_field_xpath = (By.XPATH, "//button[@data-bind='click: addField']")
         self.user_property_xpath = (By.XPATH, "(//input[contains(@data-bind,'value: slug')])[last()]")
@@ -248,7 +247,8 @@ class MobileWorkerPage(BasePage):
     def click_create(self, username):
         self.wait_to_click(self.create_button_xpath)
         time.sleep(2)
-        self.wait_for_element(self.NEW, 200)
+        # The NEW label is in the page while the row is still pending; wait for the created row.
+        self.wait_for_element(self.new_user_created_xpath, 200)
         new_user_created = self.get_text(self.new_user_created_xpath)
         print("Username is : " + new_user_created)
         assert username == new_user_created, "Could find the new mobile worker created"
@@ -689,7 +689,7 @@ class MobileWorkerPage(BasePage):
         self.mobile_worker_enter_password(fetch_random_string())
         self.wait_to_click(self.create_button_xpath)
         time.sleep(4)
-        self.is_present_and_displayed(self.NEW, 100)
+        self.wait_for_element(self.new_user_created_xpath, 100)
         new_user_created = self.get_text(self.new_user_created_xpath)
         print("Username is : " + new_user_created)
         assert user == new_user_created, "Could find the new mobile worker created"
