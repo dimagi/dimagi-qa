@@ -11,6 +11,10 @@ class CaseSearchUserInput:
     casesearch_2 = "casesearch-2"
     casesearch_split_screen = "casesearch-split-screen"
 
+    """Waits"""
+    # Longer wait: Web Apps is slow right after a deploy.
+    post_deploy_timeout = 90  # seconds
+
     """App Names"""
     case_search_app_name = "[Master] Music App (Case Search & Claim)"
     french_app = "[French] Music App"

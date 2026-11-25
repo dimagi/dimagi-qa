@@ -110,7 +110,8 @@ def test_case_03_date_range_format(driver, settings):
                                            property_type=TEXT_INPUT)
     webapps.search_button_on_case_search_page()
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.six,
-                                            expected_value=CaseSearchUserInput.date_30_12_2022)
+                                            expected_value=CaseSearchUserInput.date_30_12_2022,
+                                        timeout=CaseSearchUserInput.post_deploy_timeout)
     # Date Range Search Again with Enter on keyboard
     webapps.search_again_cases()
     webapps.clear_selections_on_case_search_page()
@@ -125,7 +126,8 @@ def test_case_03_date_range_format(driver, settings):
                                         expected_value=casesearch.parse_date(
                                             input_date=date,
                                             input_format=CaseSearchUserInput.dates.get("MM/DD/YYYY"),
-                                            output_format=CaseSearchUserInput.dates.get("DD/MM/YYYY")))
+                                            output_format=CaseSearchUserInput.dates.get("DD/MM/YYYY")),
+                                        timeout=CaseSearchUserInput.post_deploy_timeout)
 
 
 
