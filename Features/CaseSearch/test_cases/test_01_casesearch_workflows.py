@@ -8,6 +8,16 @@ from common_utilities.selenium.webapps import WebApps
 """"Contains all case search workflow related test cases"""
 
 
+def search_song_in_search_form(webapps, casesearch, song):
+    """Split screen has no omni search box and the default list may not include the song,
+    so search for it by name in the search form."""
+    webapps.clear_selections_on_case_search_page()
+    casesearch.search_against_property(search_property=CaseSearchUserInput.song_name,
+                                       input_value=song,
+                                       property_type=TEXT_INPUT)
+    webapps.search_button_on_case_search_page()
+
+
 def test_case_01_add_new_song(driver, settings):
     webapps = WebApps(driver, settings)
     casesearch = CaseSearchWorkflows(driver)
@@ -77,6 +87,7 @@ def test_case_04_see_more(driver, settings):
     casesearch.check_values_on_caselist(row_num=CaseSearchUserInput.four,
                                         expected_value=CaseSearchUserInput.ratings.get(CaseSearchUserInput.five_star))
     if 'www' in settings['url']:
+        search_song_in_search_form(webapps, casesearch, CaseSearchUserInput.song_just_babe)
         case_name = webapps.omni_search(CaseSearchUserInput.song_just_babe)
     else:
         case_name = webapps.omni_search(CaseSearchUserInput.song_123)
@@ -95,6 +106,7 @@ def test_case_05_skip_to_default_search(driver, settings):
                                         expected_value=CaseSearchUserInput.ratings.get(CaseSearchUserInput.five_star),
                                         timeout=CaseSearchUserInput.post_deploy_timeout)
     if 'www' in settings['url']:
+        search_song_in_search_form(webapps, casesearch, CaseSearchUserInput.song_just_babe)
         case_name = webapps.omni_search(CaseSearchUserInput.song_just_babe)
     else:
         case_name = webapps.omni_search(CaseSearchUserInput.song_123)
