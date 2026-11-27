@@ -856,24 +856,37 @@ class LookUpTablePage(BasePage):
         self.select_by_text(self.app_language, value)
         self.wait_to_click(self.done)
 
+    def sync_and_open_registration_form(self):
+        # Waits are longer than usual: App Preview is slow on staging after a sync or Login As.
+        self.wait_for_element(self.sync)
+        self.wait_to_click(self.sync)
+        time.sleep(10)
+        self.wait_after_interaction()
+        self.wait_for_element(self.start, 60)
+        self.wait_to_click(self.start)
+        self.wait_after_interaction()
+        self.wait_for_element(self.inapp_case_list, 90)
+        self.scroll_to_element(self.inapp_case_list)
+        self.wait_to_click(self.inapp_case_list)
+        self.wait_after_interaction()
+        self.wait_for_element(self.inapp_registration_form, 60)
+        self.wait_to_click(self.inapp_registration_form)
+        time.sleep(3)
+        self.wait_after_interaction()
+
     def submit_form_on_registration(self, lang, user, type=None):
         if self.is_present(self.home):
             self.wait_for_element(self.home)
             self.wait_to_click(self.home)
         self.language_selection(lang)
-        self.wait_for_element(self.sync)
-        self.wait_to_click(self.sync)
-        time.sleep(10)
-        self.wait_for_element(self.start)
-        self.wait_to_click(self.start)
-        self.wait_for_element(self.inapp_case_list)
-        self.scroll_to_element(self.inapp_case_list)
-        self.wait_to_click(self.inapp_case_list)
-        self.wait_for_element(self.inapp_registration_form)
-        self.wait_to_click(self.inapp_registration_form)
-        time.sleep(3)
+        self.sync_and_open_registration_form()
         if user != UserData.user_ids_list[-1]:
-            self.wait_for_element(self.inapp_select_option)
+            if not self.is_visible_and_displayed(self.inapp_select_option, 60):
+                # The lookup table was just uploaded; sync again if its options are not in the form yet.
+                print("Lookup table options not shown, syncing again")
+                self.wait_to_click(self.home)
+                self.sync_and_open_registration_form()
+            self.wait_for_element(self.inapp_select_option, 60)
             self.wait_to_click(self.inapp_select_option)
             time.sleep(3)
             value = self.get_text(self.inapp_select_option)
